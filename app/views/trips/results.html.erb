@@ -1,0 +1,121 @@
+<%
+  top3   = @results.first(3)
+  best   = top3.first
+  others = @results.drop(3)
+%>
+
+<div class="w-full max-w-3xl mx-auto space-y-8">
+
+  <%# Breadcrumb %>
+  <div class="flex items-center gap-2 text-sm text-gray-400">
+    <%= link_to "Trips", trips_path, class: "hover:text-gray-700 transition-colors" %>
+    <span>/</span>
+    <%= link_to @trip.title, trip_path(@trip), class: "hover:text-gray-700 transition-colors" %>
+    <span>/</span>
+    <span class="text-gray-600">Résultats</span>
+  </div>
+
+  <%# Top 3 %>
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <% top3.each.with_index(1) do |result, rank| %>
+      <% is_best = rank == 1 %>
+      <div class="<%= is_best ? 'bg-indigo-600 text-white' : 'bg-white border border-gray-200 text-gray-800' %> rounded-xl p-6 flex flex-col gap-3 <%= is_best ? 'sm:order-first' : '' %>">
+        <div class="flex items-center justify-between">
+          <span class="<%= is_best ? 'text-indigo-200' : 'text-gray-400' %> text-xs font-medium uppercase tracking-wider">
+            <%= rank == 1 ? "Recommandé" : "##{rank}" %>
+          </span>
+          <% if result[:city].country_code.present? %>
+            <span class="<%= is_best ? 'text-indigo-200' : 'text-gray-400' %> text-xs font-mono"><%= result[:city].country_code %></span>
+          <% end %>
+        </div>
+        <h2 class="text-2xl font-bold"><%= result[:city].city_name %></h2>
+        <div>
+          <span class="text-xl font-semibold">€<%= (result[:total_cents] / 100.0).round %></span>
+          <span class="<%= is_best ? 'text-indigo-200' : 'text-gray-400' %> text-xs ml-1">total groupe</span>
+        </div>
+        <% if rank > 1 && best %>
+          <span class="text-xs text-red-400">+€<%= ((result[:total_cents] - best[:total_cents]) / 100.0).ceil %> vs recommandé</span>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Détail par participant pour #1 %>
+  <div class="border border-gray-200 rounded-xl overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <h2 class="font-semibold text-gray-900">Détail — <%= best[:city].city_name %></h2>
+      <span class="text-sm text-gray-500"><%= @trip.participants.count %> personnes</span>
+    </div>
+    <ul class="divide-y divide-gray-100">
+      <% best[:quotes].sort_by(&:price_cents).each do |quote| %>
+        <li class="flex items-center justify-between px-6 py-4">
+          <div>
+            <span class="font-medium text-gray-800"><%= quote.participant.name %></span>
+            <span class="text-gray-400 text-sm mx-2">·</span>
+            <span class="text-gray-500 text-sm"><%= quote.participant.origin_city %></span>
+            <span class="text-gray-400 text-sm mx-1">→</span>
+            <span class="text-gray-500 text-sm"><%= best[:city].city_name %></span>
+          </div>
+          <div class="text-right">
+            <% if quote.price_cents == 0 %>
+              <span class="font-semibold text-green-600">Déjà sur place</span>
+            <% else %>
+              <span class="font-semibold text-gray-900">€<%= quote.price_euros.round %></span>
+              <% if quote.duration_minutes.present? && quote.duration_minutes > 0 %>
+                <span class="text-xs text-gray-400 ml-2"><%= quote.duration_minutes / 60 %>h<%= quote.duration_minutes % 60 %>m</span>
+              <% end %>
+            <% end %>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+    <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
+      <span class="text-sm font-medium text-gray-600">Total</span>
+      <span class="font-bold text-gray-900">€<%= (best[:total_cents] / 100.0).round %></span>
+    </div>
+  </div>
+
+  <%# Autres destinations %>
+  <% if others.any? %>
+    <div class="border border-gray-200 rounded-xl overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-100">
+        <h2 class="font-semibold text-gray-900">Autres destinations évaluées</h2>
+      </div>
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 border-b border-gray-100">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ville</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Coût total</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Surcoût vs #1</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          <% others.each.with_index(4) do |result, rank| %>
+            <tr class="hover:bg-gray-50 transition-colors">
+              <td class="px-6 py-4 text-gray-400 font-medium"><%= rank %></td>
+              <td class="px-6 py-4">
+                <span class="font-medium text-gray-800"><%= result[:city].city_name %></span>
+                <% if result[:city].country_code.present? %>
+                  <span class="text-gray-400 text-xs ml-1"><%= result[:city].country_code %></span>
+                <% end %>
+              </td>
+              <td class="px-6 py-4 text-right font-semibold text-gray-700">€<%= (result[:total_cents] / 100.0).round %></td>
+              <td class="px-6 py-4 text-right text-red-500 text-xs">
+                +€<%= ((result[:total_cents] - best[:total_cents]) / 100.0).ceil %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+
+  <%# Actions %>
+  <div class="flex gap-3">
+    <%= link_to "← Revenir au trip", trip_path(@trip), class: "text-sm text-gray-500 border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors" %>
+    <%= button_to "Recalculer", optimize_trip_path(@trip), method: :post,
+        class: "text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors" %>
+  </div>
+
+</div>

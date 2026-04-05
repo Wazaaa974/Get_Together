@@ -1,0 +1,16 @@
+<div class="w-full max-w-lg mx-auto">
+  <div class="flex items-center gap-2 text-sm text-gray-400 mb-6">
+    <%= link_to "Trips", trips_path, class: "hover:text-gray-700 transition-colors" %>
+    <span>/</span>
+    <span class="text-gray-600">Nouveau</span>
+  </div>
+
+  <div class="mb-7">
+    <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Nouveau trip</h1>
+    <p class="text-sm text-gray-500 mt-1">Définissez les grandes lignes. Vous ajouterez les participants et les villes ensuite.</p>
+  </div>
+
+  <div class="bg-white border border-gray-200 rounded-xl p-6">
+    <%= render "form", trip: @trip %>
+  </div>
+</div>

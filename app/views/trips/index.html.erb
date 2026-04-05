@@ -1,0 +1,67 @@
+<div class="w-full max-w-3xl mx-auto">
+
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Mes trips</h1>
+      <p class="text-sm text-gray-500 mt-0.5"><%= pluralize(@trips.count, "trip") %> en cours</p>
+    </div>
+    <%= link_to new_trip_path, class: "inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors" do %>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      Nouveau trip
+    <% end %>
+  </div>
+
+  <% if @trips.empty? %>
+    <div class="text-center py-20 border border-dashed border-gray-200 rounded-2xl">
+      <div class="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      </div>
+      <p class="text-gray-500 mb-1 font-medium">Aucun trip pour l'instant</p>
+      <p class="text-sm text-gray-400 mb-6">Créez votre premier trip pour trouver le meilleur lieu de rendez-vous.</p>
+      <%= link_to "Créer un trip", new_trip_path, class: "inline-flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors" %>
+    </div>
+  <% else %>
+    <div class="space-y-3">
+      <% @trips.each do |trip| %>
+        <div class="group bg-white border border-gray-200 rounded-xl p-5 hover:border-indigo-200 hover:shadow-sm transition-all">
+          <div class="flex items-start justify-between gap-4">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-3 mb-1">
+                <%= link_to trip.title, trip_path(trip), class: "text-base font-semibold text-gray-900 hover:text-indigo-600 transition-colors truncate" %>
+                <span class="flex-shrink-0 text-xs px-2 py-0.5 rounded-full font-medium
+                  <%= trip.status == 'active' ? 'bg-green-50 text-green-700 border border-green-200' :
+                      trip.status == 'completed' ? 'bg-gray-100 text-gray-500' :
+                      'bg-amber-50 text-amber-700 border border-amber-200' %>">
+                  <%= trip.status == 'draft' ? 'Brouillon' : trip.status == 'active' ? 'Actif' : 'Terminé' %>
+                </span>
+              </div>
+              <div class="flex items-center gap-4 text-sm text-gray-400">
+                <% if trip.start_date.present? %>
+                  <span class="inline-flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    <%= trip.start_date.strftime("%d %b %Y") %>
+                    <% if trip.end_date.present? %> → <%= trip.end_date.strftime("%d %b %Y") %><% end %>
+                  </span>
+                <% end %>
+                <span class="inline-flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/></svg>
+                  <%= trip.participants.count %> participant<%= trip.participants.count > 1 ? 's' : '' %>
+                </span>
+                <span class="inline-flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+                  <%= trip.candidate_cities.count %> ville<%= trip.candidate_cities.count > 1 ? 's' : '' %>
+                </span>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <% if trip.route_quotes.any? %>
+                <%= link_to "Voir résultats", results_trip_path(trip), class: "text-xs text-indigo-600 border border-indigo-200 bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition-colors font-medium" %>
+              <% end %>
+              <%= link_to "→", trip_path(trip), class: "text-gray-400 group-hover:text-indigo-500 transition-colors p-1.5" %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
