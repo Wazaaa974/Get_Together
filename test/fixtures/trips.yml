@@ -1,13 +1,15 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+weekend_paris:
+  title: Weekend à Paris
+  start_date: 2026-06-10
+  end_date: 2026-06-12
+  status: draft
+  user: alice
+  share_token: abc123token456xyz789ab
 
-one:
-  title: MyString
-  start_date: 2026-04-05
-  end_date: 2026-04-05
-  status: MyString
-
-two:
-  title: MyString
-  start_date: 2026-04-05
-  end_date: 2026-04-05
-  status: MyString
+trip_bob:
+  title: Trip de Bob
+  start_date: 2026-07-01
+  end_date: 2026-07-05
+  status: draft
+  user: bob
+  share_token: def456token789uvw012cd

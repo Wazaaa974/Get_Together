@@ -1,13 +1,15 @@
 class CandidateCitiesController < ApplicationController
   before_action :set_trip
+  before_action :require_trip_access!
 
   def create
     @candidate_city = @trip.candidate_cities.new(candidate_city_params)
     if @candidate_city.save
-      redirect_to @trip
+      redirect_to trip_path(@trip)
     else
       @new_participant = Participant.new
       @new_candidate_city = @candidate_city
+      @is_owner = current_user == @trip.user
       render "trips/show", status: :unprocessable_entity
     end
   end
@@ -15,13 +17,22 @@ class CandidateCitiesController < ApplicationController
   def destroy
     @candidate_city = @trip.candidate_cities.find(params[:id])
     @candidate_city.destroy
-    redirect_to @trip
+    redirect_to trip_path(@trip)
   end
 
   private
 
   def set_trip
-    @trip = Trip.find(params[:trip_id])
+    @trip = Trip.find_by(id: params[:trip_id])
+    unless @trip
+      redirect_to trips_path, alert: "Trip introuvable."
+    end
+  end
+
+  def require_trip_access!
+    unless @trip.user == current_user
+      redirect_to trips_path, alert: "Vous n'avez pas accès à ce trip."
+    end
   end
 
   def candidate_city_params

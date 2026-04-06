@@ -1,8 +1,10 @@
 class TripsController < ApplicationController
+  before_action :authenticate_user!, except: [:shared]
   before_action :set_trip, only: [:show, :edit, :update, :destroy, :optimize, :results, :waiting, :optimization_status]
+  before_action :require_trip_owner!, only: [:edit, :update, :destroy, :optimize]
 
   def index
-    @trips = Trip.order(created_at: :desc)
+    @trips = current_user.trips.order(created_at: :desc)
   end
 
   def new
@@ -10,7 +12,7 @@ class TripsController < ApplicationController
   end
 
   def create
-    @trip = Trip.new(trip_params)
+    @trip = current_user.trips.new(trip_params)
     if @trip.save
       redirect_to @trip, notice: "Trip créé avec succès."
     else
@@ -21,6 +23,7 @@ class TripsController < ApplicationController
   def show
     @new_participant = Participant.new
     @new_candidate_city = CandidateCity.new
+    @is_owner = current_user == @trip.user
   end
 
   def edit
@@ -51,13 +54,11 @@ class TripsController < ApplicationController
   end
 
   def waiting
-    # If already done, redirect straight to results
     if @trip.optimization_status == "done"
       redirect_to results_trip_path(@trip)
     elsif @trip.optimization_status == "failed"
-      redirect_to @trip, alert: "Le calcul a échoué. Vérifiez les participants."
+      redirect_to @trip, alert: "Le calcul a échoué. Vérifiez les participants et réessayez."
     end
-    # Otherwise render waiting.html.erb
   end
 
   def optimization_status
@@ -72,10 +73,33 @@ class TripsController < ApplicationController
     end
   end
 
+  # Public share route — no auth required
+  def shared
+    @trip = Trip.find_by(share_token: params[:share_token])
+    if @trip.nil?
+      redirect_to root_path, alert: "Ce lien de partage est invalide ou a expiré."
+      return
+    end
+    @new_participant = Participant.new
+    @new_candidate_city = CandidateCity.new
+    @is_owner = false
+    @shared_view = true
+    render :show
+  end
+
   private
 
   def set_trip
-    @trip = Trip.find(params[:id])
+    @trip = current_user.trips.find_by(id: params[:id])
+    unless @trip
+      redirect_to trips_path, alert: "Trip introuvable."
+    end
+  end
+
+  def require_trip_owner!
+    unless @trip && @trip.user == current_user
+      redirect_to trips_path, alert: "Vous n'avez pas accès à ce trip."
+    end
   end
 
   def trip_params
