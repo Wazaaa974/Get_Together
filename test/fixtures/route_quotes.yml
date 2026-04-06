@@ -1,19 +1,17 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+alice_to_barcelona:
+  trip: weekend_paris
+  participant: alice_participant
+  candidate_city: barcelona
+  price_cents: 8500
+  currency: EUR
+  duration_minutes: 130
+  transport_type: flight
 
-one:
-  trip: one
-  participant: one
-  candidate_city: one
-  price_cents: 1
-  currency: MyString
-  duration_minutes: 1
-  transport_type: MyString
-
-two:
-  trip: two
-  participant: two
-  candidate_city: two
-  price_cents: 1
-  currency: MyString
-  duration_minutes: 1
-  transport_type: MyString
+bob_to_barcelona:
+  trip: weekend_paris
+  participant: bob_participant
+  candidate_city: barcelona
+  price_cents: 9200
+  currency: EUR
+  duration_minutes: 150
+  transport_type: flight

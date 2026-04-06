@@ -34,8 +34,22 @@
             <span class="text-base font-bold text-gray-900 tracking-tight group-hover:text-indigo-600 transition-colors">Get Together</span>
           <% end %>
         </div>
-        <%= link_to "Nouveau trip", new_trip_path,
-            class: "text-sm bg-indigo-600 text-white px-4 py-1.5 rounded-lg font-medium hover:bg-indigo-700 transition-colors" %>
+        <div class="flex items-center gap-3">
+          <% if user_signed_in? %>
+            <%= link_to "Nouveau trip", new_trip_path,
+                class: "text-sm bg-indigo-600 text-white px-4 py-1.5 rounded-lg font-medium hover:bg-indigo-700 transition-colors" %>
+            <div class="flex items-center gap-2 text-sm text-gray-500">
+              <span class="hidden sm:inline truncate max-w-[160px]"><%= current_user.email %></span>
+              <%= link_to "Déconnexion", destroy_user_session_path, data: { turbo_method: :delete },
+                  class: "text-gray-400 hover:text-gray-700 transition-colors" %>
+            </div>
+          <% else %>
+            <%= link_to "Connexion", new_user_session_path,
+                class: "text-sm text-gray-500 hover:text-gray-800 transition-colors" %>
+            <%= link_to "Créer un compte", new_user_registration_path,
+                class: "text-sm bg-indigo-600 text-white px-4 py-1.5 rounded-lg font-medium hover:bg-indigo-700 transition-colors" %>
+          <% end %>
+        </div>
       </div>
     </nav>
 

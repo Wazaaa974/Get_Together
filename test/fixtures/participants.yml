@@ -1,13 +1,11 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+alice_participant:
+  trip: weekend_paris
+  name: Alice
+  origin_city: Paris
+  origin_airport_code: CDG
 
-one:
-  trip: one
-  name: MyString
-  origin_city: MyString
-  origin_airport_code: MyString
-
-two:
-  trip: two
-  name: MyString
-  origin_city: MyString
-  origin_airport_code: MyString
+bob_participant:
+  trip: weekend_paris
+  name: Bob
+  origin_city: London
+  origin_airport_code: LHR

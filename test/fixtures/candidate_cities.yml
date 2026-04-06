@@ -1,13 +1,11 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+barcelona:
+  trip: weekend_paris
+  city_name: Barcelona
+  country_code: ES
+  airport_code: BCN
 
-one:
-  trip: one
-  city_name: MyString
-  country_code: MyString
-  airport_code: MyString
-
-two:
-  trip: two
-  city_name: MyString
-  country_code: MyString
-  airport_code: MyString
+amsterdam:
+  trip: weekend_paris
+  city_name: Amsterdam
+  country_code: NL
+  airport_code: AMS
