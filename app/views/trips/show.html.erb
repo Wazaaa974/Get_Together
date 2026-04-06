@@ -1,4 +1,7 @@
 <%
+  content_for :og_title, "#{@trip.title} — Get Together"
+  content_for :og_description, "Rejoignez le trip « #{@trip.title} » et ajoutez votre ville de départ."
+
   status_classes = case @trip.status
     when "active"    then "bg-green-50 text-green-700 border border-green-200"
     when "completed" then "bg-gray-100 text-gray-500"
@@ -11,19 +14,21 @@
   end
   ready_to_optimize = @trip.participants.any?
   is_owner = @is_owner || false
+  failed   = @trip.optimization_status == "failed"
+  has_results = @trip.route_quotes.any?
 %>
 
-<div class="w-full max-w-3xl mx-auto space-y-7">
+<div class="w-full max-w-3xl mx-auto space-y-6">
 
   <%# Bannière vue partagée %>
   <% if @shared_view %>
     <div class="bg-indigo-50 border border-indigo-200 rounded-xl px-5 py-3 flex items-center gap-3 text-sm text-indigo-700">
       <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
-      Vous consultez ce trip via un lien de partage. Vous pouvez ajouter votre ville de départ.
+      Vous consultez ce trip via un lien de partage. Ajoutez votre ville ci-dessous.
     </div>
   <% end %>
 
-  <%# Breadcrumb %>
+  <%# Breadcrumb (owner uniquement) %>
   <% unless @shared_view %>
     <div class="flex items-center gap-2 text-sm text-gray-400">
       <%= link_to "Trips", trips_path, class: "hover:text-gray-700 transition-colors" %>
@@ -33,12 +38,12 @@
   <% end %>
 
   <%# En-tête %>
-  <div class="bg-white border border-gray-200 rounded-xl p-6">
+  <div class="bg-white border border-gray-200 rounded-2xl p-6">
     <div class="flex items-start justify-between gap-4">
-      <div>
+      <div class="min-w-0">
         <div class="flex items-center gap-3 flex-wrap">
-          <h1 class="text-xl font-bold text-gray-900 tracking-tight"><%= @trip.title %></h1>
-          <span class="text-xs px-2 py-0.5 rounded-full font-medium <%= status_classes %>"><%= status_label %></span>
+          <h1 class="text-xl font-bold text-gray-900 tracking-tight truncate"><%= @trip.title %></h1>
+          <span class="text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 <%= status_classes %>"><%= status_label %></span>
         </div>
         <% if @trip.start_date.present? %>
           <p class="text-sm text-gray-500 mt-1.5 inline-flex items-center gap-1.5">
@@ -59,30 +64,60 @@
       <% end %>
     </div>
 
+    <%# Résultats disponibles — bannière rapide %>
+    <% if has_results %>
+      <div class="mt-4 bg-indigo-50 border border-indigo-200 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5 text-sm text-indigo-700 min-w-0">
+          <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+          <span class="font-medium">Résultats disponibles</span>
+          <span class="text-indigo-500 text-xs hidden sm:inline">Calculé récemment</span>
+        </div>
+        <%= link_to "Voir les résultats →", results_trip_path(@trip),
+            class: "text-sm font-semibold text-indigo-600 hover:text-indigo-800 flex-shrink-0 transition-colors" %>
+      </div>
+    <% end %>
+
     <%# Lien de partage (owner seulement) %>
     <% if is_owner && @trip.share_token.present? %>
       <div class="mt-5 pt-5 border-t border-gray-100">
-        <p class="text-xs font-medium text-gray-500 mb-2">Partager ce trip</p>
+        <p class="text-xs font-medium text-gray-500 mb-2">Inviter des participants</p>
         <div class="flex items-center gap-2">
           <input type="text" readonly
             value="<%= shared_trip_url(@trip.share_token) %>"
-            class="flex-1 text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none font-mono truncate"
+            class="flex-1 text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none font-mono truncate"
             id="share-link-<%= @trip.id %>">
           <button type="button"
-            onclick="navigator.clipboard.writeText(document.getElementById('share-link-<%= @trip.id %>').value).then(() => { this.textContent = 'Copié !'; setTimeout(() => this.textContent = 'Copier', 2000) })"
+            onclick="navigator.clipboard.writeText(document.getElementById('share-link-<%= @trip.id %>').value).then(() => { this.textContent = 'Copié !'; this.classList.add('bg-green-50','text-green-700','border-green-200'); setTimeout(() => { this.textContent = 'Copier'; this.classList.remove('bg-green-50','text-green-700','border-green-200') }, 2000) })"
             class="text-xs text-indigo-600 border border-indigo-200 px-3 py-2 rounded-lg hover:bg-indigo-50 transition-colors flex-shrink-0 font-medium">
             Copier
           </button>
         </div>
-        <p class="text-xs text-gray-400 mt-1.5">Quiconque a ce lien peut rejoindre le trip et ajouter sa ville.</p>
+        <p class="text-xs text-gray-400 mt-1.5">Quiconque a ce lien peut rejoindre et ajouter sa ville — sans compte.</p>
       </div>
     <% end %>
   </div>
 
   <%# Participants %>
-  <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+  <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-      <h2 class="font-semibold text-gray-900">Participants</h2>
+      <div class="flex items-center gap-3">
+        <h2 class="font-semibold text-gray-900">Participants</h2>
+        <% if @trip.participants.any? %>
+          <%# Avatars empilés %>
+          <div class="flex -space-x-2">
+            <% @trip.participants.first(4).each do |p| %>
+              <div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold border-2 border-white flex-shrink-0" title="<%= p.name %>">
+                <%= p.name[0].upcase %>
+              </div>
+            <% end %>
+            <% if @trip.participants.count > 4 %>
+              <div class="w-6 h-6 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center text-xs font-bold border-2 border-white">
+                +<%= @trip.participants.count - 4 %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
       <span class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full"><%= @trip.participants.count %></span>
     </div>
 
@@ -125,27 +160,53 @@
         <% end %>
       </ul>
     <% else %>
-      <div class="px-6 py-6 text-center">
-        <p class="text-sm text-gray-400">Aucun participant pour l'instant. Ajoutez les membres du groupe ci-dessous.</p>
+      <div class="px-6 py-8 text-center">
+        <div class="inline-flex items-center justify-center w-10 h-10 bg-indigo-50 rounded-full mb-3">
+          <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </div>
+        <p class="text-sm font-medium text-gray-600 mb-1">Personne n'a encore rejoint</p>
+        <p class="text-xs text-gray-400">Partagez le lien du trip pour inviter vos amis.</p>
       </div>
     <% end %>
 
     <%# Formulaire ajout participant (owner ou vue partagée) %>
     <% if is_owner || @shared_view %>
       <% form_url = @shared_view ? shared_trip_participants_path(@trip.share_token) : trip_participants_path(@trip) %>
-      <%= form_with model: @new_participant, url: form_url, class: "px-6 py-4 bg-gray-50 border-t border-gray-100" do |f| %>
+      <%= form_with model: @new_participant, url: form_url,
+          class: "px-6 py-4 bg-gray-50 border-t border-gray-100" do |f| %>
         <% if @new_participant.errors.any? %>
-          <p class="text-xs text-red-600 mb-2"><%= @new_participant.errors.full_messages.first %></p>
+          <p class="text-xs text-red-600 mb-2 flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+            <%= @new_participant.errors.full_messages.first %>
+          </p>
         <% end %>
-        <div class="flex gap-2 flex-wrap">
-          <%= f.text_field :name, placeholder: "Prénom",
-              class: "flex-1 min-w-28 border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" %>
-          <%= f.text_field :origin_city, placeholder: "Ville de départ",
-              class: "flex-1 min-w-32 border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" %>
-          <%= f.text_field :origin_airport_code, placeholder: "Code IATA (optionnel)",
-              class: "w-40 border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" %>
+        <div class="flex gap-2 flex-wrap items-start">
+          <div class="flex-1 min-w-28">
+            <%= f.text_field :name, placeholder: "Prénom",
+                class: "w-full border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" %>
+          </div>
+          <%# Autocomplete ville %>
+          <div class="flex-1 min-w-40 relative"
+               data-controller="city-autocomplete"
+               data-action="focusout->city-autocomplete#onFocusOut">
+            <%= f.text_field :origin_city, placeholder: "Ville de départ",
+                class: "w-full border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent",
+                data: {
+                  city_autocomplete_target: "input",
+                  action: "input->city-autocomplete#onInput keydown->city-autocomplete#onKeydown"
+                },
+                autocomplete: "off" %>
+            <ul data-city-autocomplete-target="dropdown"
+                class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-20 overflow-hidden max-h-48 overflow-y-auto"
+                data-action="click->city-autocomplete#select">
+            </ul>
+          </div>
+          <div class="w-32">
+            <%= f.text_field :origin_airport_code, placeholder: "IATA (optionnel)",
+                class: "w-full border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" %>
+          </div>
           <%= f.submit "Ajouter",
-              class: "bg-white border border-indigo-200 text-indigo-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-50 transition-colors cursor-pointer flex-shrink-0" %>
+              class: "bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors cursor-pointer flex-shrink-0" %>
         </div>
         <p class="text-xs text-gray-400 mt-1.5">Le code IATA est facultatif — il sera déduit de la ville si absent.</p>
       <% end %>
@@ -154,7 +215,7 @@
 
   <%# Villes candidates (owner seulement) %>
   <% if is_owner %>
-    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+    <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden">
       <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
         <div>
           <h2 class="font-semibold text-gray-900">Destination personnalisée</h2>
@@ -192,8 +253,8 @@
           <% end %>
         </ul>
       <% else %>
-        <div class="px-6 py-6 text-center">
-          <p class="text-sm text-gray-400">Aucune ville candidate. Ajoutez les villes à comparer ci-dessous.</p>
+        <div class="px-6 py-5 text-center">
+          <p class="text-sm text-gray-400">Aucune ville ajoutée — les 10 destinations populaires sont évaluées par défaut.</p>
         </div>
       <% end %>
 
@@ -202,53 +263,68 @@
           <p class="text-xs text-red-600 mb-2"><%= @new_candidate_city.errors.full_messages.first %></p>
         <% end %>
         <div class="flex gap-2 flex-wrap">
-          <%= f.text_field :city_name, placeholder: "Ville (ex : Dublin)",
-              class: "flex-1 min-w-32 border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" %>
+          <%# Autocomplete ville candidate %>
+          <div class="flex-1 min-w-32 relative"
+               data-controller="city-autocomplete"
+               data-action="focusout->city-autocomplete#onFocusOut">
+            <%= f.text_field :city_name, placeholder: "Ville (ex : Dublin)",
+                class: "w-full border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent",
+                data: {
+                  city_autocomplete_target: "input",
+                  action: "input->city-autocomplete#onInput keydown->city-autocomplete#onKeydown"
+                },
+                autocomplete: "off" %>
+            <ul data-city-autocomplete-target="dropdown"
+                class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-20 overflow-hidden max-h-48 overflow-y-auto"
+                data-action="click->city-autocomplete#select">
+            </ul>
+          </div>
           <%= f.text_field :country_code, placeholder: "Pays (ex : IE)",
-              class: "w-32 border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" %>
-          <%= f.text_field :airport_code, placeholder: "Code IATA (ex : DUB)",
-              class: "w-40 border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" %>
+              class: "w-28 border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" %>
+          <%= f.text_field :airport_code, placeholder: "IATA (ex : DUB)",
+              class: "w-36 border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" %>
           <%= f.submit "Ajouter",
               class: "bg-white border border-indigo-200 text-indigo-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-50 transition-colors cursor-pointer flex-shrink-0" %>
         </div>
-        <p class="text-xs text-gray-400 mt-1.5">Le code IATA est facultatif — il sera déduit de la ville si absent.</p>
       <% end %>
     </div>
   <% end %>
 
-  <%# Bouton calcul (owner seulement) %>
+  <%# Zone calcul (owner seulement) %>
   <% if is_owner %>
-    <% failed = @trip.optimization_status == "failed" %>
-    <div class="<%= failed ? 'bg-red-50 border-red-200' : ready_to_optimize ? 'bg-indigo-50 border-indigo-200' : 'bg-gray-50 border-gray-200' %> border rounded-xl p-6 flex items-center justify-between gap-4">
-      <div>
-        <% if failed %>
-          <div class="flex items-center gap-2 mb-1">
-            <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-            <p class="font-medium text-red-800 text-sm">Le calcul a échoué</p>
-          </div>
-          <p class="text-xs text-red-600 mt-0.5">L'API de vols n'a pas pu répondre. Vérifiez les villes des participants et réessayez.</p>
-        <% else %>
-          <p class="font-medium text-gray-800 text-sm">Trouver le meilleur lieu de rendez-vous</p>
-          <% unless ready_to_optimize %>
-            <p class="text-xs text-gray-400 mt-0.5">Ajoutez au moins un participant pour lancer le calcul.</p>
-          <% else %>
-            <p class="text-xs text-gray-500 mt-0.5">
-              <%= @trip.participants.count %> participant<%= @trip.participants.count > 1 ? 's' : '' %> ·
-              <%= @trip.candidate_cities.count %> ville<%= @trip.candidate_cities.count > 1 ? 's' : '' %> candidate<%= @trip.candidate_cities.count > 1 ? 's' : '' %>
-            </p>
-          <% end %>
-        <% end %>
+    <% if failed %>
+      <div class="bg-red-50 border border-red-200 rounded-2xl p-6 flex items-start gap-4">
+        <div class="w-9 h-9 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+          <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="font-semibold text-red-800 text-sm">Le calcul a échoué</p>
+          <p class="text-xs text-red-600 mt-1">L'API de vols n'a pas répondu correctement. Vérifiez les villes des participants (noms complets de préférence) et réessayez.</p>
+        </div>
+        <%= button_to "Réessayer →", optimize_trip_path(@trip), method: :post,
+            class: "bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-colors flex-shrink-0 self-center" %>
       </div>
-      <%= button_to failed ? "Réessayer →" : "Lancer le calcul →", optimize_trip_path(@trip), method: :post,
-          class: "#{ failed ? 'bg-red-600 hover:bg-red-700 text-white' : ready_to_optimize ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed' } px-5 py-2.5 rounded-lg text-sm font-medium transition-colors flex-shrink-0",
-          disabled: !ready_to_optimize && !failed %>
-    </div>
-  <% end %>
-
-  <% if @trip.route_quotes.any? %>
-    <div class="text-center">
-      <%= link_to "Voir les derniers résultats →", results_trip_path(@trip), class: "text-sm text-indigo-600 hover:text-indigo-700 font-medium transition-colors" %>
-    </div>
+    <% elsif ready_to_optimize %>
+      <div class="bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-2xl p-6 flex items-center justify-between gap-4 shadow-lg shadow-indigo-200">
+        <div class="text-white">
+          <p class="font-bold text-base">Prêt à trouver le meilleur endroit ?</p>
+          <p class="text-indigo-200 text-sm mt-1">
+            <%= @trip.participants.count %> participant<%= @trip.participants.count > 1 ? 's' : '' %> depuis
+            <%= @trip.participants.map(&:origin_city).first(2).join(", ") %><%= @trip.participants.count > 2 ? " et #{@trip.participants.count - 2} autre#{@trip.participants.count - 2 > 1 ? 's' : ''}" : '' %>
+          </p>
+        </div>
+        <%= button_to "Lancer le calcul →", optimize_trip_path(@trip), method: :post,
+            class: "bg-white text-indigo-700 px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-indigo-50 transition-colors flex-shrink-0 shadow-sm" %>
+      </div>
+    <% else %>
+      <div class="bg-gray-50 border border-dashed border-gray-300 rounded-2xl p-6 text-center">
+        <div class="inline-flex items-center justify-center w-10 h-10 bg-white border border-gray-200 rounded-xl mb-3 shadow-sm">
+          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+        </div>
+        <p class="text-sm font-medium text-gray-600">Ajoutez des participants pour lancer le calcul</p>
+        <p class="text-xs text-gray-400 mt-1">Get Together analysera les prix pour 10 destinations européennes.</p>
+      </div>
+    <% end %>
   <% end %>
 
 </div>

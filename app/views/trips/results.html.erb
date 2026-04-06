@@ -1,9 +1,11 @@
 <%
+  content_for :og_title, "Résultats — #{@trip.title} | Get Together"
+  content_for :og_description, "Get Together a trouvé les meilleures destinations pour #{@trip.title}."
+
   top3   = @results.first(3)
   best   = top3.first
   others = @results.drop(3)
 
-  # Build JSON data for the map
   participants_data = @trip.participants.map { |p|
     { name: p.name, city: p.origin_city }
   }
@@ -11,9 +13,9 @@
   results_data = @results.map { |r|
     coords = PopularDestinations.coordinates_for(r[:city].airport_code)
     {
-      city_name:   r[:city].city_name,
+      city_name:    r[:city].city_name,
       country_code: r[:city].country_code,
-      total_cents: r[:total_cents],
+      total_cents:  r[:total_cents],
       airport_code: r[:city].airport_code,
       lat: coords ? coords[0] : nil,
       lng: coords ? coords[1] : nil
@@ -28,90 +30,100 @@
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js"></script>
 <% end %>
 
-<div class="w-full max-w-5xl mx-auto space-y-8">
+<div class="w-full max-w-5xl mx-auto space-y-6">
 
   <%# Breadcrumb %>
   <div class="flex items-center gap-2 text-sm text-gray-400">
     <%= link_to "Trips", trips_path, class: "hover:text-gray-700 transition-colors" %>
     <span>/</span>
-    <%= link_to @trip.title, trip_path(@trip), class: "hover:text-gray-700 transition-colors" %>
+    <%= link_to @trip.title, trip_path(@trip), class: "hover:text-gray-700 transition-colors truncate max-w-[120px] sm:max-w-xs" %>
     <span>/</span>
     <span class="text-gray-600">Résultats</span>
   </div>
 
-  <%# Map %>
-  <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-    <div id="map"
-         class="w-full h-80"
-         data-controller="map"
-         data-map-token-value="<%= mapbox_token %>"
-         data-map-participants-value="<%= participants_data.to_json %>"
-         data-map-results-value="<%= results_data.to_json %>"
-         data-map-selected-value="0">
+  <%# Carte Mapbox — repliable sur mobile %>
+  <div data-controller="map-toggle">
+    <div class="flex items-center justify-between mb-2 sm:hidden">
+      <span class="text-sm font-medium text-gray-600">Carte interactive</span>
+      <button data-map-toggle-target="button"
+              data-action="click->map-toggle#toggle"
+              class="text-xs text-indigo-600 border border-indigo-200 px-3 py-1.5 rounded-lg font-medium hover:bg-indigo-50 transition-colors">
+        Voir la carte
+      </button>
+    </div>
+    <div data-map-toggle-target="map" class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+      <div id="map"
+           class="w-full h-64 sm:h-80"
+           data-controller="map"
+           data-map-token-value="<%= mapbox_token %>"
+           data-map-participants-value="<%= participants_data.to_json %>"
+           data-map-results-value="<%= results_data.to_json %>"
+           data-map-selected-value="0">
+      </div>
     </div>
   </div>
 
-  <%# Top 3 — clickable cards %>
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="top3-cards">
+  <%# Top 3 — cartes cliquables %>
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3" id="top3-cards">
     <% top3.each.with_index(1) do |result, rank| %>
       <% is_best = rank == 1 %>
       <button type="button"
-              class="text-left rounded-2xl p-6 flex flex-col gap-3 transition-all ring-2 cursor-pointer top3-card <%= is_best ? 'bg-indigo-600 text-white ring-indigo-600 shadow-lg shadow-indigo-200' : 'bg-white text-gray-800 ring-gray-100 hover:ring-indigo-300' %>"
+              class="text-left rounded-2xl p-5 flex flex-col gap-2.5 transition-all ring-2 cursor-pointer top3-card <%= is_best ? 'bg-indigo-600 text-white ring-indigo-600 shadow-lg shadow-indigo-200' : 'bg-white text-gray-800 ring-gray-100 hover:ring-indigo-300' %>"
               data-rank="<%= rank - 1 %>"
               onclick="selectDestination(<%= rank - 1 %>, this)">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-semibold uppercase tracking-wider <%= is_best ? 'text-indigo-200' : 'text-gray-400' %>">
+          <span class="text-xs font-bold uppercase tracking-wider <%= is_best ? 'text-indigo-200' : 'text-gray-400' %>">
             <%= rank == 1 ? "✦ Recommandé" : "##{rank}" %>
           </span>
           <% if result[:city].country_code.present? %>
             <span class="text-xs font-mono <%= is_best ? 'text-indigo-200' : 'text-gray-400' %>"><%= result[:city].country_code %></span>
           <% end %>
         </div>
-        <h2 class="text-2xl font-bold"><%= result[:city].city_name %></h2>
-        <div>
-          <span class="text-xl font-semibold">€<%= (result[:total_cents] / 100.0).round %></span>
-          <span class="text-xs ml-1 <%= is_best ? 'text-indigo-200' : 'text-gray-400' %>">total groupe</span>
+        <h2 class="text-xl font-bold leading-tight"><%= result[:city].city_name %></h2>
+        <div class="flex items-baseline gap-1">
+          <span class="text-2xl font-bold">€<%= (result[:total_cents] / 100.0).round %></span>
+          <span class="text-xs <%= is_best ? 'text-indigo-200' : 'text-gray-400' %>">total groupe</span>
         </div>
         <% if rank > 1 && best %>
-          <span class="text-xs text-red-400 font-medium">+€<%= ((result[:total_cents] - best[:total_cents]) / 100.0).ceil %> vs recommandé</span>
+          <span class="text-xs text-rose-400 font-medium">+€<%= ((result[:total_cents] - best[:total_cents]) / 100.0).ceil %> vs recommandé</span>
         <% end %>
       </button>
     <% end %>
   </div>
 
-  <%# Détail par participant pour la destination sélectionnée %>
-  <div class="border border-gray-200 rounded-2xl overflow-hidden shadow-sm" id="detail-section">
-    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-      <h2 class="font-semibold text-gray-900" id="detail-title">Détail — <%= best[:city].city_name %></h2>
-      <span class="text-sm text-gray-500"><%= @trip.participants.count %> personnes</span>
+  <%# Détail par participant %>
+  <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm" id="detail-section">
+    <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+      <h2 class="font-semibold text-gray-900 text-sm sm:text-base" id="detail-title">Détail — <%= best[:city].city_name %></h2>
+      <span class="text-sm text-gray-500"><%= @trip.participants.count %> personne<%= @trip.participants.count > 1 ? 's' : '' %></span>
     </div>
-    <ul class="divide-y divide-gray-100" id="detail-list">
+    <ul class="divide-y divide-gray-50" id="detail-list">
       <% best[:quotes].sort_by(&:price_cents).each do |quote| %>
-        <li class="flex items-center justify-between px-6 py-4">
-          <div class="flex items-center gap-3">
+        <li class="flex items-center justify-between px-5 py-4">
+          <div class="flex items-center gap-3 min-w-0">
             <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold flex-shrink-0">
               <%= quote.participant.name[0].upcase %>
             </div>
-            <div>
-              <span class="font-medium text-gray-800"><%= quote.participant.name %></span>
-              <span class="text-gray-400 text-sm mx-2">·</span>
-              <span class="text-gray-500 text-sm"><%= quote.participant.origin_city %> → <%= best[:city].city_name %></span>
+            <div class="min-w-0">
+              <span class="font-medium text-gray-800 text-sm"><%= quote.participant.name %></span>
+              <span class="text-gray-400 text-xs mx-1.5 hidden sm:inline">·</span>
+              <span class="text-gray-500 text-xs hidden sm:inline"><%= quote.participant.origin_city %> → <%= best[:city].city_name %></span>
             </div>
           </div>
-          <div class="text-right">
+          <div class="text-right flex-shrink-0">
             <% if quote.price_cents == 0 %>
-              <span class="font-semibold text-green-600 text-sm">Déjà sur place</span>
+              <span class="font-semibold text-green-600 text-sm">Sur place</span>
             <% else %>
               <span class="font-semibold text-gray-900">€<%= quote.price_euros.round %></span>
               <% if quote.duration_minutes.present? && quote.duration_minutes > 0 %>
-                <span class="text-xs text-gray-400 ml-2"><%= quote.duration_minutes / 60 %>h<%= quote.duration_minutes % 60 %>m</span>
+                <span class="text-xs text-gray-400 ml-1.5"><%= quote.duration_minutes / 60 %>h<%= quote.duration_minutes % 60 %>m</span>
               <% end %>
             <% end %>
           </div>
         </li>
       <% end %>
     </ul>
-    <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
+    <div class="px-5 py-4 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
       <span class="text-sm font-medium text-gray-600">Total groupe</span>
       <span class="font-bold text-gray-900 text-lg">€<%= (best[:total_cents] / 100.0).round %></span>
     </div>
@@ -119,51 +131,53 @@
 
   <%# Autres destinations %>
   <% if others.any? %>
-    <div class="border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-      <div class="px-6 py-4 border-b border-gray-100">
+    <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+      <div class="px-5 py-4 border-b border-gray-100">
         <h2 class="font-semibold text-gray-900">Autres destinations évaluées</h2>
       </div>
-      <table class="w-full text-sm">
-        <thead class="bg-gray-50 border-b border-gray-100">
-          <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ville</th>
-            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Coût total</th>
-            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Surcoût vs #1</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-          <% others.each.with_index(4) do |result, rank| %>
-            <tr class="hover:bg-gray-50 transition-colors">
-              <td class="px-6 py-4 text-gray-400 font-medium"><%= rank %></td>
-              <td class="px-6 py-4">
-                <span class="font-medium text-gray-800"><%= result[:city].city_name %></span>
-                <% if result[:city].country_code.present? %>
-                  <span class="text-gray-400 text-xs ml-1.5 font-mono"><%= result[:city].country_code %></span>
-                <% end %>
-              </td>
-              <td class="px-6 py-4 text-right font-semibold text-gray-700">€<%= (result[:total_cents] / 100.0).round %></td>
-              <td class="px-6 py-4 text-right text-red-400 text-xs font-medium">
-                +€<%= ((result[:total_cents] - best[:total_cents]) / 100.0).ceil %>
-              </td>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 border-b border-gray-100">
+            <tr>
+              <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+              <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ville</th>
+              <th class="px-5 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+              <th class="px-5 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Surcoût</th>
             </tr>
-          <% end %>
-        </tbody>
-      </table>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            <% others.each.with_index(4) do |result, rank| %>
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-5 py-3.5 text-gray-400 font-medium"><%= rank %></td>
+                <td class="px-5 py-3.5">
+                  <span class="font-medium text-gray-800"><%= result[:city].city_name %></span>
+                  <% if result[:city].country_code.present? %>
+                    <span class="text-gray-400 text-xs ml-1.5 font-mono"><%= result[:city].country_code %></span>
+                  <% end %>
+                </td>
+                <td class="px-5 py-3.5 text-right font-semibold text-gray-700">€<%= (result[:total_cents] / 100.0).round %></td>
+                <td class="px-5 py-3.5 text-right text-rose-400 text-xs font-medium hidden sm:table-cell">
+                  +€<%= ((result[:total_cents] - best[:total_cents]) / 100.0).ceil %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
     </div>
   <% end %>
 
   <%# Actions %>
-  <div class="flex gap-3 pb-8">
-    <%= link_to "← Revenir au trip", trip_path(@trip), class: "text-sm text-gray-500 border border-gray-200 px-4 py-2.5 rounded-xl hover:bg-gray-50 transition-colors" %>
-    <%= button_to "Recalculer", optimize_trip_path(@trip), method: :post,
+  <div class="flex flex-wrap gap-3 pb-4">
+    <%= link_to "← Revenir au trip", trip_path(@trip),
+        class: "text-sm text-gray-500 border border-gray-200 px-4 py-2.5 rounded-xl hover:bg-gray-50 transition-colors" %>
+    <%= button_to "Recalculer les prix", optimize_trip_path(@trip), method: :post,
         class: "text-sm bg-indigo-600 text-white px-4 py-2.5 rounded-xl hover:bg-indigo-700 transition-colors font-medium" %>
   </div>
 
 </div>
 
 <script>
-  // Inline JS to handle card selection and map update
   const allResults = <%= raw @results.map { |r|
     coords = PopularDestinations.coordinates_for(r[:city].airport_code)
     {
@@ -180,7 +194,6 @@
   }.to_json %>;
 
   function selectDestination(index, clickedCard) {
-    // Update card styles
     document.querySelectorAll(".top3-card").forEach((card, i) => {
       if (i === index) {
         card.classList.add("bg-indigo-600", "text-white", "ring-indigo-600", "shadow-lg", "shadow-indigo-200");
@@ -191,41 +204,35 @@
       }
     });
 
-    // Update detail section title
     const result = allResults[index];
     document.getElementById("detail-title").textContent = `Détail — ${result.city_name}`;
 
-    // Update detail list
     const list = document.getElementById("detail-list");
     list.innerHTML = result.quotes.map(q => `
-      <li class="flex items-center justify-between px-6 py-4">
-        <div class="flex items-center gap-3">
+      <li class="flex items-center justify-between px-5 py-4">
+        <div class="flex items-center gap-3 min-w-0">
           <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold flex-shrink-0">
             ${q.name[0].toUpperCase()}
           </div>
-          <div>
-            <span class="font-medium text-gray-800">${q.name}</span>
-            <span class="text-gray-400 text-sm mx-2">·</span>
-            <span class="text-gray-500 text-sm">${q.city} → ${result.city_name}</span>
+          <div class="min-w-0">
+            <span class="font-medium text-gray-800 text-sm">${q.name}</span>
+            <span class="text-gray-400 text-xs mx-1.5 hidden sm:inline">·</span>
+            <span class="text-gray-500 text-xs hidden sm:inline">${q.city} → ${result.city_name}</span>
           </div>
         </div>
-        <div class="text-right">
+        <div class="text-right flex-shrink-0">
           ${q.is_local
-            ? '<span class="font-semibold text-green-600 text-sm">Déjà sur place</span>'
-            : `<span class="font-semibold text-gray-900">€${q.price}</span>${q.duration ? `<span class="text-xs text-gray-400 ml-2">${Math.floor(q.duration/60)}h${q.duration%60}m</span>` : ''}`
+            ? '<span class="font-semibold text-green-600 text-sm">Sur place</span>'
+            : `<span class="font-semibold text-gray-900">€${q.price}</span>${q.duration ? `<span class="text-xs text-gray-400 ml-1.5">${Math.floor(q.duration/60)}h${q.duration%60}m</span>` : ''}`
           }
         </div>
       </li>
     `).join("");
 
-    // Tell the Stimulus map controller to update
     const mapEl = document.getElementById("map");
     if (mapEl?._stimulus_controller) {
       mapEl._stimulus_controller.selectDestination(index);
     }
-    // Alternative: update data attribute and dispatch event
-    if (mapEl) {
-      mapEl.dataset.mapSelectedValue = index;
-    }
+    if (mapEl) mapEl.dataset.mapSelectedValue = index;
   }
 </script>

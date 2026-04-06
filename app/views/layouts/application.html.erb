@@ -1,12 +1,28 @@
 <!DOCTYPE html>
 <html lang="fr">
   <head>
-    <title><%= content_for(:title) || "Get Together" %></title>
+    <title><%= content_for(:title) || "Get Together — Trouvez où se retrouver" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+
+    <%# Meta OG — prévisualisation WhatsApp / Slack / Twitter %>
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Get Together">
+    <meta property="og:title" content="<%= content_for(:og_title) || "Get Together — Trouvez où se retrouver" %>">
+    <meta property="og:description" content="<%= content_for(:og_description) || "Entrez vos villes de départ, Get Together trouve la destination européenne la moins chère pour tout le groupe." %>">
+    <meta property="og:image" content="<%= content_for(:og_image) || asset_url("og-image.png") rescue root_url + "icon.png" %>">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<%= content_for(:og_title) || "Get Together — Trouvez où se retrouver" %>">
+    <meta name="twitter:description" content="<%= content_for(:og_description) || "Entrez vos villes de départ, Get Together trouve la destination européenne la moins chère pour tout le groupe." %>">
+
+    <%# Mapbox token accessible aux controllers Stimulus %>
+    <% if ENV["MAPBOX_TOKEN"].present? %>
+      <meta name="mapbox-token" content="<%= ENV["MAPBOX_TOKEN"] %>">
+    <% end %>
+
     <%= yield :head %>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
