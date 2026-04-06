@@ -1,5 +1,5 @@
 class TripsController < ApplicationController
-  before_action :set_trip, only: [:show, :edit, :update, :destroy, :optimize, :results]
+  before_action :set_trip, only: [:show, :edit, :update, :destroy, :optimize, :results, :waiting, :optimization_status]
 
   def index
     @trips = Trip.order(created_at: :desc)
@@ -45,17 +45,23 @@ class TripsController < ApplicationController
       return
     end
 
-    PopularDestinations.ensure_on_trip(@trip)
-    @trip.route_quotes.destroy_all
-    results = TripOptimizer.call(@trip)
+    @trip.update!(optimization_status: "pending")
+    OptimizationJob.perform_later(@trip.id)
+    redirect_to waiting_trip_path(@trip)
+  end
 
-    if results.empty?
-      redirect_to @trip, alert: "Aucun résultat disponible. Vérifiez les participants."
-      return
+  def waiting
+    # If already done, redirect straight to results
+    if @trip.optimization_status == "done"
+      redirect_to results_trip_path(@trip)
+    elsif @trip.optimization_status == "failed"
+      redirect_to @trip, alert: "Le calcul a échoué. Vérifiez les participants."
     end
+    # Otherwise render waiting.html.erb
+  end
 
-    @trip.update!(status: "active")
-    redirect_to results_trip_path(@trip)
+  def optimization_status
+    render json: { status: @trip.optimization_status }
   end
 
   def results

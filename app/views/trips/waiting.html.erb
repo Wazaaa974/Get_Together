@@ -1,0 +1,26 @@
+<div class="w-full max-w-lg mx-auto mt-20 text-center"
+     data-controller="optimization-poll"
+     data-optimization-poll-url-value="<%= optimization_status_trip_path(@trip) %>"
+     data-optimization-poll-results-url-value="<%= results_trip_path(@trip) %>"
+     data-optimization-poll-trip-url-value="<%= trip_path(@trip) %>">
+
+  <%# Animated plane icon %>
+  <div class="mb-8">
+    <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-indigo-100 mb-4">
+      <svg class="w-10 h-10 text-indigo-600 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+      </svg>
+    </div>
+    <h1 class="text-2xl font-bold text-gray-900 mb-2">Recherche en cours…</h1>
+    <p class="text-gray-500 text-sm">On analyse les prix pour 10 destinations européennes.<br>Ça prend une vingtaine de secondes.</p>
+  </div>
+
+  <%# Progress bar (animated) %>
+  <div class="w-full bg-gray-100 rounded-full h-2 mb-6 overflow-hidden">
+    <div class="bg-indigo-600 h-2 rounded-full animate-pulse" style="width: 100%"
+         data-optimization-poll-target="bar"></div>
+  </div>
+
+  <%# Status text %>
+  <p class="text-xs text-gray-400" data-optimization-poll-target="statusText">Connexion aux APIs de vols…</p>
+</div>

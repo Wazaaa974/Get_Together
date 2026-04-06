@@ -7,6 +7,8 @@ Rails.application.routes.draw do
     member do
       post :optimize
       get  :results
+      get  :waiting
+      get  :optimization_status
     end
   end
 
