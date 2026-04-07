@@ -17,6 +17,7 @@ module GetTogether
     config.autoload_lib(ignore: %w[assets tasks])
 
     config.exceptions_app = self.routes
+    config.middleware.use Rack::Attack
 
     config.i18n.default_locale = :fr
     config.i18n.available_locales = [:fr, :en]

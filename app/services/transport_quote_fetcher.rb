@@ -8,6 +8,11 @@ require "json"
 #   1. Run: EDITOR="nano" bin/rails credentials:edit
 #   2. Add:  duffel_api_key: <your_token>
 #
+# Caching:
+#   Results are cached in Rails.cache for CACHE_TTL (6 hours) keyed by
+#   "duffel/<ORIGIN>-<DESTINATION>/<date>". This means that within the same day,
+#   re-running the optimiser for the same route skips the Duffel round-trip entirely.
+#
 # Returns { price_cents: Integer, currency: String, duration_minutes: Integer }
 # Returns nil if no offer is found or if the API call fails.
 class TransportQuoteFetcher
@@ -35,6 +40,13 @@ class TransportQuoteFetcher
   end
 
   private
+
+  def self.normalize_date(date)
+    parsed = Date.parse(date.to_s)
+    parsed > Date.today ? parsed : Date.today + 30
+  rescue ArgumentError
+    Date.today + 30
+  end
 
   def self.fetch_duffel(origin:, destination:, date:)
     offer_request_id = create_offer_request(origin: origin, destination: destination, date: date)

@@ -47,4 +47,16 @@ class VoteTest < ActiveSupport::TestCase
     assert vote.save
     assert_equal "Amsterdam", vote.reload.candidate_city.city_name
   end
+
+  test "voter_name max 50 characters" do
+    long_name = "A" * 51
+    vote = Vote.new(trip: @trip, candidate_city: @city, voter_name: long_name)
+    assert_not vote.valid?
+    assert vote.errors[:voter_name].any?
+  end
+
+  test "voter_name exactly 50 characters is valid" do
+    vote = Vote.new(trip: @trip, candidate_city: @city, voter_name: "A" * 50)
+    assert vote.valid?
+  end
 end
