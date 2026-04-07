@@ -4,7 +4,7 @@ class TripsController < ApplicationController
   before_action :require_trip_owner!, only: [:edit, :update, :destroy, :optimize]
 
   def index
-    @trips = current_user.trips.order(created_at: :desc)
+    @trips = current_user.trips.includes(:participants, :route_quotes).order(created_at: :desc)
   end
 
   def new
@@ -90,7 +90,7 @@ class TripsController < ApplicationController
   private
 
   def set_trip
-    @trip = current_user.trips.find_by(id: params[:id])
+    @trip = current_user.trips.includes(:participants, :candidate_cities, :route_quotes).find_by(id: params[:id])
     unless @trip
       redirect_to trips_path, alert: "Trip introuvable."
     end
