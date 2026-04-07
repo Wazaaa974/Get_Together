@@ -16,23 +16,35 @@ require "json"
 # Returns {
 #   price_cents: Integer, currency: String, duration_minutes: Integer,
 #   departure_at: String (ISO 8601), arrival_at: String (ISO 8601),
-#   airline_name: String
+#   airline_name: String, is_round_trip: Boolean
 # }
 # Returns nil if no offer is found or if the API call fails.
+# When return_date is provided, fetches a round-trip offer and returns the combined price.
 class TransportQuoteFetcher
   DUFFEL_BASE_URL = "https://api.duffel.com"
   CACHE_TTL       = 6.hours
 
-  def self.call(origin:, destination:, date:)
+  def self.call(origin:, destination:, date:, return_date: nil)
     return nil if origin.upcase == destination.upcase
 
-    search_date = normalize_date(date)
-    cache_key   = "duffel/#{origin.upcase}-#{destination.upcase}/#{search_date}"
+    search_date  = normalize_date(date)
+    search_return = return_date.present? ? normalize_date(return_date) : nil
+
+    cache_key = if search_return
+      "duffel/#{origin.upcase}-#{destination.upcase}/#{search_date}/return-#{search_return}"
+    else
+      "duffel/#{origin.upcase}-#{destination.upcase}/#{search_date}"
+    end
 
     # skip_nil: true prevents caching API failures (rate-limit, timeout, etc.)
     # so a re-run always retries routes that previously returned nil.
     Rails.cache.fetch(cache_key, expires_in: CACHE_TTL, skip_nil: true) do
-      fetch_duffel(origin: origin.upcase, destination: destination.upcase, date: search_date)
+      fetch_duffel(
+        origin:       origin.upcase,
+        destination:  destination.upcase,
+        date:         search_date,
+        return_date:  search_return
+      )
     end
   rescue => e
     Rails.logger.error("[TransportQuoteFetcher] #{e.class}: #{e.message}")
@@ -49,8 +61,13 @@ class TransportQuoteFetcher
     Date.today + 30
   end
 
-  def self.fetch_duffel(origin:, destination:, date:)
-    offer_request_id = create_offer_request(origin: origin, destination: destination, date: date)
+  def self.fetch_duffel(origin:, destination:, date:, return_date: nil)
+    offer_request_id = create_offer_request(
+      origin:       origin,
+      destination:  destination,
+      date:         date,
+      return_date:  return_date
+    )
     return nil unless offer_request_id
 
     offers = get_offers(offer_request_id: offer_request_id)
@@ -61,27 +78,35 @@ class TransportQuoteFetcher
     currency      = cheapest["total_currency"] || "EUR"
     duration_mins = parse_iso_duration(cheapest.dig("slices", 0, "duration"))
 
-    # First segment of the first slice — departure/arrival times and airline
+    # First segment of the outbound slice — departure/arrival times and airline
     segment      = cheapest.dig("slices", 0, "segments", 0) || {}
     departure_at = segment["departing_at"]
     arrival_at   = segment["arriving_at"]
     airline_name = segment.dig("marketing_carrier", "name")
 
     {
-      price_cents:   price_cents,
-      currency:      currency,
+      price_cents:      price_cents,
+      currency:         currency,
       duration_minutes: duration_mins,
-      departure_at:  departure_at,
-      arrival_at:    arrival_at,
-      airline_name:  airline_name
+      departure_at:     departure_at,
+      arrival_at:       arrival_at,
+      airline_name:     airline_name,
+      is_round_trip:    return_date.present?
     }
   end
 
-  def self.create_offer_request(origin:, destination:, date:)
-    uri  = URI("#{DUFFEL_BASE_URL}/air/offer_requests")
+  def self.create_offer_request(origin:, destination:, date:, return_date: nil)
+    uri = URI("#{DUFFEL_BASE_URL}/air/offer_requests")
+
+    slices = [{ origin: origin, destination: destination, departure_date: date.to_s }]
+    # Add return slice when a return date is provided
+    if return_date.present?
+      slices << { origin: destination, destination: origin, departure_date: return_date.to_s }
+    end
+
     body = {
       data: {
-        slices:      [{ origin: origin, destination: destination, departure_date: date.to_s }],
+        slices:      slices,
         passengers:  [{ type: "adult" }],
         cabin_class: "economy"
       }
