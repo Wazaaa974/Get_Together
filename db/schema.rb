@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_06_222647) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_06_224513) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -45,7 +45,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_06_222647) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["candidate_city_id"], name: "index_route_quotes_on_candidate_city_id"
+    t.index ["participant_id", "candidate_city_id"], name: "index_route_quotes_on_participant_id_and_candidate_city_id"
     t.index ["participant_id"], name: "index_route_quotes_on_participant_id"
+    t.index ["trip_id", "candidate_city_id"], name: "index_route_quotes_on_trip_id_and_candidate_city_id"
     t.index ["trip_id"], name: "index_route_quotes_on_trip_id"
   end
 
@@ -59,7 +61,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_06_222647) do
     t.string "optimization_status", default: "idle", null: false
     t.bigint "user_id"
     t.string "share_token"
+    t.index ["optimization_status"], name: "index_trips_on_optimization_status"
     t.index ["share_token"], name: "index_trips_on_share_token", unique: true
+    t.index ["user_id", "created_at"], name: "index_trips_on_user_id_and_created_at"
     t.index ["user_id"], name: "index_trips_on_user_id"
   end
 
