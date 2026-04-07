@@ -22,6 +22,7 @@
       quotes: r[:quotes].map { |q| {
         name:               q.participant.name,
         city:               q.participant.origin_city,
+        origin_iata:        q.participant.origin_airport_code.presence,
         price:              q.price_euros.round,
         duration:           q.duration_minutes,
         is_local:           q.price_cents == 0,
@@ -222,12 +223,17 @@
                 <% end %>
               <% end %>
             </div>
-            <%# Export Google Flights — priorité à la date réelle du vol, fallback sur start_date %>
+            <%# Export Google Flights — format #flt= avec IATA pour pré-remplissage fiable %>
             <% unless quote.price_cents == 0 %>
-              <% gf_url = "https://www.google.com/travel/flights?q=flights+from+#{CGI.escape(quote.participant.origin_city)}+to+#{CGI.escape(best[:city].city_name)}" %>
+              <% origin_iata = quote.participant.origin_airport_code.presence %>
+              <% dest_iata   = best[:city].airport_code.presence %>
               <% flight_date = quote.departure_at&.to_date || @trip.start_date %>
-              <% if flight_date.present? %>
-                <% gf_url += "+on+#{flight_date.strftime('%Y-%m-%d')}" %>
+              <% if origin_iata && dest_iata && flight_date %>
+                <% outbound = "#{origin_iata}.#{dest_iata}.#{flight_date.strftime('%Y-%m-%d')}" %>
+                <% return_leg = (quote.is_round_trip && @trip.end_date) ? "*#{dest_iata}.#{origin_iata}.#{@trip.end_date.strftime('%Y-%m-%d')}" : "" %>
+                <% gf_url = "https://www.google.com/travel/flights#flt=#{outbound}#{return_leg};c:EUR;e:1;sd:1;t:f" %>
+              <% else %>
+                <% gf_url = "https://www.google.com/travel/flights?q=#{CGI.escape("#{quote.participant.origin_city} to #{best[:city].city_name}")}" %>
               <% end %>
               <%= link_to gf_url, target: "_blank", rel: "noopener",
                   class: "text-gray-300 hover:text-indigo-500 transition-colors p-2.5 rounded-lg hover:bg-indigo-50 flex items-center justify-center",
@@ -299,7 +305,17 @@
 </div>
 
 <script>
-  const allResults = <%= raw results_data.to_json %>;
+  const allResults       = <%= raw results_data.to_json %>;
+  const tripReturnDate   = <%= raw @trip.end_date&.strftime("%Y-%m-%d").to_json %>;
+
+  function buildGFlightsUrl(originIata, destIata, departDate, returnDate) {
+    if (originIata && destIata && departDate) {
+      const outbound  = `${originIata}.${destIata}.${departDate}`;
+      const returnLeg = returnDate ? `*${destIata}.${originIata}.${returnDate}` : "";
+      return `https://www.google.com/travel/flights#flt=${outbound}${returnLeg};c:EUR;e:1;sd:1;t:f`;
+    }
+    return null;
+  }
 
   function selectDestination(index, clickedCard) {
     document.querySelectorAll(".top3-card").forEach((card, i) => {
@@ -346,8 +362,9 @@
             }
           </div>
           ${!q.is_local ? (() => {
-            const dateParam = q.departure_date_iso ? `+on+${q.departure_date_iso}` : '';
-            const gfUrl = `https://www.google.com/travel/flights?q=flights+from+${encodeURIComponent(q.city)}+to+${encodeURIComponent(result.city_name)}${dateParam}`;
+            const retDate = q.is_round_trip ? tripReturnDate : null;
+            const gfUrl = buildGFlightsUrl(q.origin_iata, result.airport_code, q.departure_date_iso, retDate)
+              || `https://www.google.com/travel/flights?q=${encodeURIComponent(q.city + ' to ' + result.city_name)}`;
             return `<a href="${gfUrl}" target="_blank" rel="noopener" class="text-gray-300 hover:text-indigo-500 transition-colors p-2.5 rounded-lg hover:bg-indigo-50 flex items-center justify-center" title="Google Flights"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>`;
           })() : ''}
         </div>
