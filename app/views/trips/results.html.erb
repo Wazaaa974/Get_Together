@@ -20,11 +20,15 @@
       lat: coords ? coords[0] : nil,
       lng: coords ? coords[1] : nil,
       quotes: r[:quotes].map { |q| {
-        name:     q.participant.name,
-        city:     q.participant.origin_city,
-        price:    q.price_euros.round,
-        duration: q.duration_minutes,
-        is_local: q.price_cents == 0
+        name:         q.participant.name,
+        city:         q.participant.origin_city,
+        price:        q.price_euros.round,
+        duration:     q.duration_minutes,
+        is_local:     q.price_cents == 0,
+        airline:      q.airline_name,
+        departure_at: q.departure_at&.strftime("%H:%M"),
+        arrival_at:   q.arrival_at&.strftime("%H:%M"),
+        next_day:     q.departure_at.present? && q.arrival_at.present? && q.arrival_at.to_date > q.departure_at.to_date
       }}
     }
   }
@@ -159,9 +163,27 @@
               <%= quote.participant.name[0].upcase %>
             </div>
             <div class="min-w-0">
-              <span class="font-medium text-gray-800 text-sm"><%= quote.participant.name %></span>
-              <span class="text-gray-400 text-xs mx-1.5 hidden sm:inline">·</span>
-              <span class="text-gray-500 text-xs hidden sm:inline"><%= quote.participant.origin_city %> → <%= best[:city].city_name %></span>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="font-medium text-gray-800 text-sm"><%= quote.participant.name %></span>
+                <span class="text-gray-400 text-xs hidden sm:inline">·</span>
+                <span class="text-gray-500 text-xs hidden sm:inline"><%= quote.participant.origin_city %> → <%= best[:city].city_name %></span>
+              </div>
+              <% if quote.departure_at.present? && quote.price_cents > 0 %>
+                <div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                  <% if quote.airline_name.present? %>
+                    <span class="text-xs text-gray-400 font-medium"><%= quote.airline_name %></span>
+                    <span class="text-gray-300 text-xs">·</span>
+                  <% end %>
+                  <span class="text-xs text-gray-400">
+                    <%= quote.departure_at.strftime("%H:%M") %> → <%= quote.arrival_at.strftime("%H:%M") %>
+                    <% if quote.arrival_at.to_date > quote.departure_at.to_date %>
+                      <span class="text-orange-400 ml-0.5">+1j</span>
+                    <% end %>
+                  </span>
+                  <span class="text-gray-300 text-xs">·</span>
+                  <span class="text-xs text-gray-400"><%= quote.departure_at.strftime("%d %b") %></span>
+                </div>
+              <% end %>
             </div>
           </div>
           <div class="flex items-center gap-3 flex-shrink-0">
@@ -268,16 +290,25 @@
     document.getElementById("detail-title").textContent = `Détail — ${result.city_name}`;
 
     const list = document.getElementById("detail-list");
-    list.innerHTML = result.quotes.map(q => `
+    list.innerHTML = result.quotes.map(q => {
+      const flightMeta = (!q.is_local && (q.airline || q.departure_at)) ? `
+        <div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
+          ${q.airline ? `<span class="text-xs text-gray-400 font-medium">${q.airline}</span><span class="text-gray-300 text-xs">·</span>` : ''}
+          ${q.departure_at ? `<span class="text-xs text-gray-400">${q.departure_at} → ${q.arrival_at}${q.next_day ? ' <span class="text-orange-400">+1j</span>' : ''}</span>` : ''}
+        </div>` : '';
+      return `
       <li class="flex items-center justify-between px-5 py-4">
         <div class="flex items-center gap-3 min-w-0">
           <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold flex-shrink-0">
             ${q.name[0].toUpperCase()}
           </div>
           <div class="min-w-0">
-            <span class="font-medium text-gray-800 text-sm">${q.name}</span>
-            <span class="text-gray-400 text-xs mx-1.5 hidden sm:inline">·</span>
-            <span class="text-gray-500 text-xs hidden sm:inline">${q.city} → ${result.city_name}</span>
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="font-medium text-gray-800 text-sm">${q.name}</span>
+              <span class="text-gray-400 text-xs hidden sm:inline">·</span>
+              <span class="text-gray-500 text-xs hidden sm:inline">${q.city} → ${result.city_name}</span>
+            </div>
+            ${flightMeta}
           </div>
         </div>
         <div class="flex items-center gap-3 flex-shrink-0">
@@ -289,8 +320,8 @@
           </div>
           ${!q.is_local ? `<a href="https://www.google.com/travel/flights?q=flights+from+${encodeURIComponent(q.city)}+to+${encodeURIComponent(result.city_name)}" target="_blank" rel="noopener" class="text-gray-300 hover:text-indigo-500 transition-colors p-1 rounded" title="Google Flights"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>` : ''}
         </div>
-      </li>
-    `).join("");
+      </li>`
+    }).join("");
 
     const mapEl = document.getElementById("map");
     if (mapEl?._stimulus_controller) mapEl._stimulus_controller.selectDestination(index);

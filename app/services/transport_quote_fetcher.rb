@@ -13,7 +13,11 @@ require "json"
 #   "duffel/<ORIGIN>-<DESTINATION>/<date>". This means that within the same day,
 #   re-running the optimiser for the same route skips the Duffel round-trip entirely.
 #
-# Returns { price_cents: Integer, currency: String, duration_minutes: Integer }
+# Returns {
+#   price_cents: Integer, currency: String, duration_minutes: Integer,
+#   departure_at: String (ISO 8601), arrival_at: String (ISO 8601),
+#   airline_name: String
+# }
 # Returns nil if no offer is found or if the API call fails.
 class TransportQuoteFetcher
   DUFFEL_BASE_URL = "https://api.duffel.com"
@@ -54,10 +58,23 @@ class TransportQuoteFetcher
 
     cheapest      = offers.first
     price_cents   = (cheapest["total_amount"].to_f * 100).round
-    duration_mins = parse_iso_duration(cheapest.dig("slices", 0, "duration"))
     currency      = cheapest["total_currency"] || "EUR"
+    duration_mins = parse_iso_duration(cheapest.dig("slices", 0, "duration"))
 
-    { price_cents: price_cents, currency: currency, duration_minutes: duration_mins }
+    # First segment of the first slice — departure/arrival times and airline
+    segment      = cheapest.dig("slices", 0, "segments", 0) || {}
+    departure_at = segment["departing_at"]
+    arrival_at   = segment["arriving_at"]
+    airline_name = segment.dig("marketing_carrier", "name")
+
+    {
+      price_cents:   price_cents,
+      currency:      currency,
+      duration_minutes: duration_mins,
+      departure_at:  departure_at,
+      arrival_at:    arrival_at,
+      airline_name:  airline_name
+    }
   end
 
   def self.create_offer_request(origin:, destination:, date:)
