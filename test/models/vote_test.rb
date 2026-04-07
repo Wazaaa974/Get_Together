@@ -14,7 +14,7 @@ class VoteTest < ActiveSupport::TestCase
   test "invalid without voter_name" do
     vote = Vote.new(trip: @trip, candidate_city: @city, voter_name: "")
     assert_not vote.valid?
-    assert_includes vote.errors[:voter_name], "can't be blank"
+    assert_includes vote.errors[:voter_name], "ne peut pas être vide"
   end
 
   test "invalid without trip" do
