@@ -2,6 +2,7 @@ require "net/http"
 require "json"
 
 # Fetches a flight price between two airports for a given date via the Duffel API.
+# Results are cached for 6 hours to avoid redundant API calls.
 #
 # Setup:
 #   1. Run: EDITOR="nano" bin/rails credentials:edit
@@ -21,13 +22,16 @@ class TransportQuoteFetcher
   def self.call(origin:, destination:, date:)
     return nil if origin.upcase == destination.upcase
 
-    # Ensure search date is in the future (Duffel rejects past dates)
-    search_date = normalize_date(date)
+    search_date = begin
+      parsed = Date.parse(date.to_s)
+      parsed > Date.today ? parsed : Date.today + 30
+    rescue ArgumentError
+      Date.today + 30
+    end
 
     cache_key = "duffel/#{origin.upcase}-#{destination.upcase}/#{search_date}"
 
     Rails.cache.fetch(cache_key, expires_in: CACHE_TTL) do
-      Rails.logger.info("[TransportQuoteFetcher] cache miss — fetching #{origin.upcase}→#{destination.upcase} on #{search_date}")
       fetch_duffel(origin: origin.upcase, destination: destination.upcase, date: search_date)
     end
   rescue => e
@@ -51,10 +55,10 @@ class TransportQuoteFetcher
     offers = get_offers(offer_request_id: offer_request_id)
     return nil if offers.nil? || offers.empty?
 
-    cheapest       = offers.first
-    price_cents    = (cheapest["total_amount"].to_f * 100).round
-    duration_mins  = parse_iso_duration(cheapest.dig("slices", 0, "duration"))
-    currency       = cheapest["total_currency"] || "EUR"
+    cheapest      = offers.first
+    price_cents   = (cheapest["total_amount"].to_f * 100).round
+    duration_mins = parse_iso_duration(cheapest.dig("slices", 0, "duration"))
+    currency      = cheapest["total_currency"] || "EUR"
 
     { price_cents: price_cents, currency: currency, duration_minutes: duration_mins }
   end
@@ -90,9 +94,9 @@ class TransportQuoteFetcher
   end
 
   def self.duffel_post(uri, body)
-    http               = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl       = true
-    http.read_timeout  = 30
+    http              = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl      = true
+    http.read_timeout = 30
 
     req                   = Net::HTTP::Post.new(uri)
     req["Authorization"]  = "Bearer #{ENV["DUFFEL_API_KEY"]}"
@@ -105,9 +109,9 @@ class TransportQuoteFetcher
   end
 
   def self.duffel_get(uri)
-    http               = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl       = true
-    http.read_timeout  = 30
+    http              = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl      = true
+    http.read_timeout = 30
 
     req                   = Net::HTTP::Get.new(uri)
     req["Authorization"]  = "Bearer #{ENV["DUFFEL_API_KEY"]}"
@@ -117,7 +121,6 @@ class TransportQuoteFetcher
     http.request(req)
   end
 
-  # Parses an ISO 8601 duration string like "PT2H30M" into total minutes.
   def self.parse_iso_duration(iso)
     return nil if iso.nil? || iso.empty?
 
