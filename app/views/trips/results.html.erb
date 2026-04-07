@@ -20,17 +20,18 @@
       lat: coords ? coords[0] : nil,
       lng: coords ? coords[1] : nil,
       quotes: r[:quotes].map { |q| {
-        name:              q.participant.name,
-        city:              q.participant.origin_city,
-        price:             q.price_euros.round,
-        duration:          q.duration_minutes,
-        is_local:          q.price_cents == 0,
-        airline:           q.airline_name,
-        departure_at:      q.departure_at&.strftime("%H:%M"),
-        arrival_at:        q.arrival_at&.strftime("%H:%M"),
-        departure_date:    q.departure_at&.strftime("%d %b"),
+        name:               q.participant.name,
+        city:               q.participant.origin_city,
+        price:              q.price_euros.round,
+        duration:           q.duration_minutes,
+        is_local:           q.price_cents == 0,
+        is_round_trip:      q.is_round_trip,
+        airline:            q.airline_name,
+        departure_at:       q.departure_at&.strftime("%H:%M"),
+        arrival_at:         q.arrival_at&.strftime("%H:%M"),
+        departure_date:     q.departure_at&.strftime("%d %b"),
         departure_date_iso: q.departure_at&.strftime("%Y-%m-%d"),
-        next_day:          q.departure_at.present? && q.arrival_at.present? && q.arrival_at.to_date > q.departure_at.to_date
+        next_day:           q.departure_at.present? && q.arrival_at.present? && q.arrival_at.to_date > q.departure_at.to_date
       }}
     }
   }
@@ -210,9 +211,14 @@
               <% if quote.price_cents == 0 %>
                 <span class="font-semibold text-green-600 text-sm">Sur place</span>
               <% else %>
-                <span class="font-semibold text-gray-900">€<%= quote.price_euros.round %></span>
+                <div class="flex items-center gap-1.5 justify-end">
+                  <span class="font-semibold text-gray-900">€<%= quote.price_euros.round %></span>
+                  <% if quote.is_round_trip %>
+                    <span class="text-xs bg-indigo-50 text-indigo-500 border border-indigo-100 px-1.5 py-0.5 rounded font-medium">A/R</span>
+                  <% end %>
+                </div>
                 <% if quote.duration_minutes.present? && quote.duration_minutes > 0 %>
-                  <span class="text-xs text-gray-400 ml-1.5"><%= quote.duration_minutes / 60 %>h<%= quote.duration_minutes % 60 %>m</span>
+                  <span class="text-xs text-gray-400"><%= quote.duration_minutes / 60 %>h<%= quote.duration_minutes % 60 %>m</span>
                 <% end %>
               <% end %>
             </div>
@@ -336,7 +342,7 @@
           <div class="text-right">
             ${q.is_local
               ? '<span class="font-semibold text-green-600 text-sm">Sur place</span>'
-              : `<span class="font-semibold text-gray-900">€${q.price}</span>${q.duration ? `<span class="text-xs text-gray-400 ml-1.5">${Math.floor(q.duration/60)}h${q.duration%60}m</span>` : ''}`
+              : `<div class="flex items-center gap-1.5 justify-end"><span class="font-semibold text-gray-900">€${q.price}</span>${q.is_round_trip ? '<span class="text-xs bg-indigo-50 text-indigo-500 border border-indigo-100 px-1.5 py-0.5 rounded font-medium">A/R</span>' : ''}</div>${q.duration ? `<span class="text-xs text-gray-400">${Math.floor(q.duration/60)}h${q.duration%60}m</span>` : ''}`
             }
           </div>
           ${!q.is_local ? (() => {
