@@ -10,7 +10,7 @@ class TripTest < ActiveSupport::TestCase
   test "invalid without title" do
     trip = Trip.new
     assert_not trip.valid?
-    assert_includes trip.errors[:title], "can't be blank"
+    assert_includes trip.errors[:title], "ne peut pas être vide"
   end
 
   test "invalid when end_date before start_date" do
