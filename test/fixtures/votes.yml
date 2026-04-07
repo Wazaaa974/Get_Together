@@ -1,0 +1,9 @@
+alice_vote:
+  trip: weekend_paris
+  candidate_city: barcelona
+  voter_name: Alice
+
+bob_vote:
+  trip: weekend_paris
+  candidate_city: amsterdam
+  voter_name: Bob

@@ -1,0 +1,78 @@
+<%
+  votes_by_city = trip.votes.includes(:candidate_city).group_by(&:candidate_city_id)
+  total_votes   = trip.votes.count
+  top3_cities   = trip.candidate_cities
+                      .joins(:route_quotes)
+                      .where(route_quotes: { trip_id: trip.id })
+                      .distinct
+                      .first(3)
+%>
+
+<div id="votes-section-<%= trip.id %>" class="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+  <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+    <div>
+      <h2 class="font-semibold text-gray-900">Vote du groupe</h2>
+      <p class="text-xs text-gray-400 mt-0.5">Quelle destination préférez-vous ?</p>
+    </div>
+    <% if total_votes > 0 %>
+      <span class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full"><%= total_votes %> vote<%= total_votes > 1 ? 's' : '' %></span>
+    <% end %>
+  </div>
+
+  <% if error.present? %>
+    <div class="mx-6 mt-4 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5 text-sm text-red-700">
+      <%= error %>
+    </div>
+  <% end %>
+
+  <% if top3_cities.any? %>
+    <%# Barres de vote par destination %>
+    <div class="px-6 py-4 space-y-3">
+      <% top3_cities.each do |city| %>
+        <% city_votes = votes_by_city[city.id]&.length || 0 %>
+        <% pct = total_votes > 0 ? (city_votes * 100.0 / total_votes).round : 0 %>
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-sm font-medium text-gray-700"><%= city.city_name %></span>
+            <span class="text-xs text-gray-500"><%= city_votes %> vote<%= city_votes > 1 ? 's' : '' %> · <%= pct %>%</span>
+          </div>
+          <div class="w-full bg-gray-100 rounded-full h-2">
+            <div class="bg-indigo-500 h-2 rounded-full transition-all duration-500" style="width: <%= pct %>%"></div>
+          </div>
+          <%# Avatars des votants %>
+          <% voters = votes_by_city[city.id] || [] %>
+          <% if voters.any? %>
+            <div class="flex items-center gap-1 mt-1.5">
+              <% voters.first(5).each do |v| %>
+                <span class="text-xs bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded font-medium"><%= v.voter_name %></span>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Formulaire de vote %>
+    <div class="px-6 py-4 bg-gray-50 border-t border-gray-100">
+      <p class="text-xs font-medium text-gray-600 mb-3">Votre vote</p>
+      <%= form_with url: trip_votes_path(trip), data: { turbo: true } do |f| %>
+        <div class="flex gap-2 flex-wrap">
+          <%= f.text_field :voter_name, placeholder: "Votre prénom",
+              class: "flex-1 min-w-28 border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500",
+              autocomplete: "off" %>
+          <%= f.select :candidate_city_id,
+              top3_cities.map { |c| [c.city_name, c.id] },
+              { prompt: "Choisir une destination" },
+              class: "flex-1 min-w-36 border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+          <%= f.submit "Voter",
+              class: "bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors cursor-pointer flex-shrink-0" %>
+        </div>
+        <p class="text-xs text-gray-400 mt-1.5">Vous pouvez changer votre vote en revorant.</p>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="px-6 py-6 text-center text-sm text-gray-400">
+      Lancez d'abord le calcul pour voir les destinations disponibles.
+    </div>
+  <% end %>
+</div>
