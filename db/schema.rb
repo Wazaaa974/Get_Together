@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_06_224513) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_07_070315) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -61,6 +61,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_06_224513) do
     t.string "optimization_status", default: "idle", null: false
     t.bigint "user_id"
     t.string "share_token"
+    t.datetime "last_optimized_at"
     t.index ["optimization_status"], name: "index_trips_on_optimization_status"
     t.index ["share_token"], name: "index_trips_on_share_token", unique: true
     t.index ["user_id", "created_at"], name: "index_trips_on_user_id_and_created_at"
@@ -79,10 +80,23 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_06_224513) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  create_table "votes", force: :cascade do |t|
+    t.bigint "trip_id", null: false
+    t.bigint "candidate_city_id", null: false
+    t.string "voter_name", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["candidate_city_id"], name: "index_votes_on_candidate_city_id"
+    t.index ["trip_id", "voter_name"], name: "index_votes_on_trip_id_and_voter_name", unique: true
+    t.index ["trip_id"], name: "index_votes_on_trip_id"
+  end
+
   add_foreign_key "candidate_cities", "trips"
   add_foreign_key "participants", "trips"
   add_foreign_key "route_quotes", "candidate_cities"
   add_foreign_key "route_quotes", "participants"
   add_foreign_key "route_quotes", "trips"
   add_foreign_key "trips", "users"
+  add_foreign_key "votes", "candidate_cities"
+  add_foreign_key "votes", "trips"
 end

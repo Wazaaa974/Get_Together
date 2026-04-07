@@ -17,7 +17,7 @@ class OptimizationJob < ApplicationJob
     end
 
     if results.any?
-      trip.update!(status: "active", optimization_status: "done")
+      trip.update!(status: "active", optimization_status: "done", last_optimized_at: Time.current)
     else
       trip.update!(optimization_status: "failed")
     end
