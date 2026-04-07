@@ -22,14 +22,8 @@ class TransportQuoteFetcher
   def self.call(origin:, destination:, date:)
     return nil if origin.upcase == destination.upcase
 
-    search_date = begin
-      parsed = Date.parse(date.to_s)
-      parsed > Date.today ? parsed : Date.today + 30
-    rescue ArgumentError
-      Date.today + 30
-    end
-
-    cache_key = "duffel/#{origin.upcase}-#{destination.upcase}/#{search_date}"
+    search_date = normalize_date(date)
+    cache_key   = "duffel/#{origin.upcase}-#{destination.upcase}/#{search_date}"
 
     Rails.cache.fetch(cache_key, expires_in: CACHE_TTL) do
       fetch_duffel(origin: origin.upcase, destination: destination.upcase, date: search_date)
@@ -41,6 +35,7 @@ class TransportQuoteFetcher
 
   private
 
+  # Returns a future Date suitable for Duffel. Falls back to today+30 for past or invalid dates.
   def self.normalize_date(date)
     parsed = Date.parse(date.to_s)
     parsed > Date.today ? parsed : Date.today + 30

@@ -11,8 +11,6 @@ class OptimizationJob < ApplicationJob
     started_at = Time.current
     trip.update!(optimization_status: "running")
 
-    started_at = Time.current
-
     PopularDestinations.ensure_on_trip(trip)
     trip.route_quotes.destroy_all
 
