@@ -48,7 +48,7 @@
   <div class="flex items-center justify-between flex-wrap gap-2">
     <div class="flex items-center gap-2 text-sm text-gray-400">
       <% if is_owner %>
-        <%= link_to "Trips", trips_path, class: "hover:text-gray-700 transition-colors" %>
+        <%= link_to "Mes voyages", trips_path, class: "hover:text-gray-700 transition-colors" %>
         <span>/</span>
         <%= link_to @trip.title, trip_path(@trip), class: "hover:text-gray-700 transition-colors truncate max-w-[120px] sm:max-w-xs" %>
         <span>/</span>
@@ -59,7 +59,7 @@
       <% if @trip.last_optimized_at.present? %>
         <span class="flex items-center gap-1">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          Calculé <%= time_ago_in_words(@trip.last_optimized_at) %> ago
+          Calculé il y a <%= time_ago_in_words(@trip.last_optimized_at) %>
         </span>
       <% end %>
       <%# Partager les résultats %>
@@ -265,7 +265,7 @@
     <% if is_owner %>
       <%= link_to "← Revenir au trip", trip_path(@trip),
           class: "text-sm text-gray-500 border border-gray-200 px-4 py-2.5 rounded-xl hover:bg-gray-50 transition-colors" %>
-      <%= button_to "Recalculer les prix", optimize_trip_path(@trip), method: :post,
+      <%= button_to "🔄 Actualiser les prix", optimize_trip_path(@trip), method: :post,
           class: "text-sm bg-indigo-600 text-white px-4 py-2.5 rounded-xl hover:bg-indigo-700 transition-colors font-medium" %>
     <% end %>
   </div>

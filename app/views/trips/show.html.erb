@@ -31,7 +31,7 @@
   <%# Breadcrumb (owner uniquement) %>
   <% unless @shared_view %>
     <div class="flex items-center gap-2 text-sm text-gray-400">
-      <%= link_to "Trips", trips_path, class: "hover:text-gray-700 transition-colors" %>
+      <%= link_to "Mes voyages", trips_path, class: "hover:text-gray-700 transition-colors" %>
       <span>/</span>
       <span class="text-gray-600 truncate max-w-xs"><%= @trip.title %></span>
     </div>
@@ -202,13 +202,13 @@
             </ul>
           </div>
           <div class="w-32">
-            <%= f.text_field :origin_airport_code, placeholder: "IATA (optionnel)",
+            <%= f.text_field :origin_airport_code, placeholder: "Code aéroport (ex : CDG)",
                 class: "w-full border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" %>
           </div>
           <%= f.submit "Ajouter",
               class: "bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors cursor-pointer flex-shrink-0" %>
         </div>
-        <p class="text-xs text-gray-400 mt-1.5">Le code IATA est facultatif — il sera déduit de la ville si absent.</p>
+        <p class="text-xs text-gray-400 mt-1.5">Le code aéroport est facultatif — il sera détecté automatiquement selon la ville.</p>
       <% end %>
     <% end %>
   </div>
@@ -218,8 +218,8 @@
     <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden">
       <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
         <div>
-          <h2 class="font-semibold text-gray-900">Destination personnalisée</h2>
-          <p class="text-xs text-gray-400 mt-0.5">Optionnel — l'app évalue déjà 10 destinations populaires automatiquement.</p>
+          <h2 class="font-semibold text-gray-900">Ajouter une destination</h2>
+          <p class="text-xs text-gray-400 mt-0.5">Facultatif — 10 destinations populaires sont déjà évaluées automatiquement.</p>
         </div>
         <% if @trip.candidate_cities.any? %>
           <span class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full"><%= @trip.candidate_cities.count %></span>
@@ -254,7 +254,7 @@
         </ul>
       <% else %>
         <div class="px-6 py-5 text-center">
-          <p class="text-sm text-gray-400">Aucune ville ajoutée — les 10 destinations populaires sont évaluées par défaut.</p>
+          <p class="text-sm text-gray-400">Aucune ville ajoutée — 10 destinations populaires seront évaluées automatiquement.</p>
         </div>
       <% end %>
 
