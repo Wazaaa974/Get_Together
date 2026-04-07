@@ -65,7 +65,8 @@
               { prompt: "Choisir une destination" },
               class: "flex-1 min-w-36 border border-gray-300 bg-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
           <%= f.submit "Voter",
-              class: "bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors cursor-pointer flex-shrink-0" %>
+              class: "bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors cursor-pointer flex-shrink-0",
+              data: { disable_with: "Vote en cours…" } %>
         </div>
         <p class="text-xs text-gray-400 mt-1.5">Vous pouvez changer votre vote en soumettant à nouveau.</p>
       <% end %>

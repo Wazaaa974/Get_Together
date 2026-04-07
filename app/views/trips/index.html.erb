@@ -68,8 +68,11 @@
               <%= link_to "Voir résultats", results_trip_path(trip),
                   class: "text-sm bg-indigo-50 text-indigo-600 border border-indigo-200 px-3 py-1.5 rounded-lg font-medium hover:bg-indigo-100 transition-colors" %>
             <% end %>
-            <%= link_to "→", trip_path(trip),
-                class: "w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors font-medium" %>
+            <%= link_to trip_path(trip),
+                class: "text-sm text-gray-500 border border-gray-200 px-3 py-1.5 rounded-lg hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50 transition-colors font-medium flex items-center gap-1" do %>
+              Ouvrir
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <% end %>
           </div>
         </div>
       </div>

@@ -96,19 +96,36 @@
     </div>
   </div>
 
-  <%# Filtres %>
-  <div class="flex items-center gap-3 flex-wrap"
+  <%# Filtres — segmented control %>
+  <div class="flex items-center justify-between flex-wrap gap-3"
        data-controller="results-filter"
        data-results-filter-data-value="<%= results_data.to_json %>">
-    <span class="text-sm font-medium text-gray-600">Trier par</span>
-    <select data-results-filter-target="filter"
-            data-action="change->results-filter#apply"
-            data-participant-name="<%= @trip.participants.first&.name %>"
-            class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-      <option value="total_asc">Prix total groupe</option>
-      <option value="duration_asc">Durée de vol max</option>
-      <option value="cheapest_for_me">Le moins cher pour moi (<%= @trip.participants.first&.name %>)</option>
-    </select>
+    <div class="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
+      <button type="button"
+              data-results-filter-target="pill"
+              data-value="total_asc"
+              data-action="click->results-filter#applyPill"
+              data-participant-name="<%= @trip.participants.first&.name %>"
+              class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all bg-white text-gray-800 shadow-sm">
+        Prix total
+      </button>
+      <button type="button"
+              data-results-filter-target="pill"
+              data-value="duration_asc"
+              data-action="click->results-filter#applyPill"
+              class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all text-gray-500 hover:text-gray-700">
+        Durée de vol
+      </button>
+      <% if @trip.participants.first %>
+        <button type="button"
+                data-results-filter-target="pill"
+                data-value="cheapest_for_me"
+                data-action="click->results-filter#applyPill"
+                class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all text-gray-500 hover:text-gray-700 hidden sm:block">
+          Mon prix
+        </button>
+      <% end %>
+    </div>
     <span class="text-xs text-gray-400"><%= @results.count %> destinations évaluées</span>
   </div>
 
@@ -204,7 +221,7 @@
                 <% gf_url += "+on+#{@trip.start_date.strftime('%Y-%m-%d')}" %>
               <% end %>
               <%= link_to gf_url, target: "_blank", rel: "noopener",
-                  class: "text-gray-300 hover:text-indigo-500 transition-colors p-1 rounded",
+                  class: "text-gray-300 hover:text-indigo-500 transition-colors p-2.5 rounded-lg hover:bg-indigo-50 flex items-center justify-center",
                   title: "Voir sur Google Flights" do %>
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
               <% end %>
@@ -318,7 +335,7 @@
               : `<span class="font-semibold text-gray-900">€${q.price}</span>${q.duration ? `<span class="text-xs text-gray-400 ml-1.5">${Math.floor(q.duration/60)}h${q.duration%60}m</span>` : ''}`
             }
           </div>
-          ${!q.is_local ? `<a href="https://www.google.com/travel/flights?q=flights+from+${encodeURIComponent(q.city)}+to+${encodeURIComponent(result.city_name)}" target="_blank" rel="noopener" class="text-gray-300 hover:text-indigo-500 transition-colors p-1 rounded" title="Google Flights"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>` : ''}
+          ${!q.is_local ? `<a href="https://www.google.com/travel/flights?q=flights+from+${encodeURIComponent(q.city)}+to+${encodeURIComponent(result.city_name)}" target="_blank" rel="noopener" class="text-gray-300 hover:text-indigo-500 transition-colors p-2.5 rounded-lg hover:bg-indigo-50 flex items-center justify-center" title="Google Flights"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>` : ''}
         </div>
       </li>`
     }).join("");
