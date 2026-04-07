@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_07_070315) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_07_100538) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -35,9 +35,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_07_070315) do
   end
 
   create_table "route_quotes", force: :cascade do |t|
+    t.string "airline_name"
+    t.datetime "arrival_at"
     t.bigint "candidate_city_id", null: false
     t.datetime "created_at", null: false
     t.string "currency"
+    t.datetime "departure_at"
     t.integer "duration_minutes"
     t.bigint "participant_id", null: false
     t.integer "price_cents"

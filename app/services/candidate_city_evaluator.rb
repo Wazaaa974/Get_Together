@@ -29,7 +29,10 @@ class CandidateCityEvaluator
         price_cents:      quote_data[:price_cents],
         currency:         quote_data[:currency],
         duration_minutes: quote_data[:duration_minutes],
-        transport_type:   "flight"
+        transport_type:   "flight",
+        departure_at:     quote_data[:departure_at],
+        arrival_at:       quote_data[:arrival_at],
+        airline_name:     quote_data[:airline_name]
       )
 
       route_quote
