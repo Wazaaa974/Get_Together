@@ -7,29 +7,42 @@ require "json"
 #   1. Run: EDITOR="nano" bin/rails credentials:edit
 #   2. Add:  duffel_api_key: <your_token>
 #
+# Caching:
+#   Results are cached in Rails.cache for CACHE_TTL (6 hours) keyed by
+#   "duffel/<ORIGIN>-<DESTINATION>/<date>". This means that within the same day,
+#   re-running the optimiser for the same route skips the Duffel round-trip entirely.
+#
 # Returns { price_cents: Integer, currency: String, duration_minutes: Integer }
 # Returns nil if no offer is found or if the API call fails.
 class TransportQuoteFetcher
   DUFFEL_BASE_URL = "https://api.duffel.com"
+  CACHE_TTL       = 6.hours
 
   def self.call(origin:, destination:, date:)
     return nil if origin.upcase == destination.upcase
 
     # Ensure search date is in the future (Duffel rejects past dates)
-    search_date = begin
-      parsed = Date.parse(date.to_s)
-      parsed > Date.today ? parsed : Date.today + 30
-    rescue ArgumentError
-      Date.today + 30
-    end
+    search_date = normalize_date(date)
 
-    fetch_duffel(origin: origin.upcase, destination: destination.upcase, date: search_date)
+    cache_key = "duffel/#{origin.upcase}-#{destination.upcase}/#{search_date}"
+
+    Rails.cache.fetch(cache_key, expires_in: CACHE_TTL) do
+      Rails.logger.info("[TransportQuoteFetcher] cache miss — fetching #{origin.upcase}→#{destination.upcase} on #{search_date}")
+      fetch_duffel(origin: origin.upcase, destination: destination.upcase, date: search_date)
+    end
   rescue => e
     Rails.logger.error("[TransportQuoteFetcher] #{e.class}: #{e.message}")
     nil
   end
 
   private
+
+  def self.normalize_date(date)
+    parsed = Date.parse(date.to_s)
+    parsed > Date.today ? parsed : Date.today + 30
+  rescue ArgumentError
+    Date.today + 30
+  end
 
   def self.fetch_duffel(origin:, destination:, date:)
     offer_request_id = create_offer_request(origin: origin, destination: destination, date: date)
@@ -81,12 +94,12 @@ class TransportQuoteFetcher
     http.use_ssl       = true
     http.read_timeout  = 30
 
-    req                  = Net::HTTP::Post.new(uri)
-    req["Authorization"] = "Bearer #{ENV["DUFFEL_API_KEY"]}"
+    req                   = Net::HTTP::Post.new(uri)
+    req["Authorization"]  = "Bearer #{ENV["DUFFEL_API_KEY"]}"
     req["Duffel-Version"] = "v2"
-    req["Content-Type"]  = "application/json"
-    req["Accept"]        = "application/json"
-    req.body             = body
+    req["Content-Type"]   = "application/json"
+    req["Accept"]         = "application/json"
+    req.body              = body
 
     http.request(req)
   end
@@ -96,10 +109,10 @@ class TransportQuoteFetcher
     http.use_ssl       = true
     http.read_timeout  = 30
 
-    req                  = Net::HTTP::Get.new(uri)
-    req["Authorization"] = "Bearer #{ENV["DUFFEL_API_KEY"]}"
+    req                   = Net::HTTP::Get.new(uri)
+    req["Authorization"]  = "Bearer #{ENV["DUFFEL_API_KEY"]}"
     req["Duffel-Version"] = "v2"
-    req["Accept"]        = "application/json"
+    req["Accept"]         = "application/json"
 
     http.request(req)
   end

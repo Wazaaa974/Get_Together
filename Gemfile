@@ -25,6 +25,9 @@ gem "bcrypt", "~> 3.1.7"
 # Authentication
 gem "devise"
 
+# Rate limiting — throttles abusive requests (votes spam, brute-force logins)
+gem "rack-attack"
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 

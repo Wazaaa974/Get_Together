@@ -1,10 +1,14 @@
 class OptimizationJob < ApplicationJob
   queue_as :default
 
-  TIMEOUT_SECONDS = 180 # 3 minutes
+  # With parallel city evaluation (one thread per city), the wall-clock time is
+  # dominated by the slowest single city (~5-8 s per participant).
+  # 90 s gives a comfortable 10× safety margin for 8 cities × 8 participants.
+  TIMEOUT_SECONDS = 90
 
   def perform(trip_id)
-    trip = Trip.find(trip_id)
+    trip       = Trip.find(trip_id)
+    started_at = Time.current
     trip.update!(optimization_status: "running")
 
     PopularDestinations.ensure_on_trip(trip)
@@ -14,10 +18,14 @@ class OptimizationJob < ApplicationJob
       TripOptimizer.call(trip)
     end
 
+    elapsed = (Time.current - started_at).round(1)
+
     if results.any?
       trip.update!(status: "active", optimization_status: "done", last_optimized_at: Time.current)
+      Rails.logger.info("[OptimizationJob] trip #{trip_id} done in #{elapsed}s — #{results.size} cities ranked")
     else
       trip.update!(optimization_status: "failed")
+      Rails.logger.warn("[OptimizationJob] trip #{trip_id} — no results after #{elapsed}s")
     end
   rescue Timeout::Error
     Rails.logger.error("[OptimizationJob] Timeout after #{TIMEOUT_SECONDS}s for trip #{trip_id}")
