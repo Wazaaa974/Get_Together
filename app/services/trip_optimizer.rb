@@ -15,21 +15,31 @@ class TripOptimizer
   THREAD_POOL_SIZE = 8
 
   def self.call(trip)
-    started_at = Time.current
+    started_at  = Time.current
+    trip_id     = trip.id
+    # Snapshot city IDs before spawning threads — avoids sharing the AR object
+    # across threads and triggering @association_cache race conditions.
+    city_ids    = trip.candidate_cities.pluck(:id)
+    n_cities    = city_ids.size
 
-    futures = trip.candidate_cities.map do |city|
+    futures = city_ids.map do |city_id|
       Concurrent::Future.execute(executor: thread_pool) do
         ActiveRecord::Base.connection_pool.with_connection do
-          quotes      = CandidateCityEvaluator.call(trip, city)
+          # Each thread reloads its own AR objects → independent association caches,
+          # no concurrent writes to shared Ruby state.
+          fresh_trip = Trip.includes(:participants).find(trip_id)
+          fresh_city = CandidateCity.find(city_id)
+
+          quotes      = CandidateCityEvaluator.call(fresh_trip, fresh_city)
           total_cents = ScoreCalculator.call(quotes)
-          quotes.empty? ? nil : { city: city, quotes: quotes, total_cents: total_cents }
+          quotes.empty? ? nil : { city: fresh_city, quotes: quotes, total_cents: total_cents }
         end
       end
     end
 
     results = futures.filter_map do |f|
       begin
-        f.value  # blocks until this future completes (or raises)
+        f.value
       rescue => e
         Rails.logger.error("[TripOptimizer] future failed: #{e.class}: #{e.message}")
         nil
@@ -37,7 +47,7 @@ class TripOptimizer
     end
 
     elapsed = (Time.current - started_at).round(1)
-    Rails.logger.info("[TripOptimizer] #{results.size}/#{futures.size} cities in #{elapsed}s (#{trip.candidate_cities.size} cities, parallel)")
+    Rails.logger.info("[TripOptimizer] #{results.size}/#{n_cities} cities in #{elapsed}s (parallel)")
 
     results.sort_by { |r| r[:total_cents] }
   rescue => e

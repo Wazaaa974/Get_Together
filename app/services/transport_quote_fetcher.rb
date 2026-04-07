@@ -25,7 +25,9 @@ class TransportQuoteFetcher
     search_date = normalize_date(date)
     cache_key   = "duffel/#{origin.upcase}-#{destination.upcase}/#{search_date}"
 
-    Rails.cache.fetch(cache_key, expires_in: CACHE_TTL) do
+    # skip_nil: true prevents caching API failures (rate-limit, timeout, etc.)
+    # so a re-run always retries routes that previously returned nil.
+    Rails.cache.fetch(cache_key, expires_in: CACHE_TTL, skip_nil: true) do
       fetch_duffel(origin: origin.upcase, destination: destination.upcase, date: search_date)
     end
   rescue => e
