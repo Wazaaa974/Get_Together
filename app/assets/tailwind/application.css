@@ -2,3 +2,20 @@
 @source "../../../app/views";
 @source "../../../app/helpers";
 @source "../../../app/javascript";
+
+@theme {
+  --color-gt-orange:       #E8632A;
+  --color-gt-orange-light: #FDF0E8;
+  --color-gt-orange-dark:  #B54A1A;
+  --color-gt-forest:       #2D4A3E;
+  --color-gt-forest-light: #4A7A65;
+  --color-gt-night:        #1A1F2E;
+  --color-gt-sand:         #F5F0E8;
+  --color-gt-sand-dark:    #E8E0D0;
+  --color-gt-muted:        #8A8070;
+  --color-gt-white:        #FEFCF8;
+}
+
+html, body {
+  background-color: #F5F0E8;
+}
