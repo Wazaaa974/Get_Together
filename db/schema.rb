@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_07_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_18_204524) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -60,6 +60,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_07_120000) do
     t.date "end_date"
     t.datetime "last_optimized_at"
     t.string "optimization_status", default: "idle", null: false
+    t.string "owner_token"
     t.string "share_token"
     t.date "start_date"
     t.string "status"
@@ -67,6 +68,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_07_120000) do
     t.datetime "updated_at", null: false
     t.bigint "user_id"
     t.index ["optimization_status"], name: "index_trips_on_optimization_status"
+    t.index ["owner_token"], name: "index_trips_on_owner_token", unique: true
     t.index ["share_token"], name: "index_trips_on_share_token", unique: true
     t.index ["user_id", "created_at"], name: "index_trips_on_user_id_and_created_at"
     t.index ["user_id"], name: "index_trips_on_user_id"

@@ -23,7 +23,7 @@ Le constat : quand plusieurs personnes veulent se voir, personne ne teste vraime
 1. Créer un scénario de rencontre (Trip)
 2. Ajouter plusieurs participants avec leur ville d'origine
 3. Définir une liste de villes candidates
-4. Interroger l'API Amadeus pour les prix de vols
+4. Interroger une API de prix de vols
 5. Calculer le coût total par ville candidate (somme des prix de tous les participants)
 6. Classer les résultats et afficher une recommandation claire
 
@@ -55,7 +55,7 @@ Exemple :
 | Base de données | PostgreSQL |
 | CSS | Tailwind CSS |
 | Frontend | Rails views + Hotwire/Stimulus |
-| API transport | **Amadeus API** (sandbox gratuite) |
+| API transport | **Duffel API** |
 | Auth | Aucune pour le MVP |
 | Environnement dev | Mac |
 
@@ -112,17 +112,17 @@ Les prix sont stockés en **centimes** (entier) pour éviter les bugs d'arrondi.
 
 ### Sprint 3 — Logique métier (services) ✅ (2026-04-05)
 - [x] `AirportResolver` — transforme une ville en code aéroport (ex: Paris → CDG, ORY)
-- [x] `TransportQuoteFetcher` — mock déterministe, structure prête pour Amadeus
+- [x] `TransportQuoteFetcher` — intégration Duffel API (vrais prix A/R ou aller selon end_date)
 - [x] `CandidateCityEvaluator` — calcule le coût total pour une ville candidate
 - [x] `TripOptimizer` — boucle sur toutes les villes candidates et trie les résultats
 - [x] `ScoreCalculator` — somme des prix (extensible plus tard)
 
-### Sprint 4 — Branchement API Amadeus (partiel)
-- [ ] Inscription sandbox Amadeus : https://developers.amadeus.com
-- [ ] Clés API dans les credentials Rails (`AMADEUS_CLIENT_ID`, `AMADEUS_CLIENT_SECRET`)
-- [ ] Remplacer `TransportQuoteFetcher#fetch_mock` par `#fetch_amadeus`
+### Sprint 4 — Branchement Duffel API ✅ (2026-04-07)
+- [x] Clés API dans les credentials Rails (`DUFFEL_ACCESS_TOKEN`)
+- [x] `TransportQuoteFetcher` — appel Duffel réel, A/R si `end_date` présente
 - [x] Stockage des `RouteQuote` en base (fait dans CandidateCityEvaluator)
 - [x] Gestion des erreurs et cas sans itinéraire
+- [x] Calcul asynchrone via Solid Queue + polling Turbo
 
 ### Sprint 5 — Page résultats & UI ✅ (2026-04-05)
 - [x] Page résultat avec ville recommandée

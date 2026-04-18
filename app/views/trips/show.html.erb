@@ -77,22 +77,51 @@
       </div>
     <% end %>
 
-    <%# Lien de partage (owner seulement) %>
-    <% if is_owner && @trip.share_token.present? %>
-      <div class="mt-5 pt-5 border-t border-gray-100">
-        <p class="text-xs font-medium text-gray-500 mb-2">Inviter des participants</p>
-        <div class="flex items-center gap-2">
-          <input type="text" readonly
-            value="<%= shared_trip_url(@trip.share_token) %>"
-            class="flex-1 text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none font-mono truncate"
-            id="share-link-<%= @trip.id %>">
-          <button type="button"
-            onclick="navigator.clipboard.writeText(document.getElementById('share-link-<%= @trip.id %>').value).then(() => { this.textContent = 'Copié !'; this.classList.add('bg-green-50','text-green-700','border-green-200'); setTimeout(() => { this.textContent = 'Copier'; this.classList.remove('bg-green-50','text-green-700','border-green-200') }, 2000) })"
-            class="text-xs text-indigo-600 border border-indigo-200 px-3 py-2 rounded-lg hover:bg-indigo-50 transition-colors flex-shrink-0 font-medium">
-            Copier
-          </button>
-        </div>
-        <p class="text-xs text-gray-400 mt-1.5">Quiconque a ce lien peut rejoindre et ajouter sa ville — sans compte.</p>
+    <%# Liens owner (admin + partage) %>
+    <% if is_owner %>
+      <div class="mt-5 pt-5 border-t border-gray-100 space-y-4">
+
+        <%# Lien admin — uniquement si non connecté %>
+        <% unless user_signed_in? %>
+          <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+            <p class="text-xs font-semibold text-amber-800 mb-2 flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+              Sauvegardez votre lien administrateur
+            </p>
+            <div class="flex items-center gap-2">
+              <input type="text" readonly
+                value="<%= claim_trip_url(@trip, owner_token: @trip.owner_token) %>"
+                class="flex-1 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 focus:outline-none font-mono truncate"
+                id="admin-link-<%= @trip.id %>">
+              <button type="button"
+                onclick="navigator.clipboard.writeText(document.getElementById('admin-link-<%= @trip.id %>').value).then(() => { this.textContent = 'Copié !'; this.classList.add('bg-green-50','text-green-700','border-green-200'); setTimeout(() => { this.textContent = 'Copier'; this.classList.remove('bg-green-50','text-green-700','border-green-200') }, 2000) })"
+                class="text-xs text-amber-700 border border-amber-300 px-3 py-2 rounded-lg hover:bg-amber-100 transition-colors flex-shrink-0 font-medium">
+                Copier
+              </button>
+            </div>
+            <p class="text-xs text-amber-600 mt-1.5">Ce lien vous permet de retrouver l'administration de ce trip depuis n'importe quel appareil.</p>
+          </div>
+        <% end %>
+
+        <%# Lien de partage participants %>
+        <% if @trip.share_token.present? %>
+          <div>
+            <p class="text-xs font-medium text-gray-500 mb-2">Inviter des participants</p>
+            <div class="flex items-center gap-2">
+              <input type="text" readonly
+                value="<%= shared_trip_url(@trip.share_token) %>"
+                class="flex-1 text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none font-mono truncate"
+                id="share-link-<%= @trip.id %>">
+              <button type="button"
+                onclick="navigator.clipboard.writeText(document.getElementById('share-link-<%= @trip.id %>').value).then(() => { this.textContent = 'Copié !'; this.classList.add('bg-green-50','text-green-700','border-green-200'); setTimeout(() => { this.textContent = 'Copier'; this.classList.remove('bg-green-50','text-green-700','border-green-200') }, 2000) })"
+                class="text-xs text-indigo-600 border border-indigo-200 px-3 py-2 rounded-lg hover:bg-indigo-50 transition-colors flex-shrink-0 font-medium">
+                Copier
+              </button>
+            </div>
+            <p class="text-xs text-gray-400 mt-1.5">Quiconque a ce lien peut rejoindre et ajouter sa ville — sans compte.</p>
+          </div>
+        <% end %>
+
       </div>
     <% end %>
   </div>

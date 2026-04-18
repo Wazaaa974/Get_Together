@@ -1,6 +1,4 @@
 class VotesController < ApplicationController
-  skip_before_action :authenticate_user!
-
   before_action :set_trip
 
   def create

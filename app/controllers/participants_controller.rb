@@ -1,6 +1,6 @@
 class ParticipantsController < ApplicationController
   before_action :set_trip
-  before_action :require_trip_access!
+  before_action :require_trip_owner!
 
   def edit
     @participant = @trip.participants.find(params[:id])
@@ -13,7 +13,7 @@ class ParticipantsController < ApplicationController
     else
       @new_candidate_city = CandidateCity.new
       @new_participant = @participant
-      @is_owner = current_user == @trip.user
+      @is_owner = true
       render "trips/show", status: :unprocessable_entity
     end
   end
@@ -38,13 +38,13 @@ class ParticipantsController < ApplicationController
   def set_trip
     @trip = Trip.find_by(id: params[:trip_id])
     unless @trip
-      redirect_to trips_path, alert: "Trip introuvable."
+      redirect_to root_path, alert: "Trip introuvable."
     end
   end
 
-  def require_trip_access!
-    unless @trip.user == current_user
-      redirect_to trips_path, alert: "Vous n'avez pas accès à ce trip."
+  def require_trip_owner!
+    unless owns_trip?(@trip)
+      redirect_to root_path, alert: "Accès non autorisé."
     end
   end
 

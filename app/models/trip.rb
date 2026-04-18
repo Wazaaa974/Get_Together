@@ -10,9 +10,14 @@ class Trip < ApplicationRecord
   validate :end_date_after_start_date
 
   before_create :generate_share_token
+  before_create :generate_owner_token
 
   def generate_share_token
     self.share_token = SecureRandom.urlsafe_base64(20) until share_token.present? && !Trip.exists?(share_token: share_token)
+  end
+
+  def generate_owner_token
+    self.owner_token = SecureRandom.urlsafe_base64(20) until owner_token.present? && !Trip.exists?(owner_token: owner_token)
   end
 
   private

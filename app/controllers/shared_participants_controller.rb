@@ -1,6 +1,4 @@
 class SharedParticipantsController < ApplicationController
-  skip_before_action :authenticate_user!
-
   def create
     @trip = Trip.find_by(share_token: params[:share_token])
     unless @trip

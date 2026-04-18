@@ -1,10 +1,9 @@
 class TripsController < ApplicationController
-  before_action :authenticate_user!, except: [:shared]
-  before_action :set_trip, only: [:show, :edit, :update, :destroy, :optimize, :results, :waiting, :optimization_status]
-  before_action :require_trip_owner!, only: [:edit, :update, :destroy, :optimize]
+  before_action :set_trip, only: [ :show, :edit, :update, :destroy, :optimize, :results, :waiting, :optimization_status, :claim ]
+  before_action :require_owner!, only: [ :show, :edit, :update, :destroy, :optimize, :results, :waiting, :optimization_status ]
 
   def index
-    @trips = current_user.trips.includes(:participants, :route_quotes).order(created_at: :desc)
+    @trips = user_signed_in? ? current_user.trips.includes(:participants, :route_quotes).order(created_at: :desc) : []
   end
 
   def new
@@ -12,8 +11,10 @@ class TripsController < ApplicationController
   end
 
   def create
-    @trip = current_user.trips.new(trip_params)
+    @trip = Trip.new(trip_params)
+    @trip.user = current_user if user_signed_in?
     if @trip.save
+      claim_trip_ownership(@trip)
       redirect_to @trip, notice: "Trip créé avec succès."
     else
       render :new, status: :unprocessable_entity
@@ -23,7 +24,7 @@ class TripsController < ApplicationController
   def show
     @new_participant = Participant.new
     @new_candidate_city = CandidateCity.new
-    @is_owner = current_user == @trip.user
+    @is_owner = true
   end
 
   def edit
@@ -39,7 +40,16 @@ class TripsController < ApplicationController
 
   def destroy
     @trip.destroy
-    redirect_to trips_path, notice: "Trip supprimé."
+    redirect_to (user_signed_in? ? trips_path : root_path), notice: "Trip supprimé."
+  end
+
+  def claim
+    if @trip.owner_token == params[:owner_token]
+      claim_trip_ownership(@trip)
+      redirect_to @trip, notice: "Accès administrateur activé pour ce trip."
+    else
+      redirect_to root_path, alert: "Lien invalide ou expiré."
+    end
   end
 
   def optimize
@@ -73,7 +83,6 @@ class TripsController < ApplicationController
     end
   end
 
-  # Public share route — no auth required
   def shared
     @trip = Trip.find_by(share_token: params[:share_token])
     if @trip.nil?
@@ -90,15 +99,15 @@ class TripsController < ApplicationController
   private
 
   def set_trip
-    @trip = current_user.trips.includes(:participants, :candidate_cities, :route_quotes).find_by(id: params[:id])
+    @trip = Trip.includes(:participants, :candidate_cities, :route_quotes).find_by(id: params[:id])
     unless @trip
-      redirect_to trips_path, alert: "Trip introuvable."
+      redirect_to root_path, alert: "Trip introuvable."
     end
   end
 
-  def require_trip_owner!
-    unless @trip && @trip.user == current_user
-      redirect_to trips_path, alert: "Vous n'avez pas accès à ce trip."
+  def require_owner!
+    unless owns_trip?(@trip)
+      redirect_to root_path, alert: "Accès non autorisé. Utilisez votre lien administrateur."
     end
   end
 

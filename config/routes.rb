@@ -14,6 +14,7 @@ Rails.application.routes.draw do
       get  :results
       get  :waiting
       get  :optimization_status
+      get  :claim
     end
   end
 
