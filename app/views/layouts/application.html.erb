@@ -24,65 +24,66 @@
     <% end %>
 
     <%= yield :head %>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
-    <style>
-      body { font-family: 'Inter', sans-serif; }
-    </style>
   </head>
 
-  <body class="bg-slate-50 min-h-screen">
-    <nav class="bg-white border-b border-gray-100 fixed top-0 left-0 right-0 z-10 shadow-sm">
-      <div class="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
+  <body class="bg-gt-sand min-h-screen">
+
+    <nav class="bg-gt-white border-b border-gray-100 fixed top-0 left-0 right-0 z-10">
+      <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+
+        <%# Logo %>
+        <%= link_to root_path, class: "flex items-center gap-2" do %>
+          <div class="w-7 h-7 bg-gt-orange rounded-full flex items-center justify-center flex-shrink-0">
+            <svg class="w-3.5 h-3.5" fill="white" viewBox="0 0 24 24">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+            </svg>
+          </div>
+          <span class="font-medium text-gt-forest text-sm">Get Together</span>
+        <% end %>
+
+        <%# Nav links %>
         <div class="flex items-center gap-2">
-          <%= link_to root_path, class: "flex items-center gap-2 group" do %>
-            <div class="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center">
-              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
-              </svg>
-            </div>
-            <span class="text-base font-bold text-gray-900 tracking-tight group-hover:text-indigo-600 transition-colors">Get Together</span>
-          <% end %>
-        </div>
-        <div class="flex items-center gap-3">
           <% if user_signed_in? %>
-            <%= link_to "Nouveau trip", new_trip_path,
-                class: "text-sm bg-indigo-600 text-white px-4 py-1.5 rounded-lg font-medium hover:bg-indigo-700 transition-colors" %>
-            <div class="flex items-center gap-2 text-sm text-gray-500">
-              <span class="hidden sm:inline truncate max-w-[160px]"><%= current_user.email %></span>
-              <%= link_to "Déconnexion", destroy_user_session_path, data: { turbo_method: :delete },
-                  class: "text-gray-400 hover:text-gray-700 transition-colors" %>
-            </div>
+            <%= link_to "Mes trips", trips_path,
+                class: "text-sm text-gray-500 hover:bg-gray-100 rounded-[8px] px-3 py-1.5 transition-colors" %>
+            <span class="text-sm text-gray-400 hidden sm:inline truncate max-w-[160px]"><%= current_user.email %></span>
+            <%= link_to "Déconnexion", destroy_user_session_path, data: { turbo_method: :delete },
+                class: "text-sm text-gray-500 hover:bg-gray-100 rounded-[8px] px-3 py-1.5 transition-colors" %>
           <% else %>
-            <%= link_to "Connexion", new_user_session_path,
-                class: "text-sm text-gray-500 hover:text-gray-800 transition-colors" %>
+            <%= link_to "Se connecter", new_user_session_path,
+                class: "text-sm text-gray-500 hover:bg-gray-100 rounded-[8px] px-3 py-1.5 transition-colors" %>
             <%= link_to "Créer un compte", new_user_registration_path,
-                class: "text-sm bg-indigo-600 text-white px-4 py-1.5 rounded-lg font-medium hover:bg-indigo-700 transition-colors" %>
+                class: "text-sm font-medium bg-gt-orange text-white rounded-[8px] px-4 py-2 hover:bg-gt-orange-dark transition-colors" %>
           <% end %>
         </div>
+
       </div>
     </nav>
 
-    <main class="max-w-5xl mx-auto mt-14 px-5 py-10 pb-20">
+    <main class="max-w-5xl mx-auto mt-[73px] px-6 py-8 pb-20 min-h-screen">
+
       <% if notice.present? %>
-        <div class="mb-6 bg-green-50 border border-green-200 text-green-800 text-sm px-4 py-3 rounded-xl flex items-center gap-2">
+        <div class="mb-5 bg-green-50 border border-green-200 text-green-800 text-sm px-4 py-3 rounded-[8px] flex items-center gap-2">
           <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
           <%= notice %>
         </div>
       <% end %>
+
       <% if alert.present? %>
-        <div class="mb-6 bg-red-50 border border-red-200 text-red-800 text-sm px-4 py-3 rounded-xl flex items-center gap-2">
-          <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+        <div class="mb-5 bg-red-50 border border-red-200 text-red-800 text-sm px-4 py-3 rounded-[8px] flex items-center gap-2">
+          <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
           <%= alert %>
         </div>
       <% end %>
+
       <%= yield %>
+
     </main>
+
   </body>
 </html>
