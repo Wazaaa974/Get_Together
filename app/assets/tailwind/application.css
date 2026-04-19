@@ -4,6 +4,7 @@
 @source "../../../app/javascript";
 
 @theme {
+  /* ── Existing brand colors ── */
   --color-gt-orange:       #E8632A;
   --color-gt-orange-light: #FDF0E8;
   --color-gt-orange-dark:  #B54A1A;
@@ -14,13 +15,76 @@
   --color-gt-sand-dark:    #E8E0D0;
   --color-gt-muted:        #8A8070;
   --color-gt-white:        #FEFCF8;
+
+  /* ── New editorial tokens ── */
+  --color-gt-ink:          #181512;
+  --color-gt-ink-soft:     #3D3A35;
+  --color-gt-line:         #E8DFD0;
+  --color-gt-tangelo:      #F28D3D;
+  --color-gt-coral:        #E85D5D;
+  --color-gt-plum:         #7A3F8F;
+  --color-gt-sky:          #3A7FB2;
+
+  /* ── Typography ── */
+  --font-display: 'Fraunces', 'Cormorant Garamond', ui-serif, Georgia, serif;
+  --font-sans:    'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* ── Border radius ── */
+  --radius-gt-pill: 9999px;
+  --radius-gt-card: 18px;
+  --radius-gt-hero: 22px;
+
+  /* ── Globe animations ── */
+  --animate-gt-spin:  gt-spin 8s linear infinite;
+  --animate-gt-drift: gt-drift 8s linear infinite;
+  --animate-gt-pulse: gt-pulse 3.2s ease-in-out infinite;
+}
+
+/* ── Globe keyframes ── */
+@keyframes gt-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes gt-drift {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-200px); }
+}
+@keyframes gt-pulse {
+  0%, 100% { opacity: 0.2; }
+  50%       { opacity: 0.6; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-gt-spin, .animate-gt-drift, .animate-gt-pulse { animation: none !important; }
 }
 
 html, body {
   background-color: #F5F0E8;
 }
 
+/* ── Results card selection ── */
 .card-selected {
   background: linear-gradient(160deg, #1A1F2E 0%, #2D4A3E 100%);
   color: white;
+}
+
+/* ── Destination strip placeholder ── */
+.dest-stripe {
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(232,224,208,0.6) 0px,
+    rgba(232,224,208,0.6) 8px,
+    transparent 8px,
+    transparent 16px
+  );
+}
+.dest-stripe-winner {
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(255,255,255,0.12) 0px,
+    rgba(255,255,255,0.12) 8px,
+    transparent 8px,
+    transparent 16px
+  );
 }
