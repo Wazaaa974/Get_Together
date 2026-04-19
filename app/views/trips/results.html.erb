@@ -46,31 +46,30 @@
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js"></script>
 <% end %>
 
-<div class="w-full max-w-5xl mx-auto space-y-6">
+<div class="w-full max-w-5xl mx-auto space-y-5">
 
-  <%# Breadcrumb + historique %>
+  <%# Breadcrumb + partage %>
   <div class="flex items-center justify-between flex-wrap gap-2">
-    <div class="flex items-center gap-2 text-sm text-gray-400">
+    <div class="flex items-center gap-2 text-[13px] text-gt-muted">
       <% if is_owner %>
-        <%= link_to "Mes voyages", trips_path, class: "hover:text-gray-700 transition-colors" %>
+        <%= link_to "Mes trips", trips_path, class: "hover:text-gt-forest transition-colors" %>
         <span>/</span>
-        <%= link_to @trip.title, trip_path(@trip), class: "hover:text-gray-700 transition-colors truncate max-w-[120px] sm:max-w-xs" %>
+        <%= link_to @trip.title, trip_path(@trip), class: "hover:text-gt-forest transition-colors truncate max-w-[120px] sm:max-w-xs" %>
         <span>/</span>
       <% end %>
-      <span class="text-gray-600">Résultats</span>
+      <span class="text-gt-forest">Résultats</span>
     </div>
-    <div class="flex items-center gap-3 text-xs text-gray-400">
+    <div class="flex items-center gap-4 text-[12px] text-gt-muted">
       <% if @trip.last_optimized_at.present? %>
         <span class="flex items-center gap-1">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           Calculé il y a <%= time_ago_in_words(@trip.last_optimized_at) %>
         </span>
       <% end %>
-      <%# Partager les résultats %>
       <% if @trip.share_token.present? %>
         <button type="button"
           onclick="navigator.clipboard.writeText('<%= shared_trip_url(@trip.share_token) %>results').then(() => { this.innerHTML = '✓ Lien copié'; setTimeout(() => this.innerHTML = 'Partager les résultats', 2000) })"
-          class="flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 font-medium transition-colors">
+          class="flex items-center gap-1.5 text-gt-orange hover:text-gt-orange-dark font-medium transition-colors">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
           Partager les résultats
         </button>
@@ -78,17 +77,17 @@
     </div>
   </div>
 
-  <%# Carte Mapbox — repliable sur mobile %>
+  <%# Carte Mapbox %>
   <div data-controller="map-toggle">
     <div class="flex items-center justify-between mb-2 sm:hidden">
-      <span class="text-sm font-medium text-gray-600">Carte interactive</span>
+      <span class="text-[13px] font-medium text-gt-forest">Carte interactive</span>
       <button data-map-toggle-target="button"
               data-action="click->map-toggle#toggle"
-              class="text-xs text-indigo-600 border border-indigo-200 px-3 py-1.5 rounded-lg font-medium hover:bg-indigo-50 transition-colors">
+              class="text-[12px] text-gt-orange border border-gt-orange/30 px-3 py-1.5 rounded-[8px] font-medium hover:bg-gt-orange-light transition-colors">
         Voir la carte
       </button>
     </div>
-    <div data-map-toggle-target="map" class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+    <div data-map-toggle-target="map" class="bg-gt-white border border-gray-100 rounded-[14px] overflow-hidden">
       <div id="map"
            class="w-full h-64 sm:h-80"
            data-controller="map"
@@ -100,24 +99,24 @@
     </div>
   </div>
 
-  <%# Filtres — segmented control %>
+  <%# Filtres %>
   <div class="flex items-center justify-between flex-wrap gap-3"
        data-controller="results-filter"
        data-results-filter-data-value="<%= results_data.to_json %>">
-    <div class="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
+    <div class="flex items-center gap-1 bg-gt-sand-dark rounded-[8px] p-1">
       <button type="button"
               data-results-filter-target="pill"
               data-value="total_asc"
               data-action="click->results-filter#applyPill"
               data-participant-name="<%= @trip.participants.first&.name %>"
-              class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all bg-white text-gray-800 shadow-sm">
+              class="px-3 py-1.5 rounded-[6px] text-[13px] font-medium transition-all bg-gt-white text-gt-forest">
         Prix total
       </button>
       <button type="button"
               data-results-filter-target="pill"
               data-value="duration_asc"
               data-action="click->results-filter#applyPill"
-              class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all text-gray-500 hover:text-gray-700">
+              class="px-3 py-1.5 rounded-[6px] text-[13px] font-medium transition-all text-gt-muted hover:text-gt-forest">
         Durée de vol
       </button>
       <% if @trip.participants.first %>
@@ -125,12 +124,12 @@
                 data-results-filter-target="pill"
                 data-value="cheapest_for_me"
                 data-action="click->results-filter#applyPill"
-                class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all text-gray-500 hover:text-gray-700 hidden sm:block">
+                class="px-3 py-1.5 rounded-[6px] text-[13px] font-medium transition-all text-gt-muted hover:text-gt-forest hidden sm:block">
           Mon prix
         </button>
       <% end %>
     </div>
-    <span class="text-xs text-gray-400"><%= @results.count %> destinations évaluées</span>
+    <span class="text-[12px] text-gt-muted"><%= @results.count %> destinations évaluées</span>
   </div>
 
   <%# Top 3 — cartes cliquables %>
@@ -139,29 +138,31 @@
     <% top3.each.with_index(1) do |result, rank| %>
       <% is_best = rank == 1 %>
       <button type="button"
-              class="text-left rounded-2xl p-5 flex flex-col gap-2.5 transition-all ring-2 cursor-pointer top3-card result-card <%= is_best ? 'bg-indigo-600 text-white ring-indigo-600 shadow-lg shadow-indigo-200' : 'bg-white text-gray-800 ring-gray-100 hover:ring-indigo-300' %>"
+              class="text-left rounded-[14px] p-5 flex flex-col gap-2.5 transition-all ring-2 cursor-pointer top3-card result-card relative overflow-hidden <%= is_best ? 'card-selected ring-gt-forest' : 'bg-gt-white text-gray-800 ring-gray-100 hover:ring-gray-200' %>"
               data-rank="<%= rank - 1 %>"
               onclick="selectDestination(<%= rank - 1 %>, this)">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold uppercase tracking-wider <%= is_best ? 'text-indigo-200' : 'text-gray-400' %>">
+        <% if is_best %>
+          <div class="absolute top-0 right-0 w-20 h-20 rounded-full opacity-20 pointer-events-none" style="background: radial-gradient(circle, #E8632A, transparent); transform: translate(30%, -30%);"></div>
+        <% end %>
+        <div class="flex items-center justify-between relative">
+          <span class="text-[11px] font-medium uppercase tracking-wider <%= is_best ? 'text-gt-orange' : 'text-gt-muted' %>">
             <%= rank == 1 ? "✦ Recommandé" : "##{rank}" %>
           </span>
           <% if result[:city].country_code.present? %>
-            <span class="text-xs font-mono <%= is_best ? 'text-indigo-200' : 'text-gray-400' %>"><%= result[:city].country_code %></span>
+            <span class="text-[11px] font-mono <%= is_best ? 'text-white/50' : 'text-gt-muted' %>"><%= result[:city].country_code %></span>
           <% end %>
         </div>
-        <h2 class="text-xl font-bold leading-tight card-city"><%= result[:city].city_name %></h2>
+        <h2 class="text-[20px] font-medium leading-tight card-city"><%= result[:city].city_name %></h2>
         <div class="flex items-baseline gap-1">
-          <span class="text-2xl font-bold card-total">€<%= (result[:total_cents] / 100.0).round %></span>
-          <span class="text-xs <%= is_best ? 'text-indigo-200' : 'text-gray-400' %>">total groupe</span>
+          <span class="text-[24px] font-medium card-total">€<%= (result[:total_cents] / 100.0).round %></span>
+          <span class="text-[12px] <%= is_best ? 'text-white/40' : 'text-gt-muted' %>">total groupe</span>
         </div>
         <% if rank > 1 && best %>
-          <span class="text-xs text-rose-400 font-medium">+€<%= ((result[:total_cents] - best[:total_cents]) / 100.0).ceil %> vs recommandé</span>
+          <span class="text-[12px] text-red-400 font-medium">+€<%= ((result[:total_cents] - best[:total_cents]) / 100.0).ceil %> vs recommandé</span>
         <% end %>
-        <%# Votes pour cette destination %>
         <% city_votes = @trip.votes.where(candidate_city: result[:city]).count %>
         <% if city_votes > 0 %>
-          <span class="text-xs <%= is_best ? 'text-indigo-200' : 'text-indigo-500' %> font-medium flex items-center gap-1">
+          <span class="text-[12px] <%= is_best ? 'text-white/60' : 'text-gt-forest-light' %> font-medium flex items-center gap-1">
             <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z"/></svg>
             <%= city_votes %> vote<%= city_votes > 1 ? 's' : '' %>
           </span>
@@ -171,38 +172,38 @@
   </div>
 
   <%# Détail par participant %>
-  <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm" id="detail-section">
+  <div class="bg-gt-white border border-gray-100 rounded-[14px] overflow-hidden" id="detail-section">
     <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-      <h2 class="font-semibold text-gray-900 text-sm sm:text-base" id="detail-title">Détail — <%= best[:city].city_name %></h2>
-      <span class="text-sm text-gray-500"><%= @trip.participants.count %> personne<%= @trip.participants.count > 1 ? 's' : '' %></span>
+      <h2 class="font-medium text-gt-forest text-sm sm:text-[15px]" id="detail-title">Détail — <%= best[:city].city_name %></h2>
+      <span class="text-[13px] text-gt-muted"><%= @trip.participants.count %> personne<%= @trip.participants.count > 1 ? 's' : '' %></span>
     </div>
     <ul class="divide-y divide-gray-50" id="detail-list">
       <% best[:quotes].sort_by(&:price_cents).each do |quote| %>
         <li class="flex items-center justify-between px-5 py-4">
           <div class="flex items-center gap-3 min-w-0">
-            <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold flex-shrink-0">
+            <div class="w-8 h-8 rounded-full bg-gt-orange-light text-gt-orange-dark flex items-center justify-center text-[12px] font-medium flex-shrink-0">
               <%= quote.participant.name[0].upcase %>
             </div>
             <div class="min-w-0">
               <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="font-medium text-gray-800 text-sm"><%= quote.participant.name %></span>
-                <span class="text-gray-400 text-xs hidden sm:inline">·</span>
-                <span class="text-gray-500 text-xs hidden sm:inline"><%= quote.participant.origin_city %> → <%= best[:city].city_name %></span>
+                <span class="font-medium text-gt-forest text-sm"><%= quote.participant.name %></span>
+                <span class="text-gt-muted text-[12px] hidden sm:inline">·</span>
+                <span class="text-gray-500 text-[12px] hidden sm:inline"><%= quote.participant.origin_city %> → <%= best[:city].city_name %></span>
               </div>
               <% if quote.departure_at.present? && quote.price_cents > 0 %>
                 <div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
                   <% if quote.airline_name.present? %>
-                    <span class="text-xs text-gray-400 font-medium"><%= quote.airline_name %></span>
-                    <span class="text-gray-300 text-xs">·</span>
+                    <span class="text-[12px] text-gt-muted font-medium"><%= quote.airline_name %></span>
+                    <span class="text-gray-300 text-[12px]">·</span>
                   <% end %>
-                  <span class="text-xs text-gray-400">
+                  <span class="text-[12px] text-gt-muted">
                     <%= quote.departure_at.strftime("%H:%M") %> → <%= quote.arrival_at.strftime("%H:%M") %>
                     <% if quote.arrival_at.to_date > quote.departure_at.to_date %>
-                      <span class="text-orange-400 ml-0.5">+1j</span>
+                      <span class="text-gt-orange ml-0.5">+1j</span>
                     <% end %>
                   </span>
-                  <span class="text-gray-300 text-xs">·</span>
-                  <span class="text-xs text-gray-400"><%= quote.departure_at.strftime("%d %b") %></span>
+                  <span class="text-gray-300 text-[12px]">·</span>
+                  <span class="text-[12px] text-gt-muted"><%= quote.departure_at.strftime("%d %b") %></span>
                 </div>
               <% end %>
             </div>
@@ -210,20 +211,19 @@
           <div class="flex items-center gap-3 flex-shrink-0">
             <div class="text-right">
               <% if quote.price_cents == 0 %>
-                <span class="font-semibold text-green-600 text-sm">Sur place</span>
+                <span class="font-medium text-green-600 text-sm">Sur place</span>
               <% else %>
                 <div class="flex items-center gap-1.5 justify-end">
-                  <span class="font-semibold text-gray-900">€<%= quote.price_euros.round %></span>
+                  <span class="font-medium text-gt-forest">€<%= quote.price_euros.round %></span>
                   <% if quote.is_round_trip %>
-                    <span class="text-xs bg-indigo-50 text-indigo-500 border border-indigo-100 px-1.5 py-0.5 rounded font-medium">A/R</span>
+                    <span class="text-[11px] bg-gt-orange-light text-gt-orange-dark px-1.5 py-0.5 rounded font-medium">A/R</span>
                   <% end %>
                 </div>
                 <% if quote.duration_minutes.present? && quote.duration_minutes > 0 %>
-                  <span class="text-xs text-gray-400"><%= quote.duration_minutes / 60 %>h<%= quote.duration_minutes % 60 %>m</span>
+                  <span class="text-[12px] text-gt-muted"><%= quote.duration_minutes / 60 %>h<%= quote.duration_minutes % 60 %>m</span>
                 <% end %>
               <% end %>
             </div>
-            <%# Export Google Flights — format #flt= avec IATA pour pré-remplissage fiable %>
             <% unless quote.price_cents == 0 %>
               <% origin_iata = quote.participant.origin_airport_code.presence %>
               <% dest_iata   = best[:city].airport_code.presence %>
@@ -236,7 +236,7 @@
                 <% gf_url = "https://www.google.com/travel/flights?q=#{CGI.escape("#{quote.participant.origin_city} to #{best[:city].city_name}")}" %>
               <% end %>
               <%= link_to gf_url, target: "_blank", rel: "noopener",
-                  class: "text-gray-300 hover:text-indigo-500 transition-colors p-2.5 rounded-lg hover:bg-indigo-50 flex items-center justify-center",
+                  class: "text-gt-muted hover:text-gt-orange transition-colors p-2 rounded-[8px] hover:bg-gt-orange-light flex items-center justify-center",
                   title: "Voir sur Google Flights" do %>
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
               <% end %>
@@ -245,9 +245,9 @@
         </li>
       <% end %>
     </ul>
-    <div class="px-5 py-4 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
-      <span class="text-sm font-medium text-gray-600">Total groupe</span>
-      <span class="font-bold text-gray-900 text-lg">€<%= (best[:total_cents] / 100.0).round %></span>
+    <div class="px-5 py-4 bg-gt-sand/50 border-t border-gray-100 flex justify-between items-center">
+      <span class="text-[13px] font-medium text-gt-muted">Total groupe</span>
+      <span class="font-medium text-gt-forest text-[18px]">€<%= (best[:total_cents] / 100.0).round %></span>
     </div>
   </div>
 
@@ -256,32 +256,32 @@
 
   <%# Autres destinations %>
   <% if others.any? %>
-    <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+    <div class="bg-gt-white border border-gray-100 rounded-[14px] overflow-hidden">
       <div class="px-5 py-4 border-b border-gray-100">
-        <h2 class="font-semibold text-gray-900">Autres destinations évaluées</h2>
+        <p class="text-[11px] font-medium uppercase tracking-wider text-gt-muted">Autres destinations évaluées</p>
       </div>
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
-          <thead class="bg-gray-50 border-b border-gray-100">
+          <thead class="bg-gt-sand/50 border-b border-gray-100">
             <tr>
-              <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-              <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ville</th>
-              <th class="px-5 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-              <th class="px-5 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Surcoût</th>
+              <th class="px-5 py-3 text-left text-[11px] font-medium text-gt-muted uppercase tracking-wider">#</th>
+              <th class="px-5 py-3 text-left text-[11px] font-medium text-gt-muted uppercase tracking-wider">Ville</th>
+              <th class="px-5 py-3 text-right text-[11px] font-medium text-gt-muted uppercase tracking-wider">Total</th>
+              <th class="px-5 py-3 text-right text-[11px] font-medium text-gt-muted uppercase tracking-wider hidden sm:table-cell">Surcoût</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-50">
             <% others.each.with_index(4) do |result, rank| %>
-              <tr class="hover:bg-gray-50 transition-colors">
-                <td class="px-5 py-3.5 text-gray-400 font-medium"><%= rank %></td>
+              <tr class="hover:bg-gt-sand/30 transition-colors">
+                <td class="px-5 py-3.5 text-gt-muted font-medium"><%= rank %></td>
                 <td class="px-5 py-3.5">
-                  <span class="font-medium text-gray-800"><%= result[:city].city_name %></span>
+                  <span class="font-medium text-gt-forest"><%= result[:city].city_name %></span>
                   <% if result[:city].country_code.present? %>
-                    <span class="text-gray-400 text-xs ml-1.5 font-mono"><%= result[:city].country_code %></span>
+                    <span class="text-gt-muted text-[11px] ml-1.5 font-mono"><%= result[:city].country_code %></span>
                   <% end %>
                 </td>
-                <td class="px-5 py-3.5 text-right font-semibold text-gray-700">€<%= (result[:total_cents] / 100.0).round %></td>
-                <td class="px-5 py-3.5 text-right text-rose-400 text-xs font-medium hidden sm:table-cell">
+                <td class="px-5 py-3.5 text-right font-medium text-gt-forest">€<%= (result[:total_cents] / 100.0).round %></td>
+                <td class="px-5 py-3.5 text-right text-red-400 text-[12px] font-medium hidden sm:table-cell">
                   +€<%= ((result[:total_cents] - best[:total_cents]) / 100.0).ceil %>
                 </td>
               </tr>
@@ -296,9 +296,9 @@
   <div class="flex flex-wrap gap-3 pb-4">
     <% if is_owner %>
       <%= link_to "← Revenir au trip", trip_path(@trip),
-          class: "text-sm text-gray-500 border border-gray-200 px-4 py-2.5 rounded-xl hover:bg-gray-50 transition-colors" %>
-      <%= button_to "🔄 Actualiser les prix", optimize_trip_path(@trip), method: :post,
-          class: "text-sm bg-indigo-600 text-white px-4 py-2.5 rounded-xl hover:bg-indigo-700 transition-colors font-medium" %>
+          class: "text-[13px] text-gray-500 border border-gray-200 px-4 py-2.5 rounded-[8px] hover:bg-gt-sand transition-colors" %>
+      <%= button_to "Actualiser les prix", optimize_trip_path(@trip), method: :post,
+          class: "text-[13px] bg-gt-orange text-white px-4 py-2.5 rounded-[8px] hover:bg-gt-orange-dark transition-colors font-medium" %>
     <% end %>
   </div>
 
@@ -320,11 +320,11 @@
   function selectDestination(index, clickedCard) {
     document.querySelectorAll(".top3-card").forEach((card, i) => {
       if (i === index) {
-        card.classList.add("bg-indigo-600", "text-white", "ring-indigo-600", "shadow-lg", "shadow-indigo-200");
-        card.classList.remove("bg-white", "text-gray-800", "ring-gray-100", "hover:ring-indigo-300");
+        card.classList.add("card-selected", "ring-gt-forest");
+        card.classList.remove("bg-gt-white", "text-gray-800", "ring-gray-100", "hover:ring-gray-200");
       } else {
-        card.classList.remove("bg-indigo-600", "text-white", "ring-indigo-600", "shadow-lg", "shadow-indigo-200");
-        card.classList.add("bg-white", "text-gray-800", "ring-gray-100", "hover:ring-indigo-300");
+        card.classList.remove("card-selected", "ring-gt-forest");
+        card.classList.add("bg-gt-white", "text-gray-800", "ring-gray-100", "hover:ring-gray-200");
       }
     });
 
@@ -335,20 +335,20 @@
     list.innerHTML = result.quotes.map(q => {
       const flightMeta = (!q.is_local && (q.airline || q.departure_at)) ? `
         <div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
-          ${q.airline ? `<span class="text-xs text-gray-400 font-medium">${q.airline}</span><span class="text-gray-300 text-xs">·</span>` : ''}
-          ${q.departure_at ? `<span class="text-xs text-gray-400">${q.departure_at} → ${q.arrival_at}${q.next_day ? ' <span class="text-orange-400">+1j</span>' : ''}</span>` : ''}
-          ${q.departure_date ? `<span class="text-gray-300 text-xs">·</span><span class="text-xs text-gray-400">${q.departure_date}</span>` : ''}
+          ${q.airline ? `<span class="text-xs text-gt-muted font-medium">${q.airline}</span><span class="text-gray-300 text-xs">·</span>` : ''}
+          ${q.departure_at ? `<span class="text-xs text-gt-muted">${q.departure_at} → ${q.arrival_at}${q.next_day ? ' <span class="text-gt-orange">+1j</span>' : ''}</span>` : ''}
+          ${q.departure_date ? `<span class="text-gray-300 text-xs">·</span><span class="text-xs text-gt-muted">${q.departure_date}</span>` : ''}
         </div>` : '';
       return `
       <li class="flex items-center justify-between px-5 py-4">
         <div class="flex items-center gap-3 min-w-0">
-          <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold flex-shrink-0">
+          <div class="w-8 h-8 rounded-full bg-gt-orange-light text-gt-orange-dark flex items-center justify-center text-xs font-medium flex-shrink-0">
             ${q.name[0].toUpperCase()}
           </div>
           <div class="min-w-0">
             <div class="flex items-center gap-1.5 flex-wrap">
-              <span class="font-medium text-gray-800 text-sm">${q.name}</span>
-              <span class="text-gray-400 text-xs hidden sm:inline">·</span>
+              <span class="font-medium text-gt-forest text-sm">${q.name}</span>
+              <span class="text-gt-muted text-xs hidden sm:inline">·</span>
               <span class="text-gray-500 text-xs hidden sm:inline">${q.city} → ${result.city_name}</span>
             </div>
             ${flightMeta}
@@ -357,15 +357,15 @@
         <div class="flex items-center gap-3 flex-shrink-0">
           <div class="text-right">
             ${q.is_local
-              ? '<span class="font-semibold text-green-600 text-sm">Sur place</span>'
-              : `<div class="flex items-center gap-1.5 justify-end"><span class="font-semibold text-gray-900">€${q.price}</span>${q.is_round_trip ? '<span class="text-xs bg-indigo-50 text-indigo-500 border border-indigo-100 px-1.5 py-0.5 rounded font-medium">A/R</span>' : ''}</div>${q.duration ? `<span class="text-xs text-gray-400">${Math.floor(q.duration/60)}h${q.duration%60}m</span>` : ''}`
+              ? '<span class="font-medium text-green-600 text-sm">Sur place</span>'
+              : `<div class="flex items-center gap-1.5 justify-end"><span class="font-medium text-gt-forest">€${q.price}</span>${q.is_round_trip ? '<span class="text-xs bg-gt-orange-light text-gt-orange-dark px-1.5 py-0.5 rounded font-medium">A/R</span>' : ''}</div>${q.duration ? `<span class="text-xs text-gt-muted">${Math.floor(q.duration/60)}h${q.duration%60}m</span>` : ''}`
             }
           </div>
           ${!q.is_local ? (() => {
             const retDate = q.is_round_trip ? tripReturnDate : null;
             const gfUrl = buildGFlightsUrl(q.origin_iata, result.airport_code, q.departure_date_iso, retDate)
               || `https://www.google.com/travel/flights?q=${encodeURIComponent(q.city + ' to ' + result.city_name)}`;
-            return `<a href="${gfUrl}" target="_blank" rel="noopener" class="text-gray-300 hover:text-indigo-500 transition-colors p-2.5 rounded-lg hover:bg-indigo-50 flex items-center justify-center" title="Google Flights"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>`;
+            return `<a href="${gfUrl}" target="_blank" rel="noopener" class="text-gt-muted hover:text-gt-orange transition-colors p-2 rounded-lg hover:bg-gt-orange-light flex items-center justify-center" title="Google Flights"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>`;
           })() : ''}
         </div>
       </li>`

@@ -1,81 +1,170 @@
-<% content_for :title, "Get Together — Trouvez l'endroit idéal" %>
+<% content_for :title, "Get Together — Trouvez où se retrouver" %>
 
-<% if @trips.empty? %>
-  <%# Hero for empty state %>
+<% unless user_signed_in? && @trips.any? %>
+  <% content_for :full_width_hero do %>
+
+    <%# ── Hero dark gradient ── %>
+    <div class="relative overflow-hidden pt-[73px]" style="background: linear-gradient(160deg, #1A1F2E 0%, #2D4A3E 100%);">
+      <div class="absolute inset-0 pointer-events-none" style="background-image: radial-gradient(circle at 20% 80%, rgba(232,99,42,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(74,122,101,0.20) 0%, transparent 50%);"></div>
+
+      <div class="relative max-w-5xl mx-auto px-6 py-20 text-center">
+
+        <%# Badge %>
+        <div class="inline-flex items-center gap-1.5 bg-white/10 text-white/80 text-[11px] font-medium uppercase tracking-wider px-3 py-1.5 rounded-full mb-6">
+          <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+          200+ destinations européennes
+        </div>
+
+        <%# Headline %>
+        <h1 class="text-[38px] font-medium text-white leading-tight mb-4">
+          Trouvez où <em class="not-italic text-gt-orange">se retrouver</em>,<br>sans prise de tête
+        </h1>
+        <p class="text-white/60 text-[15px] max-w-lg mx-auto mb-8 leading-relaxed">
+          Chaque personne indique sa ville de départ. Get Together calcule la destination la moins chère pour tout le groupe en quelques secondes.
+        </p>
+
+        <%# CTA %>
+        <%= link_to new_trip_path, class: "inline-flex items-center gap-2 bg-gt-orange text-white px-6 py-3 rounded-[8px] text-sm font-medium hover:bg-gt-orange-dark transition-colors" do %>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Créer un trip gratuit
+        <% end %>
+
+        <%# Stat bar %>
+        <div class="flex items-center justify-center gap-6 mt-10 text-white/50 text-[12px]">
+          <span>✓ 200+ destinations</span>
+          <span class="w-px h-3 bg-white/20"></span>
+          <span>✓ Résultats en ~30s</span>
+          <span class="w-px h-3 bg-white/20"></span>
+          <span>✓ 100% gratuit</span>
+        </div>
+
+      </div>
+    </div>
+
+    <%# ── How it works ── %>
+    <div class="bg-gt-white border-t border-gray-100">
+      <div class="max-w-5xl mx-auto px-6 py-14">
+        <p class="text-[11px] font-medium uppercase tracking-wider text-gt-muted text-center mb-8">Comment ça marche</p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+          <div class="text-center px-4">
+            <div class="w-10 h-10 bg-gt-orange-light rounded-full flex items-center justify-center mx-auto mb-4">
+              <span class="text-gt-orange-dark text-sm font-medium">1</span>
+            </div>
+            <h3 class="text-[15px] font-medium text-gt-forest mb-2">Créez un trip</h3>
+            <p class="text-[13px] text-gt-muted leading-relaxed">Donnez un nom à votre voyage et choisissez les dates. Ça prend 30 secondes.</p>
+          </div>
+
+          <div class="text-center px-4">
+            <div class="w-10 h-10 bg-gt-orange-light rounded-full flex items-center justify-center mx-auto mb-4">
+              <span class="text-gt-orange-dark text-sm font-medium">2</span>
+            </div>
+            <h3 class="text-[15px] font-medium text-gt-forest mb-2">Invitez vos amis</h3>
+            <p class="text-[13px] text-gt-muted leading-relaxed">Partagez le lien d'invitation. Chacun ajoute sa ville de départ depuis n'importe où.</p>
+          </div>
+
+          <div class="text-center px-4">
+            <div class="w-10 h-10 bg-gt-orange-light rounded-full flex items-center justify-center mx-auto mb-4">
+              <span class="text-gt-orange-dark text-sm font-medium">3</span>
+            </div>
+            <h3 class="text-[15px] font-medium text-gt-forest mb-2">On optimise tout</h3>
+            <p class="text-[13px] text-gt-muted leading-relaxed">Get Together compare les vols et trouve la ville la moins chère pour le groupe entier.</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  <% end %>
+<% end %>
+
+<%# ── Authenticated: empty state ── %>
+<% if user_signed_in? && @trips.empty? %>
   <div class="text-center py-20">
-    <div class="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-2xl mb-6">
-      <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 004 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-      </svg>
+    <div class="w-12 h-12 bg-gt-orange-light rounded-full flex items-center justify-center mx-auto mb-5">
+      <svg class="w-5 h-5 text-gt-orange-dark" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
     </div>
-    <h1 class="text-3xl font-bold text-gray-900 mb-3">Trouvez l'endroit idéal<br>pour vous retrouver</h1>
-    <p class="text-gray-500 max-w-md mx-auto mb-8 leading-relaxed">
-      Chaque personne indique sa ville de départ. Get Together calcule automatiquement la destination la moins chère pour tout le groupe.
-    </p>
-    <%= link_to "Créer mon premier trip", new_trip_path,
-        class: "inline-flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200" %>
+    <h1 class="text-[20px] font-medium text-gt-forest mb-2">Votre premier trip vous attend</h1>
+    <p class="text-[14px] text-gt-muted max-w-sm mx-auto mb-6 leading-relaxed">Créez un trip, invitez vos amis et laissez Get Together trouver la destination idéale.</p>
+    <%= link_to new_trip_path, class: "inline-flex items-center gap-2 bg-gt-orange text-white px-5 py-2.5 rounded-[8px] text-sm font-medium hover:bg-gt-orange-dark transition-colors" do %>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      Créer mon premier trip
+    <% end %>
   </div>
-<% else %>
-  <div class="flex items-center justify-between mb-8">
+
+<%# ── Authenticated: trips grid ── %>
+<% elsif user_signed_in? && @trips.any? %>
+
+  <div class="flex items-center justify-between mb-6">
     <div>
-      <h1 class="text-2xl font-bold text-gray-900">Mes trips</h1>
-      <p class="text-gray-500 text-sm mt-0.5"><%= @trips.count %> trip<%= @trips.count > 1 ? "s" : "" %> en cours</p>
+      <h1 class="text-[20px] font-medium text-gt-forest">Mes trips</h1>
+      <p class="text-[13px] text-gt-muted mt-0.5"><%= @trips.count %> trip<%= @trips.count > 1 ? "s" : "" %></p>
     </div>
-    <%= link_to new_trip_path,
-        class: "inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl font-medium text-sm hover:bg-indigo-700 transition-colors" do %>
+    <%= link_to new_trip_path, class: "inline-flex items-center gap-1.5 bg-gt-orange text-white px-4 py-2 rounded-[8px] text-sm font-medium hover:bg-gt-orange-dark transition-colors" do %>
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
       Nouveau trip
     <% end %>
   </div>
 
-  <div class="space-y-3">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
     <% @trips.each do |trip| %>
       <%
-        status_classes = case trip.status
-          when "active"    then "bg-emerald-50 text-emerald-700 border border-emerald-200"
-          when "completed" then "bg-gray-100 text-gray-500"
-          else                  "bg-amber-50 text-amber-700 border border-amber-200"
-        end
         status_label = case trip.status
           when "active"    then "Actif"
           when "completed" then "Terminé"
           else                  "Brouillon"
         end
+        status_classes = case trip.status
+          when "active"    then "bg-green-50 text-green-700"
+          when "completed" then "bg-gray-100 text-gray-500"
+          else                  "bg-gt-orange-light text-gt-orange-dark"
+        end
       %>
-      <div class="bg-white border border-gray-100 rounded-2xl p-5 hover:border-indigo-200 hover:shadow-sm transition-all">
-        <div class="flex items-center justify-between gap-4">
-          <div class="min-w-0">
-            <div class="flex items-center gap-2.5 flex-wrap mb-1.5">
-              <h2 class="font-semibold text-gray-900 text-base truncate"><%= trip.title %></h2>
-              <span class="text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 <%= status_classes %>"><%= status_label %></span>
+      <div class="bg-gt-white rounded-[14px] border border-gray-100 overflow-hidden flex flex-col">
+
+        <%# Card dark gradient header %>
+        <div class="px-5 py-4 relative overflow-hidden" style="background: linear-gradient(160deg, #1A1F2E 0%, #2D4A3E 100%);">
+          <div class="absolute top-0 right-0 w-16 h-16 rounded-full opacity-10" style="background: radial-gradient(circle, #E8632A, transparent); transform: translate(25%, -25%);"></div>
+          <p class="text-[11px] font-medium uppercase tracking-wider text-white/40 mb-1">Trip</p>
+          <h2 class="text-[15px] font-medium text-white truncate"><%= trip.title %></h2>
+          <% if trip.start_date.present? %>
+            <p class="text-[12px] text-white/50 mt-0.5">
+              <%= trip.start_date.strftime("%d %b") %><% if trip.end_date.present? %> → <%= trip.end_date.strftime("%d %b %Y") %><% else %> <%= trip.start_date.strftime("%Y") %><% end %>
+            </p>
+          <% end %>
+        </div>
+
+        <%# Card body %>
+        <div class="px-5 py-4 flex-1 flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5 text-[13px] text-gt-muted">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <%= trip.participants.count %> participant<%= trip.participants.count > 1 ? "s" : "" %>
             </div>
-            <div class="flex items-center gap-4 text-sm text-gray-500 flex-wrap">
-              <% if trip.start_date.present? %>
-                <span class="inline-flex items-center gap-1">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                  <%= trip.start_date.strftime("%d %b %Y") %>
-                  <% if trip.end_date.present? %><span class="text-gray-300">→</span> <%= trip.end_date.strftime("%d %b %Y") %><% end %>
-                </span>
-              <% end %>
-              <span class="inline-flex items-center gap-1">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                <%= trip.participants.count %> participant<%= trip.participants.count > 1 ? "s" : "" %>
-              </span>
-            </div>
+            <span class="inline-block px-2 py-0.5 rounded-full text-[11px] font-medium <%= status_classes %>"><%= status_label %></span>
           </div>
-          <div class="flex items-center gap-2 flex-shrink-0">
+
+          <div class="flex items-center gap-2 mt-auto pt-1">
             <% if trip.route_quotes.any? %>
-              <%= link_to "Voir résultats", results_trip_path(trip),
-                  class: "text-sm bg-indigo-50 text-indigo-600 border border-indigo-200 px-3 py-1.5 rounded-lg font-medium hover:bg-indigo-100 transition-colors" %>
+              <%= link_to "Résultats", results_trip_path(trip),
+                  class: "flex-1 text-center text-[13px] font-medium bg-gt-orange-light text-gt-orange-dark px-3 py-1.5 rounded-[8px] hover:bg-gt-orange hover:text-white transition-colors" %>
             <% end %>
             <%= link_to trip_path(trip),
-                class: "text-sm text-gray-500 border border-gray-200 px-3 py-1.5 rounded-lg hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50 transition-colors font-medium flex items-center gap-1" do %>
+                class: "flex-1 text-center text-[13px] text-gray-500 border border-gray-200 px-3 py-1.5 rounded-[8px] hover:border-gray-300 hover:text-gt-forest transition-colors font-medium" do %>
               Ouvrir
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             <% end %>
           </div>
         </div>
+
       </div>
     <% end %>
+
+    <%# New trip dashed card %>
+    <%= link_to new_trip_path, class: "rounded-[14px] border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-2 py-10 text-gt-muted hover:border-gt-orange hover:text-gt-orange transition-colors min-h-[160px]" do %>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"/></svg>
+      <span class="text-[13px] font-medium">Nouveau trip</span>
+    <% end %>
+
   </div>
+
 <% end %>
