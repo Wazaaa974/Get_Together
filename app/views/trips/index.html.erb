@@ -133,23 +133,26 @@
         </div>
         <div class="grid grid-cols-6 gap-3.5 md:grid-cols-3 sm:grid-cols-2">
           <% [
-            { city: "Lisbonne", price: "€164", rank: 1 },
-            { city: "Dublin",   price: "€184", rank: 2 },
-            { city: "Bruxelles",price: "€196", rank: 3 },
-            { city: "Barcelone",price: "€211", rank: 4 },
-            { city: "Amsterdam",price: "€224", rank: 5 },
-            { city: "Berlin",   price: "€238", rank: 6 },
+            { city: "Lisbonne",  price: "€164", rank: 1, photo: "photo-1548707309-dcebeab9ea9b" },
+            { city: "Dublin",    price: "€184", rank: 2, photo: "photo-1513635269975-59663e0ac1ad" },
+            { city: "Bruxelles", price: "€196", rank: 3, photo: "photo-1559113202-c916b8e44373" },
+            { city: "Barcelone", price: "€211", rank: 4, photo: "photo-1539037116277-4db20889f2d4" },
+            { city: "Amsterdam", price: "€224", rank: 5, photo: "photo-1534351590666-13e3e96b5017" },
+            { city: "Berlin",    price: "€238", rank: 6, photo: "photo-1560969184-10fe8719e047" },
           ].each_with_index do |dest, i| %>
-            <div class="aspect-[3/4] rounded-[16px] p-4 flex flex-col justify-between relative overflow-hidden
-                        <%= i == 0 ? 'text-white' : 'bg-gt-white border border-gt-line text-gt-forest' %>"
-                 style="<%= i == 0 ? 'background: linear-gradient(170deg, #E8632A 0%, #B54A1A 100%);' : '' %>">
-              <div class="absolute inset-0 <%= i == 0 ? 'dest-stripe-winner' : 'dest-stripe' %> pointer-events-none"></div>
-              <div class="relative font-mono text-[10px] tracking-[0.08em] opacity-80">
+            <div class="aspect-[3/4] rounded-[16px] p-4 flex flex-col justify-between relative overflow-hidden text-white"
+                 style="background-image: url('https://images.unsplash.com/<%= dest[:photo] %>?w=600&h=800&fit=crop&crop=center&q=80'); background-size: cover; background-position: center;">
+              <%# Dark overlay %>
+              <div class="absolute inset-0 rounded-[16px]" style="background: linear-gradient(to top, rgba(24,21,18,0.75) 0%, rgba(24,21,18,0.15) 50%, rgba(24,21,18,0.0) 100%);"></div>
+              <% if i == 0 %>
+                <div class="absolute inset-0 rounded-[16px]" style="background: linear-gradient(170deg, rgba(232,99,42,0.35) 0%, transparent 60%);"></div>
+              <% end %>
+              <div class="relative font-mono text-[10px] tracking-[0.08em] text-white/80">
                 <%= i == 0 ? '★ BEST FIT' : "##{i + 1}" %>
               </div>
               <div class="relative">
-                <div class="font-display text-[22px] tracking-[-0.01em] leading-tight"><%= dest[:city] %></div>
-                <div class="text-[13px] opacity-80 mt-0.5"><%= dest[:price] %> total</div>
+                <div class="font-display text-[22px] tracking-[-0.01em] leading-tight text-white"><%= dest[:city] %></div>
+                <div class="text-[13px] text-white/80 mt-0.5"><%= dest[:price] %> total</div>
               </div>
             </div>
           <% end %>

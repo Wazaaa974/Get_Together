@@ -50,13 +50,80 @@
           </div>
         </div>
 
-        <%# Participants placeholder (shown after creation) %>
-        <div class="bg-gt-white border border-gt-line rounded-[18px] p-[22px]">
-          <div class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted mb-3.5">Participants <span class="text-gt-forest">· 0</span></div>
-          <div class="flex items-center gap-3 px-3.5 py-4 bg-gt-sand rounded-[12px] border border-dashed border-gt-line">
-            <div class="w-9 h-9 rounded-full border border-dashed border-gt-orange flex items-center justify-center text-gt-orange text-xl font-display flex-shrink-0">+</div>
-            <p class="text-[13px] text-gt-muted leading-snug">Les participants seront ajoutés après la création du trip via le lien d'invitation.</p>
+        <%# Participants — ajout inline %>
+        <div class="bg-gt-white border border-gt-line rounded-[18px] p-[22px]"
+             data-controller="participant-rows">
+
+          <div class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted mb-3.5">Participants</div>
+
+          <%# Rows container %>
+          <div class="flex flex-col gap-2" data-participant-rows-target="container">
+            <%= f.fields_for :participants do |pf| %>
+              <div data-participant-row class="flex items-center gap-2 bg-gt-sand rounded-[12px] px-3 py-2.5 border border-gt-line">
+                <div class="w-8 h-8 rounded-full bg-gt-orange-light flex items-center justify-center font-display italic text-gt-orange text-[16px] flex-shrink-0">g</div>
+                <div class="flex-1 min-w-0">
+                  <%= pf.text_field :name, placeholder: "Prénom",
+                      class: "w-full border-none bg-transparent outline-none text-[14px] text-gt-ink placeholder:text-gt-muted" %>
+                </div>
+                <div class="w-px h-5 bg-gt-line flex-shrink-0"></div>
+                <div class="flex-[1.8] min-w-0 relative"
+                     data-controller="city-autocomplete"
+                     data-action="focusout->city-autocomplete#onFocusOut">
+                  <%= pf.text_field :origin_city, placeholder: "Ville de départ",
+                      class: "w-full border-none bg-transparent outline-none text-[14px] text-gt-ink placeholder:text-gt-muted",
+                      data: { city_autocomplete_target: "input", action: "input->city-autocomplete#onInput keydown->city-autocomplete#onKeydown" },
+                      autocomplete: "off" %>
+                  <ul data-city-autocomplete-target="dropdown"
+                      class="hidden absolute top-full left-0 right-0 mt-1 bg-gt-white border border-gt-line rounded-[14px] z-20 overflow-hidden max-h-48 overflow-y-auto"
+                      data-action="click->city-autocomplete#select"></ul>
+                </div>
+                <button type="button"
+                        data-action="participant-rows#remove"
+                        class="text-gt-muted hover:text-red-400 transition-colors flex-shrink-0 p-0.5">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+              </div>
+            <% end %>
           </div>
+
+          <%# Template for JS-added rows %>
+          <template data-participant-rows-target="template">
+            <div data-participant-row class="flex items-center gap-2 bg-gt-sand rounded-[12px] px-3 py-2.5 border border-gt-line">
+              <div class="w-8 h-8 rounded-full bg-gt-orange-light flex items-center justify-center font-display italic text-gt-orange text-[16px] flex-shrink-0">g</div>
+              <div class="flex-1 min-w-0">
+                <input type="text" name="trip[participants_attributes][NEW_IDX][name]" placeholder="Prénom"
+                       class="w-full border-none bg-transparent outline-none text-[14px] text-gt-ink placeholder:text-gt-muted">
+              </div>
+              <div class="w-px h-5 bg-gt-line flex-shrink-0"></div>
+              <div class="flex-[1.8] min-w-0 relative"
+                   data-controller="city-autocomplete"
+                   data-action="focusout->city-autocomplete#onFocusOut">
+                <input type="text" name="trip[participants_attributes][NEW_IDX][origin_city]" placeholder="Ville de départ"
+                       autocomplete="off"
+                       class="w-full border-none bg-transparent outline-none text-[14px] text-gt-ink placeholder:text-gt-muted"
+                       data-city-autocomplete-target="input"
+                       data-action="input->city-autocomplete#onInput keydown->city-autocomplete#onKeydown">
+                <ul data-city-autocomplete-target="dropdown"
+                    class="hidden absolute top-full left-0 right-0 mt-1 bg-gt-white border border-gt-line rounded-[14px] z-20 overflow-hidden max-h-48 overflow-y-auto"
+                    data-action="click->city-autocomplete#select"></ul>
+              </div>
+              <button type="button"
+                      data-action="participant-rows#remove"
+                      class="text-gt-muted hover:text-red-400 transition-colors flex-shrink-0 p-0.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
+          </template>
+
+          <%# Add row button %>
+          <button type="button"
+                  data-action="participant-rows#add"
+                  class="mt-2.5 w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-[12px] border border-dashed border-gt-line text-gt-muted hover:border-gt-orange hover:text-gt-orange transition-colors text-[13px] font-medium">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Ajouter un participant
+          </button>
+
+          <p class="font-mono text-[10px] tracking-[0.06em] text-gt-muted mt-2.5">CODE AÉROPORT FACULTATIF — DÉTECTÉ AUTOMATIQUEMENT</p>
         </div>
 
       </div>
@@ -65,24 +132,34 @@
       <div class="flex flex-col gap-5">
 
         <%# Dates card %>
-        <div class="bg-gt-white border border-gt-line rounded-[18px] p-[22px]">
+        <div class="bg-gt-white border border-gt-line rounded-[18px] p-[22px]"
+             data-controller="date-presets">
           <div class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted mb-3.5">Quand</div>
           <div class="grid grid-cols-2 gap-3">
             <div class="p-3.5 border border-gt-line rounded-[12px] bg-gt-sand">
               <div class="font-mono text-[10px] tracking-[0.08em] uppercase text-gt-muted mb-1.5">Départ</div>
               <%= f.date_field :start_date,
+                  data: { date_presets_target: "start" },
                   class: "w-full border-none bg-transparent font-display text-[20px] text-gt-forest focus:outline-none cursor-pointer" %>
             </div>
             <div class="p-3.5 border border-gt-line rounded-[12px] bg-gt-sand">
               <div class="font-mono text-[10px] tracking-[0.08em] uppercase text-gt-muted mb-1.5">Retour</div>
               <%= f.date_field :end_date,
+                  data: { date_presets_target: "end" },
                   class: "w-full border-none bg-transparent font-display text-[20px] text-gt-forest focus:outline-none cursor-pointer" %>
             </div>
           </div>
           <div class="flex gap-2 flex-wrap mt-3">
-            <% ["Ce week-end", "Le mois prochain", "Flexible ±3 j"].each do |hint| %>
-              <span class="inline-flex items-center px-3 py-1.5 rounded-full bg-gt-sand-dark text-gt-ink-soft text-xs font-medium"><%= hint %></span>
-            <% end %>
+            <button type="button"
+                    data-action="date-presets#weekend"
+                    class="inline-flex items-center px-3 py-1.5 rounded-full bg-gt-sand-dark text-gt-ink-soft text-xs font-medium hover:bg-gt-orange-light hover:text-gt-orange-dark transition-colors cursor-pointer">
+              Ce week-end
+            </button>
+            <button type="button"
+                    data-action="date-presets#nextMonth"
+                    class="inline-flex items-center px-3 py-1.5 rounded-full bg-gt-sand-dark text-gt-ink-soft text-xs font-medium hover:bg-gt-orange-light hover:text-gt-orange-dark transition-colors cursor-pointer">
+              Le mois prochain
+            </button>
           </div>
         </div>
 

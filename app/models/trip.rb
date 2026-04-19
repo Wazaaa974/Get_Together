@@ -2,6 +2,7 @@ class Trip < ApplicationRecord
   belongs_to :user, optional: true
 
   has_many :participants, dependent: :destroy
+  accepts_nested_attributes_for :participants, allow_destroy: true, reject_if: :all_blank
   has_many :candidate_cities, dependent: :destroy
   has_many :route_quotes, dependent: :destroy
   has_many :votes, dependent: :destroy

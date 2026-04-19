@@ -22,7 +22,7 @@ export default class extends Controller {
     if (!this.token) return
     try {
       const url  = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json` +
-                   `?access_token=${this.token}&types=place,locality&language=fr,en&limit=5`
+                   `?access_token=${this.token}&types=place,locality&language=fr,en&limit=5&bbox=-30,25,55,75`
       const res  = await fetch(url)
       const data = await res.json()
       this.show(data.features || [])

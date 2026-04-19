@@ -8,6 +8,7 @@ class TripsController < ApplicationController
 
   def new
     @trip = Trip.new
+    3.times { @trip.participants.build }
   end
 
   def create
@@ -112,6 +113,9 @@ class TripsController < ApplicationController
   end
 
   def trip_params
-    params.require(:trip).permit(:title, :start_date, :end_date, :status)
+    params.require(:trip).permit(
+      :title, :start_date, :end_date, :status,
+      participants_attributes: [:id, :name, :origin_city, :origin_airport_code, :_destroy]
+    )
   end
 end

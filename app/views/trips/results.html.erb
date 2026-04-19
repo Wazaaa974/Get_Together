@@ -7,6 +7,40 @@
   best   = top3.first
   others = @results.drop(3)
 
+  city_photos = {
+    "barcelone"   => "photo-1539037116277-4db20889f2d4",
+    "barcelona"   => "photo-1539037116277-4db20889f2d4",
+    "lisbonne"    => "photo-1548707309-dcebeab9ea9b",
+    "lisbon"      => "photo-1548707309-dcebeab9ea9b",
+    "lisboa"      => "photo-1548707309-dcebeab9ea9b",
+    "dublin"      => "photo-1513635269975-59663e0ac1ad",
+    "bruxelles"   => "photo-1559113202-c916b8e44373",
+    "brussels"    => "photo-1559113202-c916b8e44373",
+    "amsterdam"   => "photo-1534351590666-13e3e96b5017",
+    "berlin"      => "photo-1560969184-10fe8719e047",
+    "paris"       => "photo-1502602898657-3e91760cbb34",
+    "rome"        => "photo-1552832230-c0197dd311b5",
+    "roma"        => "photo-1552832230-c0197dd311b5",
+    "madrid"      => "photo-1583422409516-2895a77efded",
+    "vienne"      => "photo-1573599852326-2d4da0bbe613",
+    "vienna"      => "photo-1573599852326-2d4da0bbe613",
+    "prague"      => "photo-1592906209472-a36b1f3782ef",
+    "budapest"    => "photo-1541343672885-9be56236302a",
+    "copenhague"  => "photo-1513622470522-26c3c8a854bc",
+    "copenhagen"  => "photo-1513622470522-26c3c8a854bc",
+    "stockholm"   => "photo-1509356843151-3e7d96241e11",
+    "athènes"     => "photo-1603565816030-6b389eeb23cb",
+    "athens"      => "photo-1603565816030-6b389eeb23cb",
+    "zurich"      => "photo-1515488764276-beab7607c1e6",
+    "zürich"      => "photo-1515488764276-beab7607c1e6",
+    "milan"       => "photo-1610016302534-6f67f1c968d8",
+    "porto"       => "photo-1562183241-840b8af0721e",
+    "nice"        => "photo-1491557345352-5929e343eb89",
+    "malaga"      => "photo-1555881400-74d7acaacd8b",
+  }
+  winner_photo_id = city_photos[best[:city].city_name.downcase.unicode_normalize(:nfd).gsub(/\p{Mn}/, "").strip] ||
+                    city_photos[best[:city].city_name.downcase.strip]
+
   participants_data = @trip.participants.map { |p| { name: p.name, city: p.origin_city } }
 
   results_data = @results.map { |r|
@@ -71,6 +105,18 @@
 
   <%# ── WinnerCard ── %>
   <div class="rounded-[24px] relative overflow-hidden mb-5" style="background: linear-gradient(150deg, #1A1F2E 0%, #2D4A3E 65%, #4A7A65 100%); padding: 44px 48px;">
+
+    <%# City photo — blended from the right %>
+    <div id="winner-photo-layer" class="absolute inset-0 pointer-events-none" style="
+      background-image: <%= winner_photo_id ? "url('https://images.unsplash.com/#{winner_photo_id}?w=1400&h=700&fit=crop&crop=center&q=80')" : 'none' %>;
+      background-size: cover;
+      background-position: center right;
+      opacity: <%= winner_photo_id ? '0.22' : '0' %>;
+      mix-blend-mode: overlay;
+      -webkit-mask-image: linear-gradient(to right, transparent 20%, black 70%);
+      mask-image: linear-gradient(to right, transparent 20%, black 70%);
+    "></div>
+
     <%# Orange glow top-right %>
     <div class="absolute right-[-80px] top-[-80px] w-[320px] h-[320px] rounded-full pointer-events-none" style="background: radial-gradient(circle, rgba(232,99,42,0.4) 0%, transparent 65%);"></div>
 
@@ -82,20 +128,19 @@
     <div class="relative">
       <%# Dark chips %>
       <div class="flex items-center gap-2.5 mb-5 flex-wrap">
-        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#2b2d35] text-white text-xs font-medium">★ Best fit</span>
-        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#2b2d35] text-white text-xs font-medium">92 / 100 équité</span>
+        <span id="winner-rank-chip" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#2b2d35] text-white text-xs font-medium">★ Best fit</span>
       </div>
 
       <%# Meet in kicker %>
       <div class="font-mono text-[12px] tracking-[0.14em] uppercase text-white/70 mb-1">Meet in</div>
 
       <%# 140px city name %>
-      <h1 class="font-display font-normal text-white leading-[0.92] tracking-[-0.03em] mb-2 sm:text-[76px]" style="font-size: 140px;">
+      <h1 id="winner-city-name" class="font-display font-normal text-white leading-[0.92] tracking-[-0.03em] mb-2 sm:text-[76px]" style="font-size: 140px;">
         <%= best[:city].city_name %><em class="italic text-gt-orange not-italic">.</em>
       </h1>
 
       <%# Country · IATA italic subtitle %>
-      <div class="font-display italic text-[22px] text-white/75 mb-8">
+      <div id="winner-subtitle" class="font-display italic text-[22px] text-white/75 mb-8">
         <%= best[:city].country_code %> · <%= best[:city].airport_code %>
       </div>
 
@@ -103,29 +148,25 @@
       <div class="flex gap-12 mb-8 flex-wrap sm:gap-6">
         <div>
           <div class="font-mono text-[10px] tracking-[0.12em] uppercase text-white/55">Total groupe</div>
-          <div class="font-display italic text-[44px] text-white leading-none mt-1">€<%= (best[:total_cents] / 100.0).round %></div>
+          <div id="winner-total-val" class="font-display italic text-[44px] text-white leading-none mt-1">€<%= (best[:total_cents] / 100.0).round %></div>
         </div>
         <div>
           <div class="font-mono text-[10px] tracking-[0.12em] uppercase text-white/55">Moy. par personne</div>
-          <div class="font-display text-[28px] text-white leading-none mt-1">€<%= avg_price %></div>
+          <div id="winner-avg-val" class="font-display text-[28px] text-white leading-none mt-1">€<%= avg_price %></div>
         </div>
-        <% if max_dur.present? && max_dur > 0 %>
-          <div>
-            <div class="font-mono text-[10px] tracking-[0.12em] uppercase text-white/55">Vol le plus long</div>
-            <div class="font-display text-[28px] text-white leading-none mt-1"><%= max_dur / 60 %>h<%= max_dur % 60 %>m</div>
-          </div>
-        <% end %>
-        <% if diff_vs_2 %>
-          <div>
-            <div class="font-mono text-[10px] tracking-[0.12em] uppercase text-white/55">Moins cher que #2</div>
-            <div class="font-display text-[28px] text-white leading-none mt-1">−€<%= diff_vs_2 %></div>
-          </div>
-        <% end %>
+        <div id="winner-dur-block" class="<%= (max_dur.present? && max_dur > 0) ? '' : 'hidden' %>">
+          <div class="font-mono text-[10px] tracking-[0.12em] uppercase text-white/55">Vol le plus long</div>
+          <div id="winner-dur-val" class="font-display text-[28px] text-white leading-none mt-1"><%= max_dur.present? && max_dur > 0 ? "#{max_dur / 60}h#{max_dur % 60}m" : "" %></div>
+        </div>
+        <div id="winner-diff-block" class="<%= diff_vs_2 ? '' : 'hidden' %>">
+          <div id="winner-diff-label" class="font-mono text-[10px] tracking-[0.12em] uppercase text-white/55">Moins cher que #2</div>
+          <div id="winner-diff-val" class="font-display text-[28px] text-white leading-none mt-1"><%= diff_vs_2 ? "−€#{diff_vs_2}" : "" %></div>
+        </div>
       </div>
 
       <%# CTAs %>
       <div class="flex items-center gap-3 flex-wrap">
-        <%= link_to best_gf_url, target: "_blank", rel: "noopener",
+        <%= link_to best_gf_url, target: "_blank", rel: "noopener", id: "winner-gf-link",
             class: "px-[22px] py-[14px] rounded-full bg-gt-orange text-white text-[15px] font-medium shadow-[0_8px_24px_rgba(232,99,42,0.2)] hover:bg-gt-orange-dark transition-colors inline-flex items-center gap-2" do %>
           Réserver sur Google Flights →
         <% end %>
@@ -223,7 +264,7 @@
             </div>
             <div>
               <div class="text-[14px] font-medium text-gt-ink"><%= quote.participant.name %></div>
-              <div class="font-mono text-[11px] text-gt-muted tracking-[0.04em]"><%= origin_iata || "???" %> → <%= dest_iata || best[:city].city_name %></div>
+              <div class="font-mono text-[11px] text-gt-muted tracking-[0.04em]"><%= origin_iata || quote.participant.origin_city %> → <%= dest_iata || best[:city].city_name %></div>
             </div>
             <div class="text-[13px] text-gt-ink-soft"><%= quote.participant.origin_city %></div>
             <div class="font-mono text-[12px] text-gt-muted text-right">
@@ -261,15 +302,24 @@
     <%# ── Right column: runners-up + vote ── %>
     <div class="flex flex-col gap-5">
 
-      <%# Runners-up %>
+      <%# Classement complet — toutes les destinations cliquables %>
       <div class="bg-gt-white border border-gt-line rounded-[18px] p-[22px]">
-        <div class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted mb-3.5">Runners-up</div>
-        <% (top3.drop(1) + others).each_with_index do |result, i| %>
-          <div class="flex items-center gap-2.5 py-2.5 <%= i < (top3.count - 1 + others.count - 1) ? 'border-b border-dashed border-gt-line' : '' %>">
-            <span class="font-mono text-[11px] text-gt-muted w-5">#<%= i + 2 %></span>
-            <span class="flex-1 text-[14px] text-gt-ink font-medium"><%= result[:city].city_name %></span>
-            <span class="font-mono text-[11px] text-gt-orange-dark">+€<%= ((result[:total_cents] - best[:total_cents]) / 100.0).ceil %></span>
-            <span class="font-display italic text-[18px] text-gt-forest min-w-[48px] text-right">€<%= (result[:total_cents] / 100.0).round %></span>
+        <div class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted mb-3.5">Classement complet</div>
+        <% @results.each_with_index do |result, i| %>
+          <%
+            diff = i == 0 ? nil : ((result[:total_cents] - best[:total_cents]) / 100.0).ceil
+          %>
+          <div data-result-idx="<%= i %>"
+               onclick="selectDestination(<%= i %>)"
+               class="flex items-center gap-2.5 py-2.5 px-2 -mx-2 rounded-[10px] cursor-pointer transition-colors <%= i < @results.count - 1 ? 'border-b border-dashed border-gt-line' : '' %> <%= i == 0 ? 'bg-gt-sand-dark' : 'hover:bg-gt-sand' %>">
+            <span class="font-mono text-[11px] text-gt-muted w-5 flex-shrink-0">#<%= i + 1 %></span>
+            <span class="flex-1 text-[14px] text-gt-ink font-medium truncate"><%= result[:city].city_name %></span>
+            <% if diff %>
+              <span class="font-mono text-[11px] text-gt-orange-dark flex-shrink-0">+€<%= diff %></span>
+            <% else %>
+              <span class="font-mono text-[10px] text-gt-muted flex-shrink-0 tracking-[0.06em]">BEST</span>
+            <% end %>
+            <span class="font-display italic text-[18px] text-gt-forest min-w-[48px] text-right flex-shrink-0">€<%= (result[:total_cents] / 100.0).round %></span>
           </div>
         <% end %>
       </div>
@@ -300,11 +350,45 @@
 </div>
 
 <script>
-  const allResults     = <%= raw results_data.to_json %>;
-  const tripReturnDate = <%= raw @trip.end_date&.strftime("%Y-%m-%d").to_json %>;
+  const allResults          = <%= raw results_data.to_json %>;
+  const tripReturnDate      = <%= raw @trip.end_date&.strftime("%Y-%m-%d").to_json %>;
+  const tripParticipants    = <%= @trip.participants.count %>;
 
   const TONE_BG = ['bg-gt-orange-light','bg-[#DDE7E1]','bg-[#DCE8F1]','bg-[#EADCF0]','bg-gt-sand-dark'];
   const TONE_FG = ['text-gt-orange-dark','text-gt-forest','text-[#3A6B92]','text-[#7A3F8F]','text-gt-ink-soft'];
+
+  const CITY_PHOTOS = {
+    "barcelone":"photo-1539037116277-4db20889f2d4","barcelona":"photo-1539037116277-4db20889f2d4",
+    "lisbonne":"photo-1548707309-dcebeab9ea9b","lisbon":"photo-1548707309-dcebeab9ea9b","lisboa":"photo-1548707309-dcebeab9ea9b",
+    "dublin":"photo-1513635269975-59663e0ac1ad",
+    "bruxelles":"photo-1559113202-c916b8e44373","brussels":"photo-1559113202-c916b8e44373",
+    "amsterdam":"photo-1534351590666-13e3e96b5017",
+    "berlin":"photo-1560969184-10fe8719e047",
+    "paris":"photo-1502602898657-3e91760cbb34",
+    "rome":"photo-1552832230-c0197dd311b5","roma":"photo-1552832230-c0197dd311b5",
+    "madrid":"photo-1583422409516-2895a77efded",
+    "vienne":"photo-1573599852326-2d4da0bbe613","vienna":"photo-1573599852326-2d4da0bbe613",
+    "prague":"photo-1592906209472-a36b1f3782ef",
+    "budapest":"photo-1541343672885-9be56236302a",
+    "copenhague":"photo-1513622470522-26c3c8a854bc","copenhagen":"photo-1513622470522-26c3c8a854bc",
+    "stockholm":"photo-1509356843151-3e7d96241e11",
+    "athenes":"photo-1603565816030-6b389eeb23cb","athens":"photo-1603565816030-6b389eeb23cb",
+    "zurich":"photo-1515488764276-beab7607c1e6",
+    "milan":"photo-1610016302534-6f67f1c968d8",
+    "porto":"photo-1562183241-840b8af0721e",
+    "nice":"photo-1491557345352-5929e343eb89",
+    "malaga":"photo-1555881400-74d7acaacd8b",
+  };
+
+  function normalize(str) {
+    return str.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '').trim();
+  }
+
+  function getCityPhotoUrl(cityName) {
+    const key = normalize(cityName);
+    const id  = CITY_PHOTOS[key] || CITY_PHOTOS[cityName.toLowerCase().trim()];
+    return id ? `https://images.unsplash.com/${id}?w=1400&h=700&fit=crop&crop=center&q=80` : null;
+  }
 
   function buildGFlightsUrl(originIata, destIata, departDate, returnDate) {
     if (originIata && destIata && departDate) {
@@ -316,9 +400,74 @@
   }
 
   function selectDestination(index) {
+    index = parseInt(index, 10);
     const result = allResults[index];
-    document.getElementById('detail-title').textContent = `→ ${result.city_name}`;
+    if (!result) return;
 
+    // ── 1. Update winner card photo ──
+    const photoLayer = document.getElementById('winner-photo-layer');
+    if (photoLayer) {
+      const url = getCityPhotoUrl(result.city_name);
+      photoLayer.style.backgroundImage = url ? `url('${url}')` : 'none';
+      photoLayer.style.opacity = url ? '0.22' : '0';
+    }
+
+    // ── 2. Update winner card text ──
+    document.getElementById('winner-rank-chip').textContent =
+      index === 0 ? '★ Best fit' : `#${index + 1}`;
+
+    document.getElementById('winner-city-name').innerHTML =
+      `${result.city_name}<em class="italic text-gt-orange not-italic">.</em>`;
+
+    document.getElementById('winner-subtitle').textContent =
+      `${result.country_code} · ${result.airport_code}`;
+
+    // ── 3. Update stats ──
+    const totalEur = Math.round(result.total_cents / 100);
+    const avgEur   = tripParticipants > 0 ? Math.round(totalEur / tripParticipants) : totalEur;
+    document.getElementById('winner-total-val').textContent = `€${totalEur}`;
+    document.getElementById('winner-avg-val').textContent   = `€${avgEur}`;
+
+    const durBlock = document.getElementById('winner-dur-block');
+    if (result.max_duration && result.max_duration > 0) {
+      durBlock.classList.remove('hidden');
+      document.getElementById('winner-dur-val').textContent =
+        `${Math.floor(result.max_duration / 60)}h${result.max_duration % 60}m`;
+    } else {
+      durBlock.classList.add('hidden');
+    }
+
+    const diffBlock   = document.getElementById('winner-diff-block');
+    const nextResult  = allResults[index + 1];
+    if (nextResult) {
+      diffBlock.classList.remove('hidden');
+      const diffEur = Math.ceil((nextResult.total_cents - result.total_cents) / 100);
+      document.getElementById('winner-diff-label').textContent = `Moins cher que #${index + 2}`;
+      document.getElementById('winner-diff-val').textContent   = `−€${diffEur}`;
+    } else {
+      diffBlock.classList.add('hidden');
+    }
+
+    // ── 4. Update Google Flights CTA ──
+    const gfLink = document.getElementById('winner-gf-link');
+    if (gfLink) {
+      const q = result.quotes.find(q => q.origin_iata && !q.is_local);
+      if (q) {
+        const url = buildGFlightsUrl(q.origin_iata, result.airport_code, q.departure_date_iso,
+                      q.is_round_trip ? tripReturnDate : null);
+        if (url) gfLink.href = url;
+      }
+    }
+
+    // ── 5. Highlight selected row in classement panel ──
+    document.querySelectorAll('[data-result-idx]').forEach(el => {
+      const idx = parseInt(el.dataset.resultIdx, 10);
+      el.classList.toggle('bg-gt-sand-dark', idx === index);
+      el.classList.toggle('hover:bg-gt-sand', idx !== index);
+    });
+
+    // ── 6. Update fare breakdown table ──
+    document.getElementById('detail-title').textContent = `→ ${result.city_name}`;
     const list = document.getElementById('detail-list');
     list.innerHTML = result.quotes.map((q, qi) => {
       const bg = TONE_BG[qi % TONE_BG.length];
@@ -329,7 +478,7 @@
       const price = q.is_local
         ? `<span class="font-display italic text-[18px] text-gt-forest-light">Local</span>`
         : `<div><div class="font-display italic text-[22px] text-gt-orange leading-none">€${q.price}</div>${q.is_round_trip ? '<div class="font-mono text-[9px] text-gt-muted">A/R</div>' : ''}</div>
-           <a href="${gfUrl}" target="_blank" rel="noopener" class="text-gt-muted hover:text-gt-orange transition-colors p-1" title="Google Flights">
+           <a href="${gfUrl}" target="_blank" rel="noopener" class="text-gt-muted hover:text-gt-orange transition-colors p-1">
              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
            </a>`;
       const dur = q.duration ? `${Math.floor(q.duration/60)}h${q.duration%60}m` : '';
@@ -341,7 +490,7 @@
           </div>
           <div>
             <div class="text-[14px] font-medium text-gt-ink">${q.name}</div>
-            <div class="font-mono text-[11px] text-gt-muted">${q.origin_iata || '???'} → ${result.airport_code}</div>
+            <div class="font-mono text-[11px] text-gt-muted">${q.origin_iata || q.city} → ${result.airport_code}</div>
           </div>
           <div class="text-[13px] text-gt-ink-soft">${q.city}</div>
           <div class="font-mono text-[12px] text-gt-muted text-right">${dur}</div>
@@ -349,11 +498,12 @@
         </li>`;
     }).join('');
 
-    // total
-    const totalEl = list.closest('#detail-section').querySelector('.font-display.italic');
-    if (totalEl) totalEl.textContent = `€${Math.round(result.total_cents / 100)}`;
+    const totalEl = list.closest('#detail-section').querySelector('#winner-total-val, .breakdown-total');
+    if (totalEl && totalEl.id !== 'winner-total-val') totalEl.textContent = `€${Math.round(result.total_cents / 100)}`;
+    const brkTotal = list.closest('#detail-section').querySelector('.font-display.italic.text-gt-forest');
+    if (brkTotal) brkTotal.textContent = `€${Math.round(result.total_cents / 100)}`;
 
-    // map sync
+    // ── 7. Map sync ──
     const mapEl = document.getElementById('map');
     if (mapEl?._stimulus_controller) mapEl._stimulus_controller.selectDestination(index);
     if (mapEl) mapEl.dataset.mapSelectedValue = index;
