@@ -1,16 +1,123 @@
-<div class="w-full max-w-lg mx-auto">
-  <div class="flex items-center gap-2 text-sm text-gray-400 mb-6">
-    <%= link_to "Mes voyages", trips_path, class: "hover:text-gray-700 transition-colors" %>
-    <span>/</span>
-    <span class="text-gray-600">Nouveau</span>
+<% content_for :title, "Nouveau trip — Get Together" %>
+<% content_for :nav_crumb, "Nouveau trip" %>
+
+<div class="max-w-[960px] mx-auto px-8 pt-[81px] pb-20">
+
+  <%# ── Header row ── %>
+  <div class="flex items-start justify-between mb-8">
+    <div>
+      <div class="font-mono text-[11px] tracking-[0.12em] uppercase text-gt-muted mb-2">Étape 1 / 2 — Votre groupe</div>
+      <h1 class="font-display font-normal text-[56px] leading-[1] tracking-[-0.025em] text-gt-forest sm:text-[36px]">
+        Qui se <em class="italic text-gt-orange">retrouve&nbsp;?</em>
+      </h1>
+    </div>
+    <div class="flex-shrink-0 mt-2" style="transform: rotate(-6deg);" aria-hidden="true">
+      <div class="inline-flex items-center gap-1.5 px-2.5 py-1 border border-dashed border-gt-forest text-gt-forest rounded font-mono text-[10px] font-medium tracking-[0.12em] uppercase">Brouillon</div>
+    </div>
   </div>
 
-  <div class="mb-7">
-    <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Nouveau trip</h1>
-    <p class="text-sm text-gray-500 mt-1">Définissez les grandes lignes. Vous ajouterez les participants et les villes ensuite.</p>
-  </div>
+  <%= form_with model: @trip, class: "" do |f| %>
+    <% if @trip.errors.any? %>
+      <div class="mb-5 bg-red-50 border border-red-200 rounded-[14px] p-4">
+        <p class="text-sm font-medium text-red-800 mb-1">Impossible de sauvegarder :</p>
+        <ul class="list-disc list-inside text-sm text-red-600 space-y-0.5">
+          <% @trip.errors.full_messages.each do |msg| %><li><%= msg %></li><% end %>
+        </ul>
+      </div>
+    <% end %>
 
-  <div class="bg-white border border-gray-200 rounded-xl p-6">
-    <%= render "form", trip: @trip %>
-  </div>
+    <%= f.hidden_field :status, value: "draft" %>
+
+    <div class="grid gap-5" style="grid-template-columns: 1.2fr 1fr;">
+
+      <%# ── LEFT ── %>
+      <div class="flex flex-col gap-5">
+
+        <%# Trip name card %>
+        <div class="bg-gt-white border border-gt-line rounded-[18px] p-[22px]">
+          <div class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted mb-3.5">Nom du trip</div>
+          <%= f.text_field :title,
+              placeholder: "Eurotrip avec la promo…",
+              class: "w-full pb-3 border-b border-gt-line bg-transparent font-display text-[26px] text-gt-forest tracking-[-0.01em] focus:outline-none focus:border-gt-orange transition-colors placeholder:text-gt-muted/50" %>
+          <div class="flex gap-2 flex-wrap mt-4">
+            <% ["Week-end entre amis", "Réunion de famille", "Retraite d'équipe", "Anniversaire"].each do |preset| %>
+              <button type="button"
+                onclick="document.querySelector('input[name=\'trip[title]\']').value = '<%= preset %>'"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gt-white border border-gt-line text-gt-forest text-xs font-medium hover:border-gt-forest/30 transition-colors cursor-pointer">
+                <%= preset %>
+              </button>
+            <% end %>
+          </div>
+        </div>
+
+        <%# Participants placeholder (shown after creation) %>
+        <div class="bg-gt-white border border-gt-line rounded-[18px] p-[22px]">
+          <div class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted mb-3.5">Participants <span class="text-gt-forest">· 0</span></div>
+          <div class="flex items-center gap-3 px-3.5 py-4 bg-gt-sand rounded-[12px] border border-dashed border-gt-line">
+            <div class="w-9 h-9 rounded-full border border-dashed border-gt-orange flex items-center justify-center text-gt-orange text-xl font-display flex-shrink-0">+</div>
+            <p class="text-[13px] text-gt-muted leading-snug">Les participants seront ajoutés après la création du trip via le lien d'invitation.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <%# ── RIGHT ── %>
+      <div class="flex flex-col gap-5">
+
+        <%# Dates card %>
+        <div class="bg-gt-white border border-gt-line rounded-[18px] p-[22px]">
+          <div class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted mb-3.5">Quand</div>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="p-3.5 border border-gt-line rounded-[12px] bg-gt-sand">
+              <div class="font-mono text-[10px] tracking-[0.08em] uppercase text-gt-muted mb-1.5">Départ</div>
+              <%= f.date_field :start_date,
+                  class: "w-full border-none bg-transparent font-display text-[20px] text-gt-forest focus:outline-none cursor-pointer" %>
+            </div>
+            <div class="p-3.5 border border-gt-line rounded-[12px] bg-gt-sand">
+              <div class="font-mono text-[10px] tracking-[0.08em] uppercase text-gt-muted mb-1.5">Retour</div>
+              <%= f.date_field :end_date,
+                  class: "w-full border-none bg-transparent font-display text-[20px] text-gt-forest focus:outline-none cursor-pointer" %>
+            </div>
+          </div>
+          <div class="flex gap-2 flex-wrap mt-3">
+            <% ["Ce week-end", "Le mois prochain", "Flexible ±3 j"].each do |hint| %>
+              <span class="inline-flex items-center px-3 py-1.5 rounded-full bg-gt-sand-dark text-gt-ink-soft text-xs font-medium"><%= hint %></span>
+            <% end %>
+          </div>
+        </div>
+
+        <%# Candidate cities preview card %>
+        <div class="bg-gt-white border border-gt-line rounded-[18px] p-[22px]">
+          <div class="flex items-baseline justify-between mb-3.5">
+            <div class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted">Destinations cibles</div>
+            <span class="text-xs text-gt-muted">Évaluées automatiquement</span>
+          </div>
+          <% [["Lisbonne","PT"], ["Dublin","IE"], ["Bruxelles","BE"], ["Barcelone","ES"], ["Amsterdam","NL"]].each_with_index do |(c, cc), i| %>
+            <div class="flex items-center gap-3 py-2.5 <%= i < 4 ? 'border-b border-dashed border-gt-line' : '' %>">
+              <div class="w-8 h-8 rounded-[10px] bg-gt-sand flex items-center justify-center font-mono text-[10px] text-gt-forest tracking-[0.06em] flex-shrink-0"><%= cc %></div>
+              <span class="text-[14px] text-gt-ink-soft flex-1"><%= c %></span>
+              <span class="font-mono text-[11px] text-gt-muted opacity-50">—</span>
+            </div>
+          <% end %>
+          <p class="font-mono text-[10px] tracking-[0.06em] text-gt-muted mt-3">+ 5 AUTRES DESTINATIONS POPULAIRES</p>
+        </div>
+
+      </div>
+
+    </div>
+
+    <%# ── Bottom bar ── %>
+    <div class="flex items-center justify-between mt-7 pt-5 border-t border-gt-line">
+      <p class="text-[13px] text-gt-muted">En continuant, nous récupérerons les vrais tarifs via Duffel.</p>
+      <div class="flex items-center gap-3">
+        <%= link_to "Annuler", trips_path,
+            class: "px-[18px] py-3 rounded-full border border-gt-line text-gt-ink-soft text-sm font-medium hover:border-gt-forest/30 transition-colors" %>
+        <%= f.submit "Trouver la ville idéale →",
+            class: "px-[22px] py-[14px] rounded-full bg-gt-orange text-white text-[15px] font-medium shadow-[0_8px_24px_rgba(232,99,42,0.2)] hover:bg-gt-orange-dark transition-colors cursor-pointer",
+            data: { disable_with: "Création…" } %>
+      </div>
+    </div>
+
+  <% end %>
+
 </div>
