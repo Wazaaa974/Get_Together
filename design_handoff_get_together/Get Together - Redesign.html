@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Get Together — Redesign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; padding: 0; background: #EDE6D8; font-family: 'Inter', system-ui, sans-serif; color: #181512; }
+  * { box-sizing: border-box; }
+  @keyframes gt-spin { to { transform: rotate(360deg); } }
+  @keyframes gt-drift { to { transform: translateX(-200px); } }
+  @keyframes gt-pulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.6; } }
+  /* tweaks panel */
+  .tw { position: fixed; bottom: 20px; right: 20px; width: 280px; background: #FEFCF8; border: 1px solid #E8DFD0; border-radius: 16px; padding: 16px; box-shadow: 0 16px 50px rgba(24,21,18,0.18); z-index: 100; font-family: 'Inter', sans-serif; display: none; }
+  .tw.on { display: block; }
+  .tw h4 { font-family: 'Fraunces', serif; font-weight: 500; font-size: 18px; margin: 0 0 10px; color: #2D4A3E; }
+  .tw label { display: block; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: #8A8070; margin: 10px 0 6px; font-family: 'JetBrains Mono', monospace; }
+  .tw .row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tw button.opt { padding: 6px 10px; border-radius: 999px; border: 1px solid #E8DFD0; background: #fff; font-size: 11px; cursor: pointer; font-family: 'Inter'; }
+  .tw button.opt.sel { background: #2D4A3E; color: #fff; border-color: #2D4A3E; }
+  .tw .swatch { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff; outline: 1px solid #E8DFD0; cursor: pointer; }
+  .tw .swatch.sel { outline: 2px solid #181512; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<div class="tw" id="tweaks">
+  <h4>Tweaks</h4>
+  <label>Screen</label>
+  <div class="row" id="tw-screen"></div>
+  <label>Hero variant <span style="text-transform:none;color:#B54A1A">(landing)</span></label>
+  <div class="row" id="tw-hero"></div>
+  <label>Accent color</label>
+  <div class="row" id="tw-accent"></div>
+  <label>Device</label>
+  <div class="row" id="tw-device"></div>
+</div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="src/tokens.jsx"></script>
+<script type="text/babel" src="src/bits.jsx"></script>
+<script type="text/babel" src="browser-window.jsx"></script>
+<script type="text/babel" src="src/landing.jsx"></script>
+<script type="text/babel" src="src/new-trip.jsx"></script>
+<script type="text/babel" src="src/screens.jsx"></script>
+<script type="text/babel" src="src/mobile.jsx"></script>
+
+<script type="text/babel" data-presets="env,react">
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "screen": "landing",
+  "hero": "keynote",
+  "accent": "Ember",
+  "device": "desktop"
+}/*EDITMODE-END*/;
+
+const STORAGE_KEY = 'gt-redesign-state-v1';
+const load = () => { try { return { ...TWEAK_DEFAULTS, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') }; } catch(e) { return {...TWEAK_DEFAULTS}; } };
+const save = (s) => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch(e) {} };
+
+function App() {
+  const [state, setState] = React.useState(load);
+  React.useEffect(() => { save(state); }, [state]);
+  const accent = GT.accentAlts[state.accent] || GT.orange;
+
+  // expose setter for tweaks panel
+  React.useEffect(() => { window.__setTweak = (k, v) => setState(s => ({...s, [k]: v})); window.__getTweak = () => state; renderTweaks(state); }, [state]);
+
+  const isMobile = state.device === 'mobile';
+  const isSplit = state.device === 'split';
+
+  let content;
+  if (state.screen === 'landing') content = <Landing accent={accent} variant={state.hero}/>;
+  else if (state.screen === 'new') content = <NewTrip accent={accent}/>;
+  else if (state.screen === 'dashboard') content = <Dashboard accent={accent}/>;
+  else if (state.screen === 'waiting') content = <Waiting accent={accent}/>;
+  else if (state.screen === 'results') content = <Results accent={accent}/>;
+
+  if (isMobile) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: 40, background: GT.sand, gap: 30 }}>
+        <div style={{ display: 'flex', gap: 24 }}>
+          <MobileLanding accent={accent}/>
+          <MobileResults accent={accent}/>
+        </div>
+      </div>
+    );
+  }
+  if (isSplit) {
+    return (
+      <div style={{ minHeight: '100vh', background: GT.sand, padding: 30, display: 'flex', gap: 24, justifyContent: 'center', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        <div style={{ width: 1100 }}>
+          <ChromeWindow tabs={[{ title: 'Get Together' }]} url="gettogether.app" width={1100} height={720}>
+            {content}
+          </ChromeWindow>
+        </div>
+        <div style={{ display: 'flex', gap: 20 }}>
+          <MobileLanding accent={accent}/>
+          <MobileResults accent={accent}/>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div style={{ minHeight: '100vh', background: GT.sand, padding: 30, display: 'grid', placeItems: 'start center' }}>
+      <ChromeWindow tabs={[{ title: 'Get Together' }]} url={
+        state.screen === 'landing' ? 'gettogether.app' :
+        state.screen === 'new' ? 'gettogether.app/trips/new' :
+        state.screen === 'dashboard' ? 'gettogether.app/trips/gt-0481' :
+        state.screen === 'waiting' ? 'gettogether.app/trips/gt-0481/waiting' :
+        'gettogether.app/trips/gt-0481/results'
+      } width={1180} height={820}>
+        {content}
+      </ChromeWindow>
+    </div>
+  );
+}
+
+function renderTweaks(state) {
+  const mk = (id, items, key, swatches) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = '';
+    items.forEach(([val, label]) => {
+      const b = document.createElement('button');
+      b.className = swatches ? 'swatch' : 'opt';
+      if (state[key] === val) b.classList.add('sel');
+      if (swatches) { b.style.background = GT.accentAlts[val]; b.title = label || val; }
+      else { b.textContent = label || val; }
+      b.onclick = () => window.__setTweak(key, val);
+      el.appendChild(b);
+    });
+  };
+  mk('tw-screen', [['landing','Landing'],['new','New trip'],['dashboard','Dashboard'],['waiting','Waiting'],['results','Results']], 'screen');
+  mk('tw-hero', [['keynote','Keynote'],['boarding','Boarding pass'],['globe','Globe']], 'hero');
+  mk('tw-accent', Object.keys(GT.accentAlts).map(k => [k, k]), 'accent', true);
+  mk('tw-device', [['desktop','Desktop'],['mobile','Mobile pair'],['split','Split view']], 'device');
+}
+
+window.addEventListener('message', (e) => {
+  if (!e.data) return;
+  if (e.data.type === '__activate_edit_mode') document.getElementById('tweaks').classList.add('on');
+  if (e.data.type === '__deactivate_edit_mode') document.getElementById('tweaks').classList.remove('on');
+});
+window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
