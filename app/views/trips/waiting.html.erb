@@ -85,7 +85,7 @@
     <% routes.each_with_index do |(participant, dest), i| %>
       <div class="p-3 rounded-[12px] bg-gt-sand border border-dashed border-gt-line font-mono text-[11px] flex justify-between items-center opacity-70"
            data-step="<%= i %>">
-        <span class="text-gt-muted"><%= participant.origin_airport_code.presence || "???" %> → <%= dest.airport_code %></span>
+        <span class="text-gt-muted"><%= participant.origin_airport_code.presence || participant.origin_city %> → <%= dest.airport_code %></span>
         <span class="text-gt-muted font-medium">…</span>
       </div>
     <% end %>

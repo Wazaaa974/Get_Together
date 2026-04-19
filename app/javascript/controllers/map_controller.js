@@ -41,7 +41,7 @@ export default class extends Controller {
   async geocodeParticipants() {
     const participants = this.participantsValue
     await Promise.all(participants.map(async (p) => {
-      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(p.city)}.json?access_token=${this.tokenValue}&types=place&limit=1`
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(p.city)}.json?access_token=${this.tokenValue}&types=place&limit=1&bbox=-30,25,55,75`
       try {
         const res  = await fetch(url)
         const data = await res.json()
