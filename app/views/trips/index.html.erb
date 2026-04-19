@@ -1,112 +1,204 @@
 <% content_for :title, "Get Together — Trouvez où se retrouver" %>
 
+<%# ── LANDING (non-auth or no trips) ── %>
 <% unless user_signed_in? && @trips.any? %>
+  <% content_for :transparent_nav %>
   <% content_for :full_width_hero do %>
 
-    <%# ── Hero dark gradient ── %>
-    <div class="relative overflow-hidden pt-[73px]" style="background: linear-gradient(160deg, #1A1F2E 0%, #2D4A3E 100%);">
-      <div class="absolute inset-0 pointer-events-none" style="background-image: radial-gradient(circle at 20% 80%, rgba(232,99,42,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(74,122,101,0.20) 0%, transparent 50%);"></div>
+    <%# ── HERO — Keynote variant ── %>
+    <section class="pt-[81px] pb-0 relative overflow-hidden">
+      <div class="max-w-[1180px] mx-auto px-16 pt-14 pb-20 relative">
 
-      <div class="relative max-w-5xl mx-auto px-6 py-20 text-center">
-
-        <%# Badge %>
-        <div class="inline-flex items-center gap-1.5 bg-white/10 text-white/80 text-[11px] font-medium uppercase tracking-wider px-3 py-1.5 rounded-full mb-6">
-          <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-          200+ destinations européennes
+        <%# Chips row %>
+        <div class="flex items-center gap-2.5 mb-7">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gt-orange-light text-gt-orange-dark text-xs font-medium tracking-wide">◉ Now booking · Printemps 2026</span>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gt-white border border-gt-line text-gt-forest text-xs font-medium">3 840 groupes retrouvés ce mois-ci</span>
         </div>
 
-        <%# Headline %>
-        <h1 class="text-[38px] font-medium text-white leading-tight mb-4">
-          Trouvez où <em class="not-italic text-gt-orange">se retrouver</em>,<br>sans prise de tête
+        <%# Headline — 88px Fraunces %>
+        <h1 class="font-display font-normal text-[88px] leading-[0.95] tracking-[-0.03em] text-gt-forest max-w-[900px] mb-6 lg:text-[64px] sm:text-[44px]">
+          Où devriez-vous tous<br><em class="not-italic italic text-gt-orange">vous retrouver</em> vraiment&nbsp;?
         </h1>
-        <p class="text-white/60 text-[15px] max-w-lg mx-auto mb-8 leading-relaxed">
-          Chaque personne indique sa ville de départ. Get Together calcule la destination la moins chère pour tout le groupe en quelques secondes.
+
+        <%# Body copy %>
+        <p class="text-[19px] leading-[1.5] text-gt-ink-soft max-w-[540px] mb-10 sm:text-[16px]">
+          Indiquez vos villes de départ. On compare les vrais prix de vols depuis chaque porte et on vous donne l'endroit le moins cher <em class="italic text-gt-orange">pour tout le monde</em>.
         </p>
 
-        <%# CTA %>
-        <%= link_to new_trip_path, class: "inline-flex items-center gap-2 bg-gt-orange text-white px-6 py-3 rounded-[8px] text-sm font-medium hover:bg-gt-orange-dark transition-colors" do %>
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-          Créer un trip gratuit
-        <% end %>
+        <%# Search widget (links to new_trip_path) %>
+        <div class="max-w-[720px] mb-10">
+          <%= link_to new_trip_path, class: "bg-gt-white rounded-full border border-gt-line flex items-center p-1.5 shadow-[0_14px_40px_rgba(24,21,18,0.08)] hover:shadow-[0_14px_40px_rgba(24,21,18,0.14)] transition-shadow cursor-pointer" do %>
+            <div class="flex-1 px-5 py-3.5 relative">
+              <div class="font-mono text-[11px] font-medium tracking-[0.06em] uppercase text-gt-muted">Groupe</div>
+              <div class="text-sm text-gt-muted mt-0.5">4 personnes</div>
+              <div class="absolute right-0 top-3 bottom-3 w-px bg-gt-line"></div>
+            </div>
+            <div class="flex-[1.4] px-5 py-3.5 relative">
+              <div class="font-mono text-[11px] font-medium tracking-[0.06em] uppercase text-gt-muted">Depuis</div>
+              <div class="text-sm text-gt-muted mt-0.5">Paris · Madrid · Londres · Berlin</div>
+              <div class="absolute right-0 top-3 bottom-3 w-px bg-gt-line"></div>
+            </div>
+            <div class="flex-1 px-5 py-3.5">
+              <div class="font-mono text-[11px] font-medium tracking-[0.06em] uppercase text-gt-muted">Quand</div>
+              <div class="text-sm text-gt-muted mt-0.5">14 → 18 mai</div>
+            </div>
+            <div class="p-1 flex-shrink-0">
+              <div class="w-[52px] h-[52px] rounded-full bg-gt-orange grid place-items-center shadow-[0_8px_20px_rgba(232,99,42,0.27)] hover:bg-gt-orange-dark transition-colors">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+              </div>
+            </div>
+          <% end %>
+        </div>
 
-        <%# Stat bar %>
-        <div class="flex items-center justify-center gap-6 mt-10 text-white/50 text-[12px]">
-          <span>✓ 200+ destinations</span>
-          <span class="w-px h-3 bg-white/20"></span>
-          <span>✓ Résultats en ~30s</span>
-          <span class="w-px h-3 bg-white/20"></span>
-          <span>✓ 100% gratuit</span>
+        <%# Metrics row %>
+        <div class="flex items-center gap-9 sm:gap-5">
+          <div>
+            <div class="font-display italic text-[28px] text-gt-forest leading-none">200+</div>
+            <div class="text-[13px] text-gt-muted mt-1">destinations</div>
+          </div>
+          <div class="w-px h-8 bg-gt-line"></div>
+          <div>
+            <div class="font-display italic text-[28px] text-gt-forest leading-none">~30s</div>
+            <div class="text-[13px] text-gt-muted mt-1">pour une réponse honnête</div>
+          </div>
+          <div class="w-px h-8 bg-gt-line"></div>
+          <div>
+            <div class="font-display italic text-[28px] text-gt-forest leading-none">Gratuit</div>
+            <div class="text-[13px] text-gt-muted mt-1">sans compte requis</div>
+          </div>
+        </div>
+
+        <%# Floating MiniTicket ornament %>
+        <div class="absolute top-16 right-16 rotate-6 hidden lg:block" aria-hidden="true">
+          <div class="w-[260px] bg-gt-white border border-gt-line rounded-[14px] overflow-hidden shadow-[0_20px_50px_rgba(24,21,18,0.08)]">
+            <div class="px-[18px] py-3.5 bg-gt-forest text-white flex justify-between items-center">
+              <span class="font-mono text-[10px] tracking-[0.15em]">BOARDING</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 12 L21 5 L15 12 L21 19 Z M3 12 L9 10 L11 12 L9 14 Z" fill="white"/></svg>
+            </div>
+            <div class="px-[18px] pt-4 pb-2.5 flex items-center gap-2.5">
+              <div class="flex-1">
+                <div class="font-mono text-[10px] text-gt-muted tracking-[0.08em] uppercase">Depuis</div>
+                <div class="font-display text-[28px] text-gt-forest leading-none mt-1">CDG</div>
+              </div>
+              <div class="flex-[1.5] border-b border-dashed border-gt-line relative mb-2">
+                <svg class="absolute -right-1 -top-[7px]" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 12 L21 5 L15 12 L21 19 Z M3 12 L9 10 L11 12 L9 14 Z" fill="#E8632A"/></svg>
+              </div>
+              <div class="flex-1 text-right">
+                <div class="font-mono text-[10px] text-gt-muted tracking-[0.08em] uppercase">Vers</div>
+                <div class="font-display text-[28px] text-gt-forest leading-none mt-1">LIS</div>
+              </div>
+            </div>
+            <div class="px-[18px] pb-4 flex justify-between text-[11px] text-gt-muted">
+              <span>Groupe de 4</span>
+              <span class="text-gt-orange font-medium">€184 total</span>
+            </div>
+          </div>
         </div>
 
       </div>
-    </div>
+    </section>
 
-    <%# ── How it works ── %>
-    <div class="bg-gt-white border-t border-gray-100">
-      <div class="max-w-5xl mx-auto px-6 py-14">
-        <p class="text-[11px] font-medium uppercase tracking-wider text-gt-muted text-center mb-8">Comment ça marche</p>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-          <div class="text-center px-4">
-            <div class="w-10 h-10 bg-gt-orange-light rounded-full flex items-center justify-center mx-auto mb-4">
-              <span class="text-gt-orange-dark text-sm font-medium">1</span>
+    <%# ── HOW IT WORKS ── %>
+    <section id="how-it-works" class="bg-gt-white border-t border-b border-gt-line py-[72px]">
+      <div class="max-w-[1180px] mx-auto px-16">
+        <div class="flex items-baseline justify-between mb-9">
+          <h2 class="font-display font-normal text-[44px] tracking-[-0.02em] text-gt-forest leading-none">
+            Trois étapes. <em class="italic text-gt-orange">Pas de tableur.</em>
+          </h2>
+          <span class="font-mono text-[11px] text-gt-muted tracking-[0.15em] uppercase hidden md:block">— Comment ça marche</span>
+        </div>
+        <div class="grid grid-cols-3 gap-6 md:grid-cols-1">
+          <% [
+            { n: "01", t: "Réunissez votre groupe", d: "Un lien. Un tap. Chaque personne renseigne son aéroport de départ." },
+            { n: "02", t: "On évalue chaque option", d: "Vrais tarifs Duffel, depuis chaque origine, vers chaque destination — simultanément." },
+            { n: "03", t: "Une réponse honnête", d: "La ville où le coût total des billets est le plus bas, avec le détail par personne." },
+          ].each do |step| %>
+            <div class="p-7 border border-gt-line rounded-[18px] bg-gt-sand relative">
+              <div class="font-display italic text-[52px] text-gt-orange leading-none"><%= step[:n] %></div>
+              <div class="font-display text-[24px] text-gt-forest mt-4 tracking-[-0.01em] leading-tight"><%= step[:t] %></div>
+              <p class="text-[14px] text-gt-ink-soft mt-2.5 leading-[1.55]"><%= step[:d] %></p>
             </div>
-            <h3 class="text-[15px] font-medium text-gt-forest mb-2">Créez un trip</h3>
-            <p class="text-[13px] text-gt-muted leading-relaxed">Donnez un nom à votre voyage et choisissez les dates. Ça prend 30 secondes.</p>
-          </div>
-
-          <div class="text-center px-4">
-            <div class="w-10 h-10 bg-gt-orange-light rounded-full flex items-center justify-center mx-auto mb-4">
-              <span class="text-gt-orange-dark text-sm font-medium">2</span>
-            </div>
-            <h3 class="text-[15px] font-medium text-gt-forest mb-2">Invitez vos amis</h3>
-            <p class="text-[13px] text-gt-muted leading-relaxed">Partagez le lien d'invitation. Chacun ajoute sa ville de départ depuis n'importe où.</p>
-          </div>
-
-          <div class="text-center px-4">
-            <div class="w-10 h-10 bg-gt-orange-light rounded-full flex items-center justify-center mx-auto mb-4">
-              <span class="text-gt-orange-dark text-sm font-medium">3</span>
-            </div>
-            <h3 class="text-[15px] font-medium text-gt-forest mb-2">On optimise tout</h3>
-            <p class="text-[13px] text-gt-muted leading-relaxed">Get Together compare les vols et trouve la ville la moins chère pour le groupe entier.</p>
-          </div>
-
+          <% end %>
         </div>
       </div>
-    </div>
+    </section>
 
-  <% end %>
-<% end %>
+    <%# ── POPULAR MEET-UPS ── %>
+    <section class="py-[56px] pb-[80px]">
+      <div class="max-w-[1180px] mx-auto px-16">
+        <div class="flex items-baseline justify-between mb-7">
+          <h2 class="font-display font-normal text-[36px] tracking-[-0.02em] text-gt-forest">
+            Retrouvailles populaires <em class="italic text-gt-muted">cette semaine</em>
+          </h2>
+        </div>
+        <div class="grid grid-cols-6 gap-3.5 md:grid-cols-3 sm:grid-cols-2">
+          <% [
+            { city: "Lisbonne", price: "€164", rank: 1 },
+            { city: "Dublin",   price: "€184", rank: 2 },
+            { city: "Bruxelles",price: "€196", rank: 3 },
+            { city: "Barcelone",price: "€211", rank: 4 },
+            { city: "Amsterdam",price: "€224", rank: 5 },
+            { city: "Berlin",   price: "€238", rank: 6 },
+          ].each_with_index do |dest, i| %>
+            <div class="aspect-[3/4] rounded-[16px] p-4 flex flex-col justify-between relative overflow-hidden
+                        <%= i == 0 ? 'text-white' : 'bg-gt-white border border-gt-line text-gt-forest' %>"
+                 style="<%= i == 0 ? 'background: linear-gradient(170deg, #E8632A 0%, #B54A1A 100%);' : '' %>">
+              <div class="absolute inset-0 <%= i == 0 ? 'dest-stripe-winner' : 'dest-stripe' %> pointer-events-none"></div>
+              <div class="relative font-mono text-[10px] tracking-[0.08em] opacity-80">
+                <%= i == 0 ? '★ BEST FIT' : "##{i + 1}" %>
+              </div>
+              <div class="relative">
+                <div class="font-display text-[22px] tracking-[-0.01em] leading-tight"><%= dest[:city] %></div>
+                <div class="text-[13px] opacity-80 mt-0.5"><%= dest[:price] %> total</div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </section>
 
-<%# ── Authenticated: empty state ── %>
+    <%# ── FOOTER ── %>
+    <footer class="bg-gt-night text-white px-16 py-10">
+      <div class="max-w-[1180px] mx-auto flex justify-between items-center">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-full bg-gt-orange flex items-center justify-center font-display italic text-[18px]">g</div>
+          <span class="font-display text-gt-white text-[18px] tracking-tight">Get Together</span>
+        </div>
+        <span class="font-mono text-[11px] text-white/50 tracking-[0.08em]">© 2026 · FAIT POUR LES AMIS</span>
+      </div>
+    </footer>
+
+  <% end %><%# end content_for :full_width_hero %>
+<% end %><%# end unless %>
+
+<%# ── AUTH EMPTY STATE ── %>
 <% if user_signed_in? && @trips.empty? %>
-  <div class="text-center py-20">
+  <div class="text-center py-24">
     <div class="w-12 h-12 bg-gt-orange-light rounded-full flex items-center justify-center mx-auto mb-5">
       <svg class="w-5 h-5 text-gt-orange-dark" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
     </div>
-    <h1 class="text-[20px] font-medium text-gt-forest mb-2">Votre premier trip vous attend</h1>
-    <p class="text-[14px] text-gt-muted max-w-sm mx-auto mb-6 leading-relaxed">Créez un trip, invitez vos amis et laissez Get Together trouver la destination idéale.</p>
-    <%= link_to new_trip_path, class: "inline-flex items-center gap-2 bg-gt-orange text-white px-5 py-2.5 rounded-[8px] text-sm font-medium hover:bg-gt-orange-dark transition-colors" do %>
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-      Créer mon premier trip
+    <h1 class="font-display text-[44px] tracking-[-0.02em] text-gt-forest leading-none mb-3">Votre premier trip vous attend</h1>
+    <p class="text-[15px] text-gt-ink-soft max-w-sm mx-auto mb-8 leading-relaxed">Créez un trip, invitez vos amis et laissez Get Together trouver la destination idéale.</p>
+    <%= link_to new_trip_path, class: "inline-flex items-center gap-2 px-[22px] py-[14px] rounded-full bg-gt-orange text-white text-[15px] font-medium shadow-[0_8px_24px_rgba(232,99,42,0.2)] hover:bg-gt-orange-dark transition-colors" do %>
+      Créer mon premier trip →
     <% end %>
   </div>
 
-<%# ── Authenticated: trips grid ── %>
+<%# ── AUTH WITH TRIPS ── %>
 <% elsif user_signed_in? && @trips.any? %>
 
-  <div class="flex items-center justify-between mb-6">
+  <div class="flex items-center justify-between mb-8">
     <div>
-      <h1 class="text-[20px] font-medium text-gt-forest">Mes trips</h1>
-      <p class="text-[13px] text-gt-muted mt-0.5"><%= @trips.count %> trip<%= @trips.count > 1 ? "s" : "" %></p>
+      <h1 class="font-display text-[44px] tracking-[-0.02em] text-gt-forest leading-none">Mes trips</h1>
+      <p class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted mt-2"><%= @trips.count %> trip<%= @trips.count > 1 ? "s" : "" %></p>
     </div>
-    <%= link_to new_trip_path, class: "inline-flex items-center gap-1.5 bg-gt-orange text-white px-4 py-2 rounded-[8px] text-sm font-medium hover:bg-gt-orange-dark transition-colors" do %>
+    <%= link_to new_trip_path, class: "inline-flex items-center gap-2 px-[18px] py-[10px] rounded-full bg-gt-orange text-white text-[13px] font-medium shadow-[0_8px_24px_rgba(232,99,42,0.2)] hover:bg-gt-orange-dark transition-colors" do %>
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
       Nouveau trip
     <% end %>
   </div>
 
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+  <div class="grid grid-cols-3 gap-3.5 lg:grid-cols-2 sm:grid-cols-1">
     <% @trips.each do |trip| %>
       <%
         status_label = case trip.status
@@ -116,55 +208,46 @@
         end
         status_classes = case trip.status
           when "active"    then "bg-green-50 text-green-700"
-          when "completed" then "bg-gray-100 text-gray-500"
+          when "completed" then "bg-gt-sand-dark text-gt-ink-soft"
           else                  "bg-gt-orange-light text-gt-orange-dark"
         end
       %>
-      <div class="bg-gt-white rounded-[14px] border border-gray-100 overflow-hidden flex flex-col">
-
-        <%# Card dark gradient header %>
-        <div class="px-5 py-4 relative overflow-hidden" style="background: linear-gradient(160deg, #1A1F2E 0%, #2D4A3E 100%);">
-          <div class="absolute top-0 right-0 w-16 h-16 rounded-full opacity-10" style="background: radial-gradient(circle, #E8632A, transparent); transform: translate(25%, -25%);"></div>
-          <p class="text-[11px] font-medium uppercase tracking-wider text-white/40 mb-1">Trip</p>
-          <h2 class="text-[15px] font-medium text-white truncate"><%= trip.title %></h2>
+      <div class="bg-gt-white border border-gt-line rounded-[18px] overflow-hidden flex flex-col">
+        <%# Dark gradient header %>
+        <div class="px-5 py-5 relative overflow-hidden" style="background: linear-gradient(160deg, #1A1F2E 0%, #2D4A3E 100%);">
+          <div class="absolute right-[-20px] top-[-20px] w-[100px] h-[100px] rounded-full opacity-25" style="background: radial-gradient(circle, #E8632A, transparent);"></div>
+          <p class="font-mono text-[10px] tracking-[0.12em] uppercase text-white/40 mb-1.5">Trip</p>
+          <h2 class="font-display text-[20px] tracking-[-0.01em] text-white truncate"><%= trip.title %></h2>
           <% if trip.start_date.present? %>
-            <p class="text-[12px] text-white/50 mt-0.5">
+            <p class="font-mono text-[11px] text-white/40 mt-1 tracking-wide">
               <%= trip.start_date.strftime("%d %b") %><% if trip.end_date.present? %> → <%= trip.end_date.strftime("%d %b %Y") %><% else %> <%= trip.start_date.strftime("%Y") %><% end %>
             </p>
           <% end %>
         </div>
-
-        <%# Card body %>
+        <%# Body %>
         <div class="px-5 py-4 flex-1 flex flex-col gap-3">
           <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5 text-[13px] text-gt-muted">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <span class="text-[13px] text-gt-ink-soft flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-gt-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
               <%= trip.participants.count %> participant<%= trip.participants.count > 1 ? "s" : "" %>
-            </div>
-            <span class="inline-block px-2 py-0.5 rounded-full text-[11px] font-medium <%= status_classes %>"><%= status_label %></span>
+            </span>
+            <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-medium <%= status_classes %>"><%= status_label %></span>
           </div>
-
           <div class="flex items-center gap-2 mt-auto pt-1">
             <% if trip.route_quotes.any? %>
-              <%= link_to "Résultats", results_trip_path(trip),
-                  class: "flex-1 text-center text-[13px] font-medium bg-gt-orange-light text-gt-orange-dark px-3 py-1.5 rounded-[8px] hover:bg-gt-orange hover:text-white transition-colors" %>
+              <%= link_to "Résultats", results_trip_path(trip), class: "flex-1 text-center text-[13px] font-medium bg-gt-orange-light text-gt-orange-dark px-3 py-2 rounded-full hover:bg-gt-orange hover:text-white transition-colors" %>
             <% end %>
-            <%= link_to trip_path(trip),
-                class: "flex-1 text-center text-[13px] text-gray-500 border border-gray-200 px-3 py-1.5 rounded-[8px] hover:border-gray-300 hover:text-gt-forest transition-colors font-medium" do %>
-              Ouvrir
-            <% end %>
+            <%= link_to "Ouvrir", trip_path(trip), class: "flex-1 text-center text-[13px] text-gt-ink-soft border border-gt-line px-3 py-2 rounded-full hover:border-gt-forest/30 hover:text-gt-forest transition-colors font-medium" %>
           </div>
         </div>
-
       </div>
     <% end %>
 
     <%# New trip dashed card %>
-    <%= link_to new_trip_path, class: "rounded-[14px] border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-2 py-10 text-gt-muted hover:border-gt-orange hover:text-gt-orange transition-colors min-h-[160px]" do %>
+    <%= link_to new_trip_path, class: "rounded-[18px] border-2 border-dashed border-gt-line flex flex-col items-center justify-center gap-2 py-10 text-gt-muted hover:border-gt-orange hover:text-gt-orange transition-colors min-h-[180px]" do %>
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"/></svg>
       <span class="text-[13px] font-medium">Nouveau trip</span>
     <% end %>
-
   </div>
 
 <% end %>
