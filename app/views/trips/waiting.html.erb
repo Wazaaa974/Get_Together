@@ -1,48 +1,98 @@
-<div class="w-full max-w-lg mx-auto mt-16 text-center px-4"
+<% content_for :title, "Calcul en cours… — Get Together" %>
+<% content_for :nav_crumb, "Calcul en cours…" %>
+
+<div class="max-w-[720px] mx-auto px-8 pt-20 pb-20 text-center"
      data-controller="optimization-poll"
      data-optimization-poll-url-value="<%= optimization_status_trip_path(@trip) %>"
      data-optimization-poll-results-url-value="<%= results_trip_path(@trip) %>"
      data-optimization-poll-trip-url-value="<%= trip_path(@trip) %>">
 
-  <%# Icône animée %>
-  <div class="mb-8 relative inline-block">
-    <div class="w-24 h-24 rounded-full bg-indigo-100 flex items-center justify-center">
-      <svg class="w-12 h-12 text-indigo-600 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+  <%# ── Animated Globe ── %>
+  <div class="flex justify-center mb-8">
+    <div class="relative inline-block" style="width:220px;height:220px;">
+      <svg viewBox="0 0 200 200" width="220" height="220" style="overflow:visible;">
+        <defs>
+          <clipPath id="wglobe">
+            <circle cx="100" cy="100" r="78"/>
+          </clipPath>
+          <g id="wcts">
+            <path d="M14 52C22 44 34 42 46 44C56 42 66 46 74 50L82 54C80 60 72 62 66 64C70 70 68 76 62 80C58 86 52 90 48 94C46 100 50 104 48 108C44 110 40 106 38 100C34 94 36 86 32 80C26 74 22 66 18 60Z"/>
+            <path d="M72 36C80 34 86 38 84 46C80 50 74 48 72 44Z"/>
+            <path d="M54 112C62 110 70 114 72 122C74 130 68 138 66 146C62 152 58 156 54 152C52 146 54 138 52 132C50 124 50 118 54 112Z"/>
+            <path d="M98 50C108 46 120 48 130 50C140 48 150 52 156 56C154 62 146 62 140 60C136 64 128 64 122 60C116 62 108 62 102 58Z"/>
+            <path d="M108 72C120 68 134 70 142 76C148 82 146 92 142 100C140 110 134 120 128 128C122 134 116 130 114 122C110 114 108 104 106 94C104 86 104 78 108 72Z"/>
+            <path d="M156 48C170 44 186 48 196 54L200 58C200 66 192 68 184 66C178 72 170 74 162 70C158 66 154 60 156 54Z"/>
+            <path d="M0 158C20 154 44 160 68 156C92 160 118 154 142 158C166 156 186 160 200 158L200 172L0 172Z"/>
+          </g>
+        </defs>
+
+        <%# Equatorial ring (pulsing) %>
+        <ellipse cx="100" cy="100" rx="94" ry="36" fill="none" stroke="#2D4A3E" stroke-width="1.25"
+          style="transform-origin:100px 100px;transform:rotate(-15deg);animation:gt-pulse 3.2s ease-in-out infinite;"/>
+
+        <g style="transform-origin:100px 100px;transform:rotate(-15deg);">
+          <circle cx="100" cy="100" r="78" fill="#FFFFFF" stroke="#2D4A3E" stroke-width="1.75"/>
+          <g clip-path="url(#wglobe)">
+            <%# Lat/lon lines — static %>
+            <g fill="none" stroke="#2D4A3E" stroke-width="0.9" opacity="0.5">
+              <line x1="22" y1="100" x2="178" y2="100"/>
+              <ellipse cx="100" cy="100" rx="78" ry="26"/>
+              <ellipse cx="100" cy="100" rx="78" ry="52"/>
+            </g>
+            <%# Meridians — spinning %>
+            <g fill="none" stroke="#2D4A3E" stroke-width="0.9" opacity="0.5"
+               style="transform-origin:100px 100px;animation:gt-spin 8s linear infinite;">
+              <ellipse cx="100" cy="100" rx="26" ry="78"/>
+              <ellipse cx="100" cy="100" rx="52" ry="78"/>
+              <line x1="100" y1="22" x2="100" y2="178"/>
+            </g>
+            <%# Continents — drifting %>
+            <g fill="#2D4A3E" style="animation:gt-drift 8s linear infinite;">
+              <use href="#wcts" x="0" y="0"/>
+              <use href="#wcts" x="200" y="0"/>
+            </g>
+          </g>
+          <circle cx="100" cy="100" r="78" fill="none" stroke="#2D4A3E" stroke-width="1.75"/>
+        </g>
       </svg>
-    </div>
-    <div class="absolute -top-1 -right-1 w-5 h-5 bg-indigo-600 rounded-full flex items-center justify-center">
-      <div class="w-2 h-2 bg-white rounded-full animate-ping"></div>
     </div>
   </div>
 
-  <h1 class="text-2xl font-bold text-gray-900 mb-2">Recherche en cours…</h1>
-  <p class="text-gray-500 text-sm mb-8 leading-relaxed">
-    On compare les vols pour<br class="hidden sm:block">
-    <strong class="text-gray-700"><%= @trip.participants.count %> participant<%= @trip.participants.count > 1 ? 's' : '' %></strong>
-    sur <strong class="text-gray-700">10 destinations européennes</strong>.
+  <%# ── Kicker ── %>
+  <div class="font-mono text-[11px] tracking-[0.13em] uppercase text-gt-muted mb-3">Calcul des prix · Duffel</div>
+
+  <%# ── Headline ── %>
+  <h1 class="font-display font-normal text-[56px] leading-[1.05] tracking-[-0.025em] text-gt-forest mb-4 sm:text-[36px]">
+    On sillonne les cieux pour <em class="italic text-gt-orange">la réponse honnête…</em>
+  </h1>
+
+  <p class="text-[16px] text-gt-ink-soft leading-relaxed max-w-[480px] mx-auto mb-8">
+    On interroge Duffel pour les vrais tarifs depuis chaque origine vers chaque destination. Encore quelques secondes.
   </p>
 
-  <%# Étapes de progression %>
-  <div class="bg-white border border-gray-200 rounded-2xl p-5 mb-6 text-left space-y-3" data-optimization-poll-target="steps">
-    <% [
-      ["Connexion aux compagnies aériennes", true],
-      ["Évaluation des destinations", false],
-      ["Calcul des scores et prix", false],
-      ["Classement final", false]
-    ].each.with_index do |(label, done), i| %>
-      <div class="flex items-center gap-3 step-item" data-step="<%= i %>">
-        <div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 step-icon <%= i == 0 ? 'bg-indigo-100' : 'bg-gray-100' %>">
-          <% if done %>
-            <svg class="w-3 h-3 text-indigo-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-          <% else %>
-            <div class="w-1.5 h-1.5 rounded-full <%= i == 0 ? 'bg-indigo-400 animate-pulse' : 'bg-gray-300' %>"></div>
-          <% end %>
-        </div>
-        <span class="text-sm <%= i == 0 ? 'text-gray-800 font-medium' : 'text-gray-400' %> step-label"><%= label %></span>
+  <%# ── Route chips grid ── (initially all pending, updated via Turbo Stream) %>
+  <div class="grid grid-cols-4 gap-2.5 text-left" data-optimization-poll-target="steps">
+    <%
+      participants = @trip.participants.first(4)
+      destinations = @trip.candidate_cities.any? ? @trip.candidate_cities.first(4) : [
+        OpenStruct.new(city_name: "Lisbonne", airport_code: "LIS"),
+        OpenStruct.new(city_name: "Dublin",   airport_code: "DUB"),
+        OpenStruct.new(city_name: "Bruxelles",airport_code: "BRU"),
+        OpenStruct.new(city_name: "Barcelone",airport_code: "BCN"),
+      ]
+      routes = participants.flat_map { |p| destinations.map { |d| [p, d] } }.first(8)
+    %>
+    <% routes.each_with_index do |(participant, dest), i| %>
+      <div class="p-3 rounded-[12px] bg-gt-sand border border-dashed border-gt-line font-mono text-[11px] flex justify-between items-center opacity-70"
+           data-step="<%= i %>">
+        <span class="text-gt-muted"><%= participant.origin_airport_code.presence || "???" %> → <%= dest.airport_code %></span>
+        <span class="text-gt-muted font-medium">…</span>
       </div>
     <% end %>
   </div>
 
-  <p class="text-xs text-gray-400" data-optimization-poll-target="statusText">Ça prend environ 20–30 secondes…</p>
+  <p class="font-mono text-[11px] tracking-[0.06em] text-gt-muted mt-6" data-optimization-poll-target="statusText">
+    Environ 20–30 secondes…
+  </p>
+
 </div>
