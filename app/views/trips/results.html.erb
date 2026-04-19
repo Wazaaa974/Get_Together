@@ -1,6 +1,7 @@
 <%
   content_for :og_title, "Résultats — #{@trip.title} | Get Together"
   content_for :og_description, "Get Together a trouvé les meilleures destinations pour #{@trip.title}."
+  content_for :nav_crumb, "#{@trip.title} / Résultats"
 
   top3   = @results.first(3)
   best   = top3.first
@@ -39,6 +40,26 @@
 
   mapbox_token = ENV["MAPBOX_TOKEN"]
   is_owner     = user_signed_in? && current_user == @trip.user
+
+  avg_price   = best[:total_cents] > 0 ? (best[:total_cents] / 100.0 / [@trip.participants.count, 1].max).round : 0
+  max_dur     = best[:quotes].map(&:duration_minutes).compact.max
+  diff_vs_2   = top3[1] ? ((top3[1][:total_cents] - best[:total_cents]) / 100.0).ceil : nil
+
+  # Build best GFlights URL for the winner city
+  best_gf_url = begin
+    first_q = best[:quotes].reject { |q| q.price_cents == 0 }.first
+    if first_q
+      origin_iata = first_q.participant.origin_airport_code.presence
+      dest_iata   = best[:city].airport_code.presence
+      flight_date = first_q.departure_at&.to_date || @trip.start_date
+      if origin_iata && dest_iata && flight_date
+        outbound = "#{origin_iata}.#{dest_iata}.#{flight_date.strftime('%Y-%m-%d')}"
+        "https://www.google.com/travel/flights#flt=#{outbound};c:EUR;e:1;sd:1;t:f"
+      end
+    end
+  rescue nil
+  end
+  best_gf_url ||= "https://www.google.com/travel/flights?q=#{CGI.escape(best[:city].city_name)}"
 %>
 
 <%= content_for :head do %>
@@ -46,50 +67,90 @@
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js"></script>
 <% end %>
 
-<div class="w-full max-w-5xl mx-auto space-y-5">
+<div class="max-w-[1180px] mx-auto px-8 pt-[81px] pb-20">
 
-  <%# Breadcrumb + partage %>
-  <div class="flex items-center justify-between flex-wrap gap-2">
-    <div class="flex items-center gap-2 text-[13px] text-gt-muted">
-      <% if is_owner %>
-        <%= link_to "Mes trips", trips_path, class: "hover:text-gt-forest transition-colors" %>
-        <span>/</span>
-        <%= link_to @trip.title, trip_path(@trip), class: "hover:text-gt-forest transition-colors truncate max-w-[120px] sm:max-w-xs" %>
-        <span>/</span>
-      <% end %>
-      <span class="text-gt-forest">Résultats</span>
+  <%# ── WinnerCard ── %>
+  <div class="rounded-[24px] relative overflow-hidden mb-5" style="background: linear-gradient(150deg, #1A1F2E 0%, #2D4A3E 65%, #4A7A65 100%); padding: 44px 48px;">
+    <%# Orange glow top-right %>
+    <div class="absolute right-[-80px] top-[-80px] w-[320px] h-[320px] rounded-full pointer-events-none" style="background: radial-gradient(circle, rgba(232,99,42,0.4) 0%, transparent 65%);"></div>
+
+    <%# Stamp — top right %>
+    <div class="absolute right-10 top-10" style="transform: rotate(8deg);" aria-hidden="true">
+      <div class="inline-flex items-center gap-1.5 px-2.5 py-1 border border-dashed border-gt-orange text-gt-orange rounded font-mono text-[10px] font-medium tracking-[0.12em] uppercase bg-transparent">Cheapest for the group</div>
     </div>
-    <div class="flex items-center gap-4 text-[12px] text-gt-muted">
-      <% if @trip.last_optimized_at.present? %>
-        <span class="flex items-center gap-1">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          Calculé il y a <%= time_ago_in_words(@trip.last_optimized_at) %>
-        </span>
-      <% end %>
-      <% if @trip.share_token.present? %>
-        <button type="button"
-          onclick="navigator.clipboard.writeText('<%= shared_trip_url(@trip.share_token) %>results').then(() => { this.innerHTML = '✓ Lien copié'; setTimeout(() => this.innerHTML = 'Partager les résultats', 2000) })"
-          class="flex items-center gap-1.5 text-gt-orange hover:text-gt-orange-dark font-medium transition-colors">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
-          Partager les résultats
-        </button>
-      <% end %>
+
+    <div class="relative">
+      <%# Dark chips %>
+      <div class="flex items-center gap-2.5 mb-5 flex-wrap">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#2b2d35] text-white text-xs font-medium">★ Best fit</span>
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#2b2d35] text-white text-xs font-medium">92 / 100 équité</span>
+      </div>
+
+      <%# Meet in kicker %>
+      <div class="font-mono text-[12px] tracking-[0.14em] uppercase text-white/70 mb-1">Meet in</div>
+
+      <%# 140px city name %>
+      <h1 class="font-display font-normal text-white leading-[0.92] tracking-[-0.03em] mb-2 sm:text-[76px]" style="font-size: 140px;">
+        <%= best[:city].city_name %><em class="italic text-gt-orange not-italic">.</em>
+      </h1>
+
+      <%# Country · IATA italic subtitle %>
+      <div class="font-display italic text-[22px] text-white/75 mb-8">
+        <%= best[:city].country_code %> · <%= best[:city].airport_code %>
+      </div>
+
+      <%# Stats row %>
+      <div class="flex gap-12 mb-8 flex-wrap sm:gap-6">
+        <div>
+          <div class="font-mono text-[10px] tracking-[0.12em] uppercase text-white/55">Total groupe</div>
+          <div class="font-display italic text-[44px] text-white leading-none mt-1">€<%= (best[:total_cents] / 100.0).round %></div>
+        </div>
+        <div>
+          <div class="font-mono text-[10px] tracking-[0.12em] uppercase text-white/55">Moy. par personne</div>
+          <div class="font-display text-[28px] text-white leading-none mt-1">€<%= avg_price %></div>
+        </div>
+        <% if max_dur.present? && max_dur > 0 %>
+          <div>
+            <div class="font-mono text-[10px] tracking-[0.12em] uppercase text-white/55">Vol le plus long</div>
+            <div class="font-display text-[28px] text-white leading-none mt-1"><%= max_dur / 60 %>h<%= max_dur % 60 %>m</div>
+          </div>
+        <% end %>
+        <% if diff_vs_2 %>
+          <div>
+            <div class="font-mono text-[10px] tracking-[0.12em] uppercase text-white/55">Moins cher que #2</div>
+            <div class="font-display text-[28px] text-white leading-none mt-1">−€<%= diff_vs_2 %></div>
+          </div>
+        <% end %>
+      </div>
+
+      <%# CTAs %>
+      <div class="flex items-center gap-3 flex-wrap">
+        <%= link_to best_gf_url, target: "_blank", rel: "noopener",
+            class: "px-[22px] py-[14px] rounded-full bg-gt-orange text-white text-[15px] font-medium shadow-[0_8px_24px_rgba(232,99,42,0.2)] hover:bg-gt-orange-dark transition-colors inline-flex items-center gap-2" do %>
+          Réserver sur Google Flights →
+        <% end %>
+        <% if @trip.share_token.present? %>
+          <button type="button"
+            onclick="navigator.clipboard.writeText('<%= shared_trip_url(@trip.share_token) %>results').then(() => { this.innerHTML = '✓ Lien copié'; setTimeout(() => this.innerHTML = 'Partager les résultats', 2000) })"
+            class="px-[18px] py-3 rounded-full border border-white/25 text-white text-sm font-medium hover:bg-white/10 transition-colors inline-flex items-center gap-2">
+            Partager les résultats
+          </button>
+        <% end %>
+      </div>
     </div>
   </div>
 
-  <%# Carte Mapbox %>
-  <div data-controller="map-toggle">
+  <%# ── Mapbox map (compact) ── %>
+  <div data-controller="map-toggle" class="mb-5">
     <div class="flex items-center justify-between mb-2 sm:hidden">
-      <span class="text-[13px] font-medium text-gt-forest">Carte interactive</span>
-      <button data-map-toggle-target="button"
-              data-action="click->map-toggle#toggle"
-              class="text-[12px] text-gt-orange border border-gt-orange/30 px-3 py-1.5 rounded-[8px] font-medium hover:bg-gt-orange-light transition-colors">
+      <span class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted">Carte interactive</span>
+      <button data-map-toggle-target="button" data-action="click->map-toggle#toggle"
+              class="text-[12px] text-gt-orange border border-gt-orange/30 px-3 py-1.5 rounded-full font-medium hover:bg-gt-orange-light transition-colors">
         Voir la carte
       </button>
     </div>
-    <div data-map-toggle-target="map" class="bg-gt-white border border-gray-100 rounded-[14px] overflow-hidden">
-      <div id="map"
-           class="w-full h-64 sm:h-80"
+    <div data-map-toggle-target="map" class="bg-gt-white border border-gt-line rounded-[18px] overflow-hidden">
+      <div id="map" class="w-full h-56 sm:h-72"
            data-controller="map"
            data-map-token-value="<%= mapbox_token %>"
            data-map-participants-value="<%= participants_data.to_json %>"
@@ -99,279 +160,201 @@
     </div>
   </div>
 
-  <%# Filtres %>
-  <div class="flex items-center justify-between flex-wrap gap-3"
+  <%# ── Filter pills ── %>
+  <div class="flex items-center justify-between flex-wrap gap-3 mb-5"
        data-controller="results-filter"
        data-results-filter-data-value="<%= results_data.to_json %>">
     <div class="flex items-center gap-1 bg-gt-sand-dark rounded-[8px] p-1">
-      <button type="button"
-              data-results-filter-target="pill"
-              data-value="total_asc"
+      <button type="button" data-results-filter-target="pill" data-value="total_asc"
               data-action="click->results-filter#applyPill"
               data-participant-name="<%= @trip.participants.first&.name %>"
               class="px-3 py-1.5 rounded-[6px] text-[13px] font-medium transition-all bg-gt-white text-gt-forest">
         Prix total
       </button>
-      <button type="button"
-              data-results-filter-target="pill"
-              data-value="duration_asc"
+      <button type="button" data-results-filter-target="pill" data-value="duration_asc"
               data-action="click->results-filter#applyPill"
               class="px-3 py-1.5 rounded-[6px] text-[13px] font-medium transition-all text-gt-muted hover:text-gt-forest">
         Durée de vol
       </button>
       <% if @trip.participants.first %>
-        <button type="button"
-                data-results-filter-target="pill"
-                data-value="cheapest_for_me"
+        <button type="button" data-results-filter-target="pill" data-value="cheapest_for_me"
                 data-action="click->results-filter#applyPill"
                 class="px-3 py-1.5 rounded-[6px] text-[13px] font-medium transition-all text-gt-muted hover:text-gt-forest hidden sm:block">
           Mon prix
         </button>
       <% end %>
     </div>
-    <span class="text-[12px] text-gt-muted"><%= @results.count %> destinations évaluées</span>
+    <span class="font-mono text-[11px] tracking-[0.08em] text-gt-muted uppercase"><%= @results.count %> destinations évaluées</span>
   </div>
 
-  <%# Top 3 — cartes cliquables %>
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3" id="top3-cards"
+  <%# ── Main grid: breakdown left + (runners-up + vote) right ── %>
+  <div class="grid gap-5" style="grid-template-columns: 1.3fr 1fr;" id="top3-cards"
        data-results-filter-target="cards">
-    <% top3.each.with_index(1) do |result, rank| %>
-      <% is_best = rank == 1 %>
-      <button type="button"
-              class="text-left rounded-[14px] p-5 flex flex-col gap-2.5 transition-all ring-2 cursor-pointer top3-card result-card relative overflow-hidden <%= is_best ? 'card-selected ring-gt-forest' : 'bg-gt-white text-gray-800 ring-gray-100 hover:ring-gray-200' %>"
-              data-rank="<%= rank - 1 %>"
-              onclick="selectDestination(<%= rank - 1 %>, this)">
-        <% if is_best %>
-          <div class="absolute top-0 right-0 w-20 h-20 rounded-full opacity-20 pointer-events-none" style="background: radial-gradient(circle, #E8632A, transparent); transform: translate(30%, -30%);"></div>
-        <% end %>
-        <div class="flex items-center justify-between relative">
-          <span class="text-[11px] font-medium uppercase tracking-wider <%= is_best ? 'text-gt-orange' : 'text-gt-muted' %>">
-            <%= rank == 1 ? "✦ Recommandé" : "##{rank}" %>
-          </span>
-          <% if result[:city].country_code.present? %>
-            <span class="text-[11px] font-mono <%= is_best ? 'text-white/50' : 'text-gt-muted' %>"><%= result[:city].country_code %></span>
-          <% end %>
-        </div>
-        <h2 class="text-[20px] font-medium leading-tight card-city"><%= result[:city].city_name %></h2>
-        <div class="flex items-baseline gap-1">
-          <span class="text-[24px] font-medium card-total">€<%= (result[:total_cents] / 100.0).round %></span>
-          <span class="text-[12px] <%= is_best ? 'text-white/40' : 'text-gt-muted' %>">total groupe</span>
-        </div>
-        <% if rank > 1 && best %>
-          <span class="text-[12px] text-red-400 font-medium">+€<%= ((result[:total_cents] - best[:total_cents]) / 100.0).ceil %> vs recommandé</span>
-        <% end %>
-        <% city_votes = @trip.votes.where(candidate_city: result[:city]).count %>
-        <% if city_votes > 0 %>
-          <span class="text-[12px] <%= is_best ? 'text-white/60' : 'text-gt-forest-light' %> font-medium flex items-center gap-1">
-            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z"/></svg>
-            <%= city_votes %> vote<%= city_votes > 1 ? 's' : '' %>
-          </span>
-        <% end %>
-      </button>
-    <% end %>
-  </div>
 
-  <%# Détail par participant %>
-  <div class="bg-gt-white border border-gray-100 rounded-[14px] overflow-hidden" id="detail-section">
-    <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-      <h2 class="font-medium text-gt-forest text-sm sm:text-[15px]" id="detail-title">Détail — <%= best[:city].city_name %></h2>
-      <span class="text-[13px] text-gt-muted"><%= @trip.participants.count %> personne<%= @trip.participants.count > 1 ? 's' : '' %></span>
-    </div>
-    <ul class="divide-y divide-gray-50" id="detail-list">
-      <% best[:quotes].sort_by(&:price_cents).each do |quote| %>
-        <li class="flex items-center justify-between px-5 py-4">
-          <div class="flex items-center gap-3 min-w-0">
-            <div class="w-8 h-8 rounded-full bg-gt-orange-light text-gt-orange-dark flex items-center justify-center text-[12px] font-medium flex-shrink-0">
-              <%= quote.participant.name[0].upcase %>
+    <%# ── Fare Breakdown Panel ── %>
+    <div class="bg-gt-white border border-gt-line rounded-[18px] p-[22px]" id="detail-section">
+      <div class="flex items-baseline justify-between mb-1">
+        <div class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted">Détail des vols</div>
+        <span class="text-[13px] text-gt-muted" id="detail-title">→ <%= best[:city].city_name %> · <%= @trip.start_date&.strftime("%d %b") %></span>
+      </div>
+      <ul class="mt-3" id="detail-list">
+        <% best[:quotes].sort_by(&:price_cents).each_with_index do |quote, qi| %>
+          <%
+            tones_list = ['ember','forest','sky','plum','sand']
+            tone = tones_list[qi % tones_list.length]
+            tone_bg = { 'ember' => 'bg-gt-orange-light', 'forest' => 'bg-[#DDE7E1]', 'sky' => 'bg-[#DCE8F1]', 'plum' => 'bg-[#EADCF0]', 'sand' => 'bg-gt-sand-dark' }[tone]
+            tone_fg = { 'ember' => 'text-gt-orange-dark', 'forest' => 'text-gt-forest', 'sky' => 'text-[#3A6B92]', 'plum' => 'text-[#7A3F8F]', 'sand' => 'text-gt-ink-soft' }[tone]
+
+            origin_iata = quote.participant.origin_airport_code.presence
+            dest_iata   = best[:city].airport_code.presence
+            flight_date = quote.departure_at&.to_date || @trip.start_date
+            if origin_iata && dest_iata && flight_date
+              outbound = "#{origin_iata}.#{dest_iata}.#{flight_date.strftime('%Y-%m-%d')}"
+              return_leg = (quote.is_round_trip && @trip.end_date) ? "*#{dest_iata}.#{origin_iata}.#{@trip.end_date.strftime('%Y-%m-%d')}" : ""
+              gf_url = "https://www.google.com/travel/flights#flt=#{outbound}#{return_leg};c:EUR;e:1;sd:1;t:f"
+            else
+              gf_url = "https://www.google.com/travel/flights?q=#{CGI.escape("#{quote.participant.origin_city} to #{best[:city].city_name}")}"
+            end
+          %>
+          <li class="grid items-center gap-3 py-3.5 <%= qi < best[:quotes].count - 1 ? 'border-b border-dashed border-gt-line' : '' %>"
+              style="grid-template-columns: 44px 1.1fr 1fr 70px 70px;">
+            <div class="w-9 h-9 rounded-full <%= tone_bg %> <%= tone_fg %> flex items-center justify-center text-[13px] font-semibold border-2 border-gt-white flex-shrink-0">
+              <%= quote.participant.name[0..1].upcase %>
             </div>
-            <div class="min-w-0">
-              <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="font-medium text-gt-forest text-sm"><%= quote.participant.name %></span>
-                <span class="text-gt-muted text-[12px] hidden sm:inline">·</span>
-                <span class="text-gray-500 text-[12px] hidden sm:inline"><%= quote.participant.origin_city %> → <%= best[:city].city_name %></span>
-              </div>
-              <% if quote.departure_at.present? && quote.price_cents > 0 %>
-                <div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                  <% if quote.airline_name.present? %>
-                    <span class="text-[12px] text-gt-muted font-medium"><%= quote.airline_name %></span>
-                    <span class="text-gray-300 text-[12px]">·</span>
-                  <% end %>
-                  <span class="text-[12px] text-gt-muted">
-                    <%= quote.departure_at.strftime("%H:%M") %> → <%= quote.arrival_at.strftime("%H:%M") %>
-                    <% if quote.arrival_at.to_date > quote.departure_at.to_date %>
-                      <span class="text-gt-orange ml-0.5">+1j</span>
-                    <% end %>
-                  </span>
-                  <span class="text-gray-300 text-[12px]">·</span>
-                  <span class="text-[12px] text-gt-muted"><%= quote.departure_at.strftime("%d %b") %></span>
-                </div>
+            <div>
+              <div class="text-[14px] font-medium text-gt-ink"><%= quote.participant.name %></div>
+              <div class="font-mono text-[11px] text-gt-muted tracking-[0.04em]"><%= origin_iata || "???" %> → <%= dest_iata || best[:city].city_name %></div>
+            </div>
+            <div class="text-[13px] text-gt-ink-soft"><%= quote.participant.origin_city %></div>
+            <div class="font-mono text-[12px] text-gt-muted text-right">
+              <% if quote.duration_minutes.present? && quote.duration_minutes > 0 %>
+                <%= quote.duration_minutes / 60 %>h<%= quote.duration_minutes % 60 %>m
               <% end %>
             </div>
-          </div>
-          <div class="flex items-center gap-3 flex-shrink-0">
-            <div class="text-right">
+            <div class="text-right flex items-center justify-end gap-2">
               <% if quote.price_cents == 0 %>
-                <span class="font-medium text-green-600 text-sm">Sur place</span>
+                <span class="font-display italic text-[18px] text-gt-forest-light">Local</span>
               <% else %>
-                <div class="flex items-center gap-1.5 justify-end">
-                  <span class="font-medium text-gt-forest">€<%= quote.price_euros.round %></span>
+                <div>
+                  <div class="font-display italic text-[22px] text-gt-orange leading-none">€<%= quote.price_euros.round %></div>
                   <% if quote.is_round_trip %>
-                    <span class="text-[11px] bg-gt-orange-light text-gt-orange-dark px-1.5 py-0.5 rounded font-medium">A/R</span>
+                    <div class="font-mono text-[9px] text-gt-muted tracking-[0.06em]">A/R</div>
                   <% end %>
                 </div>
-                <% if quote.duration_minutes.present? && quote.duration_minutes > 0 %>
-                  <span class="text-[12px] text-gt-muted"><%= quote.duration_minutes / 60 %>h<%= quote.duration_minutes % 60 %>m</span>
+                <%= link_to gf_url, target: "_blank", rel: "noopener",
+                    class: "text-gt-muted hover:text-gt-orange transition-colors p-1",
+                    title: "Google Flights" do %>
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                 <% end %>
               <% end %>
             </div>
-            <% unless quote.price_cents == 0 %>
-              <% origin_iata = quote.participant.origin_airport_code.presence %>
-              <% dest_iata   = best[:city].airport_code.presence %>
-              <% flight_date = quote.departure_at&.to_date || @trip.start_date %>
-              <% if origin_iata && dest_iata && flight_date %>
-                <% outbound = "#{origin_iata}.#{dest_iata}.#{flight_date.strftime('%Y-%m-%d')}" %>
-                <% return_leg = (quote.is_round_trip && @trip.end_date) ? "*#{dest_iata}.#{origin_iata}.#{@trip.end_date.strftime('%Y-%m-%d')}" : "" %>
-                <% gf_url = "https://www.google.com/travel/flights#flt=#{outbound}#{return_leg};c:EUR;e:1;sd:1;t:f" %>
-              <% else %>
-                <% gf_url = "https://www.google.com/travel/flights?q=#{CGI.escape("#{quote.participant.origin_city} to #{best[:city].city_name}")}" %>
-              <% end %>
-              <%= link_to gf_url, target: "_blank", rel: "noopener",
-                  class: "text-gt-muted hover:text-gt-orange transition-colors p-2 rounded-[8px] hover:bg-gt-orange-light flex items-center justify-center",
-                  title: "Voir sur Google Flights" do %>
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-              <% end %>
-            <% end %>
+          </li>
+        <% end %>
+      </ul>
+      <%# Total row %>
+      <div class="border-t border-gt-line mt-2 pt-4 flex justify-between items-baseline">
+        <span class="font-mono text-[11px] tracking-[0.12em] uppercase text-gt-muted">Total groupe</span>
+        <span class="font-display italic text-[36px] text-gt-forest tracking-[-0.02em]">€<%= (best[:total_cents] / 100.0).round %></span>
+      </div>
+    </div>
+
+    <%# ── Right column: runners-up + vote ── %>
+    <div class="flex flex-col gap-5">
+
+      <%# Runners-up %>
+      <div class="bg-gt-white border border-gt-line rounded-[18px] p-[22px]">
+        <div class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted mb-3.5">Runners-up</div>
+        <% (top3.drop(1) + others).each_with_index do |result, i| %>
+          <div class="flex items-center gap-2.5 py-2.5 <%= i < (top3.count - 1 + others.count - 1) ? 'border-b border-dashed border-gt-line' : '' %>">
+            <span class="font-mono text-[11px] text-gt-muted w-5">#<%= i + 2 %></span>
+            <span class="flex-1 text-[14px] text-gt-ink font-medium"><%= result[:city].city_name %></span>
+            <span class="font-mono text-[11px] text-gt-orange-dark">+€<%= ((result[:total_cents] - best[:total_cents]) / 100.0).ceil %></span>
+            <span class="font-display italic text-[18px] text-gt-forest min-w-[48px] text-right">€<%= (result[:total_cents] / 100.0).round %></span>
           </div>
-        </li>
-      <% end %>
-    </ul>
-    <div class="px-5 py-4 bg-gt-sand/50 border-t border-gray-100 flex justify-between items-center">
-      <span class="text-[13px] font-medium text-gt-muted">Total groupe</span>
-      <span class="font-medium text-gt-forest text-[18px]">€<%= (best[:total_cents] / 100.0).round %></span>
-    </div>
-  </div>
-
-  <%# Vote du groupe %>
-  <%= render "votes/section", trip: @trip, error: nil %>
-
-  <%# Autres destinations %>
-  <% if others.any? %>
-    <div class="bg-gt-white border border-gray-100 rounded-[14px] overflow-hidden">
-      <div class="px-5 py-4 border-b border-gray-100">
-        <p class="text-[11px] font-medium uppercase tracking-wider text-gt-muted">Autres destinations évaluées</p>
+        <% end %>
       </div>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead class="bg-gt-sand/50 border-b border-gray-100">
-            <tr>
-              <th class="px-5 py-3 text-left text-[11px] font-medium text-gt-muted uppercase tracking-wider">#</th>
-              <th class="px-5 py-3 text-left text-[11px] font-medium text-gt-muted uppercase tracking-wider">Ville</th>
-              <th class="px-5 py-3 text-right text-[11px] font-medium text-gt-muted uppercase tracking-wider">Total</th>
-              <th class="px-5 py-3 text-right text-[11px] font-medium text-gt-muted uppercase tracking-wider hidden sm:table-cell">Surcoût</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-50">
-            <% others.each.with_index(4) do |result, rank| %>
-              <tr class="hover:bg-gt-sand/30 transition-colors">
-                <td class="px-5 py-3.5 text-gt-muted font-medium"><%= rank %></td>
-                <td class="px-5 py-3.5">
-                  <span class="font-medium text-gt-forest"><%= result[:city].city_name %></span>
-                  <% if result[:city].country_code.present? %>
-                    <span class="text-gt-muted text-[11px] ml-1.5 font-mono"><%= result[:city].country_code %></span>
-                  <% end %>
-                </td>
-                <td class="px-5 py-3.5 text-right font-medium text-gt-forest">€<%= (result[:total_cents] / 100.0).round %></td>
-                <td class="px-5 py-3.5 text-right text-red-400 text-[12px] font-medium hidden sm:table-cell">
-                  +€<%= ((result[:total_cents] - best[:total_cents]) / 100.0).ceil %>
-                </td>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  <% end %>
 
-  <%# Actions %>
-  <div class="flex flex-wrap gap-3 pb-4">
+      <%# Vote panel — uses existing Turbo Stream replacement pattern %>
+      <%= render "votes/section", trip: @trip, error: nil %>
+
+    </div>
+
+  </div><%# end grid %>
+
+  <%# ── Actions ── %>
+  <div class="flex flex-wrap gap-3 mt-6">
     <% if is_owner %>
-      <%= link_to "← Revenir au trip", trip_path(@trip),
-          class: "text-[13px] text-gray-500 border border-gray-200 px-4 py-2.5 rounded-[8px] hover:bg-gt-sand transition-colors" %>
+      <%= link_to "← Retour au trip", trip_path(@trip),
+          class: "px-[18px] py-3 rounded-full border border-gt-line text-gt-ink-soft text-sm font-medium hover:border-gt-forest/30 hover:text-gt-forest transition-colors" %>
       <%= button_to "Actualiser les prix", optimize_trip_path(@trip), method: :post,
-          class: "text-[13px] bg-gt-orange text-white px-4 py-2.5 rounded-[8px] hover:bg-gt-orange-dark transition-colors font-medium" %>
+          class: "px-[22px] py-[14px] rounded-full bg-gt-orange text-white text-[15px] font-medium shadow-[0_8px_24px_rgba(232,99,42,0.2)] hover:bg-gt-orange-dark transition-colors" %>
+    <% end %>
+    <% if @trip.last_optimized_at.present? %>
+      <span class="flex items-center gap-1.5 text-[12px] text-gt-muted self-center">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Calculé il y a <%= time_ago_in_words(@trip.last_optimized_at) %>
+      </span>
     <% end %>
   </div>
 
 </div>
 
 <script>
-  const allResults       = <%= raw results_data.to_json %>;
-  const tripReturnDate   = <%= raw @trip.end_date&.strftime("%Y-%m-%d").to_json %>;
+  const allResults     = <%= raw results_data.to_json %>;
+  const tripReturnDate = <%= raw @trip.end_date&.strftime("%Y-%m-%d").to_json %>;
+
+  const TONE_BG = ['bg-gt-orange-light','bg-[#DDE7E1]','bg-[#DCE8F1]','bg-[#EADCF0]','bg-gt-sand-dark'];
+  const TONE_FG = ['text-gt-orange-dark','text-gt-forest','text-[#3A6B92]','text-[#7A3F8F]','text-gt-ink-soft'];
 
   function buildGFlightsUrl(originIata, destIata, departDate, returnDate) {
     if (originIata && destIata && departDate) {
       const outbound  = `${originIata}.${destIata}.${departDate}`;
-      const returnLeg = returnDate ? `*${destIata}.${originIata}.${returnDate}` : "";
+      const returnLeg = returnDate ? `*${destIata}.${originIata}.${returnDate}` : '';
       return `https://www.google.com/travel/flights#flt=${outbound}${returnLeg};c:EUR;e:1;sd:1;t:f`;
     }
     return null;
   }
 
-  function selectDestination(index, clickedCard) {
-    document.querySelectorAll(".top3-card").forEach((card, i) => {
-      if (i === index) {
-        card.classList.add("card-selected", "ring-gt-forest");
-        card.classList.remove("bg-gt-white", "text-gray-800", "ring-gray-100", "hover:ring-gray-200");
-      } else {
-        card.classList.remove("card-selected", "ring-gt-forest");
-        card.classList.add("bg-gt-white", "text-gray-800", "ring-gray-100", "hover:ring-gray-200");
-      }
-    });
-
+  function selectDestination(index) {
     const result = allResults[index];
-    document.getElementById("detail-title").textContent = `Détail — ${result.city_name}`;
+    document.getElementById('detail-title').textContent = `→ ${result.city_name}`;
 
-    const list = document.getElementById("detail-list");
-    list.innerHTML = result.quotes.map(q => {
-      const flightMeta = (!q.is_local && (q.airline || q.departure_at)) ? `
-        <div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
-          ${q.airline ? `<span class="text-xs text-gt-muted font-medium">${q.airline}</span><span class="text-gray-300 text-xs">·</span>` : ''}
-          ${q.departure_at ? `<span class="text-xs text-gt-muted">${q.departure_at} → ${q.arrival_at}${q.next_day ? ' <span class="text-gt-orange">+1j</span>' : ''}</span>` : ''}
-          ${q.departure_date ? `<span class="text-gray-300 text-xs">·</span><span class="text-xs text-gt-muted">${q.departure_date}</span>` : ''}
-        </div>` : '';
+    const list = document.getElementById('detail-list');
+    list.innerHTML = result.quotes.map((q, qi) => {
+      const bg = TONE_BG[qi % TONE_BG.length];
+      const fg = TONE_FG[qi % TONE_FG.length];
+      const retDate = q.is_round_trip ? tripReturnDate : null;
+      const gfUrl = buildGFlightsUrl(q.origin_iata, result.airport_code, q.departure_date_iso, retDate)
+        || `https://www.google.com/travel/flights?q=${encodeURIComponent(q.city + ' to ' + result.city_name)}`;
+      const price = q.is_local
+        ? `<span class="font-display italic text-[18px] text-gt-forest-light">Local</span>`
+        : `<div><div class="font-display italic text-[22px] text-gt-orange leading-none">€${q.price}</div>${q.is_round_trip ? '<div class="font-mono text-[9px] text-gt-muted">A/R</div>' : ''}</div>
+           <a href="${gfUrl}" target="_blank" rel="noopener" class="text-gt-muted hover:text-gt-orange transition-colors p-1" title="Google Flights">
+             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+           </a>`;
+      const dur = q.duration ? `${Math.floor(q.duration/60)}h${q.duration%60}m` : '';
       return `
-      <li class="flex items-center justify-between px-5 py-4">
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="w-8 h-8 rounded-full bg-gt-orange-light text-gt-orange-dark flex items-center justify-center text-xs font-medium flex-shrink-0">
-            ${q.name[0].toUpperCase()}
+        <li class="grid items-center gap-3 py-3.5 ${qi < result.quotes.length - 1 ? 'border-b border-dashed border-gt-line' : ''}"
+            style="grid-template-columns: 44px 1.1fr 1fr 70px 70px;">
+          <div class="w-9 h-9 rounded-full ${bg} ${fg} flex items-center justify-center text-[13px] font-semibold border-2 border-gt-white flex-shrink-0">
+            ${q.name.substring(0,2).toUpperCase()}
           </div>
-          <div class="min-w-0">
-            <div class="flex items-center gap-1.5 flex-wrap">
-              <span class="font-medium text-gt-forest text-sm">${q.name}</span>
-              <span class="text-gt-muted text-xs hidden sm:inline">·</span>
-              <span class="text-gray-500 text-xs hidden sm:inline">${q.city} → ${result.city_name}</span>
-            </div>
-            ${flightMeta}
+          <div>
+            <div class="text-[14px] font-medium text-gt-ink">${q.name}</div>
+            <div class="font-mono text-[11px] text-gt-muted">${q.origin_iata || '???'} → ${result.airport_code}</div>
           </div>
-        </div>
-        <div class="flex items-center gap-3 flex-shrink-0">
-          <div class="text-right">
-            ${q.is_local
-              ? '<span class="font-medium text-green-600 text-sm">Sur place</span>'
-              : `<div class="flex items-center gap-1.5 justify-end"><span class="font-medium text-gt-forest">€${q.price}</span>${q.is_round_trip ? '<span class="text-xs bg-gt-orange-light text-gt-orange-dark px-1.5 py-0.5 rounded font-medium">A/R</span>' : ''}</div>${q.duration ? `<span class="text-xs text-gt-muted">${Math.floor(q.duration/60)}h${q.duration%60}m</span>` : ''}`
-            }
-          </div>
-          ${!q.is_local ? (() => {
-            const retDate = q.is_round_trip ? tripReturnDate : null;
-            const gfUrl = buildGFlightsUrl(q.origin_iata, result.airport_code, q.departure_date_iso, retDate)
-              || `https://www.google.com/travel/flights?q=${encodeURIComponent(q.city + ' to ' + result.city_name)}`;
-            return `<a href="${gfUrl}" target="_blank" rel="noopener" class="text-gt-muted hover:text-gt-orange transition-colors p-2 rounded-lg hover:bg-gt-orange-light flex items-center justify-center" title="Google Flights"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>`;
-          })() : ''}
-        </div>
-      </li>`
-    }).join("");
+          <div class="text-[13px] text-gt-ink-soft">${q.city}</div>
+          <div class="font-mono text-[12px] text-gt-muted text-right">${dur}</div>
+          <div class="text-right flex items-center justify-end gap-2">${price}</div>
+        </li>`;
+    }).join('');
 
-    const mapEl = document.getElementById("map");
+    // total
+    const totalEl = list.closest('#detail-section').querySelector('.font-display.italic');
+    if (totalEl) totalEl.textContent = `€${Math.round(result.total_cents / 100)}`;
+
+    // map sync
+    const mapEl = document.getElementById('map');
     if (mapEl?._stimulus_controller) mapEl._stimulus_controller.selectDestination(index);
     if (mapEl) mapEl.dataset.mapSelectedValue = index;
   }
