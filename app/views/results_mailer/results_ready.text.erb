@@ -1,0 +1,21 @@
+GET TOGETHER — <%= @trip.title %>
+=====================================
+
+✈️  La réponse honnête est tombée.
+
+Meet in <%= @best[:city].city_name.upcase %>.
+
+  Total groupe   : €<%= @total_eur %>
+  Par personne   : €<%= @avg_eur %>
+  Aéroport       : <%= @best[:city].airport_code %>
+
+Voir le classement complet :
+<%= @results_url %>
+
+---
+<% @results.first(5).each_with_index do |r, i| %>
+#<%= i+1 %>  <%= r[:city].city_name %> — €<%= (r[:total_cents] / 100.0).round %><%= i > 0 ? " (+€#{((r[:total_cents] - @best[:total_cents]) / 100.0).ceil})" : " ← BEST" %>
+<% end %>
+
+---
+© 2026 · GET TOGETHER · FAIT POUR LES AMIS

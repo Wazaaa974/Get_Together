@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= @trip.title %> — Résultats Get Together</title>
+</head>
+<body style="margin:0;padding:0;background:#F5F0E8;font-family:'Inter',Helvetica,Arial,sans-serif;">
+
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F0E8;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+
+          <%# Header %>
+          <tr>
+            <td style="padding-bottom:24px;text-align:center;">
+              <span style="font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#8A8070;">GET TOGETHER</span>
+            </td>
+          </tr>
+
+          <%# Winner card %>
+          <tr>
+            <td style="background:linear-gradient(150deg,#1A1F2E 0%,#2D4A3E 65%,#4A7A65 100%);border-radius:20px;padding:40px 40px 36px;">
+              <p style="margin:0 0 4px;font-family:'Courier New',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.6);">Meet in</p>
+              <h1 style="margin:0 0 6px;font-size:64px;font-weight:300;color:#ffffff;line-height:1;letter-spacing:-0.02em;">
+                <%= @best[:city].city_name %><span style="color:#E8632A;font-style:italic;">.</span>
+              </h1>
+              <p style="margin:0 0 28px;font-size:18px;color:rgba(255,255,255,0.65);font-style:italic;">
+                <%= @best[:city].country_code %> · <%= @best[:city].airport_code %>
+              </p>
+
+              <table cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+                <tr>
+                  <td style="padding-right:36px;">
+                    <p style="margin:0 0 4px;font-family:'Courier New',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.5);">Total groupe</p>
+                    <p style="margin:0;font-size:40px;font-weight:300;color:#ffffff;font-style:italic;line-height:1;">€<%= @total_eur %></p>
+                  </td>
+                  <td>
+                    <p style="margin:0 0 4px;font-family:'Courier New',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.5);">Moy. par personne</p>
+                    <p style="margin:0;font-size:26px;font-weight:400;color:#ffffff;line-height:1;">€<%= @avg_eur %></p>
+                  </td>
+                </tr>
+              </table>
+
+              <a href="<%= @results_url %>" style="display:inline-block;padding:14px 24px;background:#E8632A;color:#ffffff;text-decoration:none;border-radius:100px;font-size:15px;font-weight:500;">
+                Voir le classement complet →
+              </a>
+            </td>
+          </tr>
+
+          <%# Top 3 %>
+          <% if @results.size > 1 %>
+          <tr>
+            <td style="padding-top:20px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;border:1px solid #E8E0D0;overflow:hidden;">
+                <tr>
+                  <td style="padding:18px 20px 14px;">
+                    <p style="margin:0 0 12px;font-family:'Courier New',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8A8070;">Classement</p>
+                    <% @results.first(5).each_with_index do |r, i| %>
+                    <table width="100%" cellpadding="0" cellspacing="0" style="<%= i < [@results.size, 5].min - 1 ? 'border-bottom:1px dashed #E8E0D0;' : '' %>padding:8px 0;">
+                      <tr>
+                        <td width="24" style="font-family:'Courier New',monospace;font-size:11px;color:#8A8070;">#<%= i+1 %></td>
+                        <td style="font-size:14px;font-weight:500;color:#1A1F2E;"><%= r[:city].city_name %></td>
+                        <% if i > 0 %>
+                        <td align="right" style="font-family:'Courier New',monospace;font-size:11px;color:#C04E18;">+€<%= ((r[:total_cents] - @best[:total_cents]) / 100.0).ceil %></td>
+                        <% else %>
+                        <td align="right" style="font-family:'Courier New',monospace;font-size:10px;color:#8A8070;letter-spacing:0.06em;">BEST</td>
+                        <% end %>
+                        <td align="right" width="64" style="font-size:16px;color:#2D4A3E;font-style:italic;padding-left:12px;">€<%= (r[:total_cents] / 100.0).round %></td>
+                      </tr>
+                    </table>
+                    <% end %>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <% end %>
+
+          <%# Footer %>
+          <tr>
+            <td style="padding-top:24px;text-align:center;">
+              <p style="margin:0 0 4px;font-size:12px;color:#8A8070;">
+                <a href="<%= @results_url %>" style="color:#E8632A;text-decoration:none;">Ouvrir les résultats complets</a>
+              </p>
+              <p style="margin:0;font-family:'Courier New',monospace;font-size:10px;color:#A89880;letter-spacing:0.06em;">© 2026 · FAIT POUR LES AMIS</p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

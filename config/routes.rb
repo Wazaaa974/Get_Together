@@ -3,6 +3,7 @@ Rails.application.routes.draw do
   root "trips#index"
 
   get "/trips/shared/:share_token", to: "trips#shared", as: :shared_trip
+  get "/trips/shared/:share_token/results", to: "trips#shared_results", as: :shared_trip_results
   post "/trips/shared/:share_token/participants", to: "shared_participants#create", as: :shared_trip_participants
 
   resources :trips do
@@ -15,6 +16,7 @@ Rails.application.routes.draw do
       get  :waiting
       get  :optimization_status
       get  :claim
+      post :save_notification_email
     end
   end
 
