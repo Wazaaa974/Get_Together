@@ -23,6 +23,7 @@ class OptimizationJob < ApplicationJob
     if results.any?
       trip.update!(status: "active", optimization_status: "done", last_optimized_at: Time.current)
       Rails.logger.info("[OptimizationJob] trip #{trip_id} done in #{elapsed}s — #{results.size} cities ranked")
+      ResultsMailer.results_ready(trip).deliver_later if trip.notification_email.present?
     else
       trip.update!(optimization_status: "failed")
       Rails.logger.warn("[OptimizationJob] trip #{trip_id} — no results after #{elapsed}s")

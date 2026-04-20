@@ -1,5 +1,5 @@
 class TripsController < ApplicationController
-  before_action :set_trip, only: [ :show, :edit, :update, :destroy, :optimize, :results, :waiting, :optimization_status, :claim ]
+  before_action :set_trip, only: [ :show, :edit, :update, :destroy, :optimize, :results, :waiting, :optimization_status, :claim, :save_notification_email ]
   before_action :require_owner!, only: [ :show, :edit, :update, :destroy, :optimize, :results, :waiting, :optimization_status ]
 
   def index
@@ -95,6 +95,32 @@ class TripsController < ApplicationController
     @is_owner = false
     @shared_view = true
     render :show
+  end
+
+  def save_notification_email
+    email = params[:notification_email].to_s.strip
+    if email.match?(URI::MailTo::EMAIL_REGEXP)
+      @trip.update!(notification_email: email)
+      render json: { ok: true }
+    else
+      render json: { ok: false, error: "Email invalide" }, status: :unprocessable_entity
+    end
+  end
+
+  def shared_results
+    @trip = Trip.includes(:participants, :candidate_cities, :route_quotes).find_by(share_token: params[:share_token])
+    if @trip.nil?
+      redirect_to root_path, alert: "Ce lien de partage est invalide ou a expiré."
+      return
+    end
+    @is_owner = false
+    @shared_view = true
+    @results = TripOptimizer.results_from_db(@trip)
+    if @results.empty?
+      redirect_to shared_trip_path(@trip.share_token), alert: "Les résultats ne sont pas encore disponibles."
+      return
+    end
+    render :results
   end
 
   private
