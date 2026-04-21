@@ -1,16 +1,16 @@
 <% content_for :title, "Calcul en cours… — Get Together" %>
 <% content_for :nav_crumb, "Calcul en cours…" %>
 
-<div class="max-w-[640px] mx-auto px-8 pt-20 pb-20 text-center"
+<div class="max-w-[640px] mx-auto px-4 sm:px-6 lg:px-8 pt-12 sm:pt-20 pb-20 text-center"
      data-controller="optimization-poll"
      data-optimization-poll-url-value="<%= optimization_status_trip_path(@trip) %>"
      data-optimization-poll-results-url-value="<%= results_trip_path(@trip) %>"
      data-optimization-poll-trip-url-value="<%= trip_path(@trip) %>">
 
   <%# ── Animated Globe ── %>
-  <div class="flex justify-center mb-8">
-    <div class="relative inline-block" style="width:220px;height:220px;">
-      <svg viewBox="0 0 200 200" width="220" height="220" style="overflow:visible;">
+  <div class="flex justify-center mb-6 sm:mb-8">
+    <div class="relative inline-block w-[160px] h-[160px] sm:w-[220px] sm:h-[220px]">
+      <svg viewBox="0 0 200 200" class="w-full h-full" style="overflow:visible;">
         <defs>
           <clipPath id="wglobe">
             <circle cx="100" cy="100" r="78"/>
@@ -62,11 +62,11 @@
   <div class="font-mono text-[11px] tracking-[0.13em] uppercase text-gt-muted mb-3">Calcul des prix · Duffel</div>
 
   <%# ── Headline ── %>
-  <h1 class="font-display font-normal text-[48px] leading-[1.05] tracking-[-0.025em] text-gt-forest mb-4 sm:text-[32px]">
+  <h1 class="font-display font-normal text-[28px] sm:text-[36px] lg:text-[48px] leading-[1.1] tracking-[-0.025em] text-gt-forest mb-4">
     On sillonne les cieux pour <em class="italic text-gt-orange">la réponse honnête…</em>
   </h1>
 
-  <p class="text-[16px] text-gt-ink-soft leading-relaxed max-w-[440px] mx-auto mb-8">
+  <p class="text-[14px] sm:text-[16px] text-gt-ink-soft leading-relaxed max-w-[440px] mx-auto mb-8">
     On interroge Duffel pour les vrais tarifs depuis chaque origine vers chaque destination.
   </p>
 
@@ -87,7 +87,7 @@
   </div>
 
   <%# ── Route chips grid ── %>
-  <div class="grid grid-cols-4 gap-2 text-left mb-10 sm:grid-cols-2" data-optimization-poll-target="steps">
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-left mb-10" data-optimization-poll-target="steps">
     <%
       participants = @trip.participants.first(4)
       destinations = @trip.candidate_cities.any? ? @trip.candidate_cities.first(4) : [
@@ -115,7 +115,7 @@
         Recevez les résultats par email si vous fermez cette page.
       </p>
       <div id="email-form-area">
-        <div class="flex gap-2 sm:flex-col">
+        <div class="flex flex-col sm:flex-row gap-2">
           <input type="email" id="notify-email-input" placeholder="votre@email.com"
                  class="flex-1 px-4 py-2.5 rounded-full border border-gt-line text-[14px] text-gt-ink bg-gt-sand focus:outline-none focus:border-gt-forest/40 placeholder:text-gt-muted/60 transition-colors">
           <button type="button" onclick="submitNotifyEmail(this)"

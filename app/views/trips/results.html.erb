@@ -101,10 +101,10 @@
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js"></script>
 <% end %>
 
-<div class="max-w-[1180px] mx-auto px-8 pt-[81px] pb-20">
+<div class="max-w-[1180px] mx-auto px-4 sm:px-6 lg:px-8 pt-[73px] lg:pt-[81px] pb-20">
 
   <%# ── WinnerCard ── %>
-  <div class="rounded-[24px] relative overflow-hidden mb-5" style="background: linear-gradient(150deg, #1A1F2E 0%, #2D4A3E 65%, #4A7A65 100%); padding: 44px 48px;">
+  <div class="rounded-[24px] relative overflow-hidden mb-5 p-6 sm:p-8 lg:p-12" style="background: linear-gradient(150deg, #1A1F2E 0%, #2D4A3E 65%, #4A7A65 100%);">
 
     <%# City photo — blended from the right %>
     <div id="winner-photo-layer" class="absolute inset-0 pointer-events-none" style="
@@ -120,8 +120,8 @@
     <%# Orange glow top-right %>
     <div class="absolute right-[-80px] top-[-80px] w-[320px] h-[320px] rounded-full pointer-events-none" style="background: radial-gradient(circle, rgba(232,99,42,0.4) 0%, transparent 65%);"></div>
 
-    <%# Stamp — top right %>
-    <div class="absolute right-10 top-10" style="transform: rotate(8deg);" aria-hidden="true">
+    <%# Stamp — top right (hidden on mobile to save space) %>
+    <div class="absolute right-6 top-6 sm:right-10 sm:top-10 hidden sm:block" style="transform: rotate(8deg);" aria-hidden="true">
       <div class="inline-flex items-center gap-1.5 px-2.5 py-1 border border-dashed border-gt-orange text-gt-orange rounded font-mono text-[10px] font-medium tracking-[0.12em] uppercase bg-transparent">Cheapest for the group</div>
     </div>
 
@@ -134,33 +134,33 @@
       <%# Meet in kicker %>
       <div class="font-mono text-[12px] tracking-[0.14em] uppercase text-white/70 mb-1">Meet in</div>
 
-      <%# 140px city name %>
-      <h1 id="winner-city-name" class="font-display font-normal text-white leading-[0.92] tracking-[-0.03em] mb-2 sm:text-[76px]" style="font-size: 140px;">
+      <%# City name — responsive %>
+      <h1 id="winner-city-name" class="font-display font-normal text-white leading-[0.92] tracking-[-0.03em] mb-2 text-[56px] sm:text-[88px] lg:text-[120px] xl:text-[140px]">
         <%= best[:city].city_name %><em class="italic text-gt-orange not-italic">.</em>
       </h1>
 
       <%# Country · IATA italic subtitle %>
-      <div id="winner-subtitle" class="font-display italic text-[22px] text-white/75 mb-8">
+      <div id="winner-subtitle" class="font-display italic text-[18px] sm:text-[22px] text-white/75 mb-6 sm:mb-8">
         <%= best[:city].country_code %> · <%= best[:city].airport_code %>
       </div>
 
       <%# Stats row %>
-      <div class="flex gap-12 mb-8 flex-wrap sm:gap-6">
+      <div class="flex gap-6 sm:gap-9 lg:gap-12 mb-6 sm:mb-8 flex-wrap">
         <div>
           <div class="font-mono text-[10px] tracking-[0.12em] uppercase text-white/55">Total groupe</div>
-          <div id="winner-total-val" class="font-display italic text-[44px] text-white leading-none mt-1">€<%= (best[:total_cents] / 100.0).round %></div>
+          <div id="winner-total-val" class="font-display italic text-[32px] sm:text-[40px] lg:text-[44px] text-white leading-none mt-1">€<%= (best[:total_cents] / 100.0).round %></div>
         </div>
         <div>
           <div class="font-mono text-[10px] tracking-[0.12em] uppercase text-white/55">Moy. par personne</div>
-          <div id="winner-avg-val" class="font-display text-[28px] text-white leading-none mt-1">€<%= avg_price %></div>
+          <div id="winner-avg-val" class="font-display text-[22px] sm:text-[26px] lg:text-[28px] text-white leading-none mt-1">€<%= avg_price %></div>
         </div>
         <div id="winner-dur-block" class="<%= (max_dur.present? && max_dur > 0) ? '' : 'hidden' %>">
           <div class="font-mono text-[10px] tracking-[0.12em] uppercase text-white/55">Vol le plus long</div>
-          <div id="winner-dur-val" class="font-display text-[28px] text-white leading-none mt-1"><%= max_dur.present? && max_dur > 0 ? "#{max_dur / 60}h#{max_dur % 60}m" : "" %></div>
+          <div id="winner-dur-val" class="font-display text-[22px] sm:text-[26px] lg:text-[28px] text-white leading-none mt-1"><%= max_dur.present? && max_dur > 0 ? "#{max_dur / 60}h#{max_dur % 60}m" : "" %></div>
         </div>
         <div id="winner-diff-block" class="<%= diff_vs_2 ? '' : 'hidden' %>">
           <div id="winner-diff-label" class="font-mono text-[10px] tracking-[0.12em] uppercase text-white/55">Moins cher que #2</div>
-          <div id="winner-diff-val" class="font-display text-[28px] text-white leading-none mt-1"><%= diff_vs_2 ? "−€#{diff_vs_2}" : "" %></div>
+          <div id="winner-diff-val" class="font-display text-[22px] sm:text-[26px] lg:text-[28px] text-white leading-none mt-1"><%= diff_vs_2 ? "−€#{diff_vs_2}" : "" %></div>
         </div>
       </div>
 
@@ -236,11 +236,11 @@
   </div>
 
   <%# ── Main grid: breakdown left + (runners-up + vote) right ── %>
-  <div class="grid gap-5" style="grid-template-columns: 1.3fr 1fr;" id="top3-cards"
+  <div class="grid gap-5 grid-cols-1 lg:[grid-template-columns:1.3fr_1fr]" id="top3-cards"
        data-results-filter-target="cards">
 
     <%# ── Fare Breakdown Panel ── %>
-    <div class="bg-gt-white border border-gt-line rounded-[18px] p-[22px]" id="detail-section">
+    <div class="bg-gt-white border border-gt-line rounded-[18px] p-4 sm:p-[22px]" id="detail-section">
       <div class="flex items-baseline justify-between mb-1">
         <div class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted">Détail des vols</div>
         <span class="text-[13px] text-gt-muted" id="detail-title">→ <%= best[:city].city_name %> · <%= @trip.start_date&.strftime("%d %b") %></span>
@@ -264,17 +264,16 @@
               gf_url = "https://www.google.com/travel/flights?q=#{CGI.escape("#{quote.participant.origin_city} to #{best[:city].city_name}")}"
             end
           %>
-          <li class="grid items-center gap-3 py-3.5 <%= qi < best[:quotes].count - 1 ? 'border-b border-dashed border-gt-line' : '' %>"
-              style="grid-template-columns: 44px 1.1fr 1fr 70px 70px;">
+          <li class="grid items-center gap-2 sm:gap-3 py-3 sm:py-3.5 <%= qi < best[:quotes].count - 1 ? 'border-b border-dashed border-gt-line' : '' %> [grid-template-columns:40px_1fr_auto] sm:[grid-template-columns:44px_1.1fr_1fr_70px_70px]">
             <div class="w-9 h-9 rounded-full <%= tone_bg %> <%= tone_fg %> flex items-center justify-center text-[13px] font-semibold border-2 border-gt-white flex-shrink-0">
               <%= quote.participant.name[0..1].upcase %>
             </div>
-            <div>
-              <div class="text-[14px] font-medium text-gt-ink"><%= quote.participant.name %></div>
-              <div class="font-mono text-[11px] text-gt-muted tracking-[0.04em]"><%= origin_iata || quote.participant.origin_city %> → <%= dest_iata || best[:city].city_name %></div>
+            <div class="min-w-0">
+              <div class="text-[14px] font-medium text-gt-ink truncate"><%= quote.participant.name %></div>
+              <div class="font-mono text-[11px] text-gt-muted tracking-[0.04em] truncate"><%= origin_iata || quote.participant.origin_city %> → <%= dest_iata || best[:city].city_name %></div>
             </div>
-            <div class="text-[13px] text-gt-ink-soft"><%= quote.participant.origin_city %></div>
-            <div class="font-mono text-[12px] text-gt-muted text-right">
+            <div class="hidden sm:block text-[13px] text-gt-ink-soft truncate"><%= quote.participant.origin_city %></div>
+            <div class="hidden sm:block font-mono text-[12px] text-gt-muted text-right">
               <% if quote.duration_minutes.present? && quote.duration_minutes > 0 %>
                 <%= quote.duration_minutes / 60 %>h<%= quote.duration_minutes % 60 %>m
               <% end %>
@@ -310,7 +309,7 @@
     <div class="flex flex-col gap-5">
 
       <%# Classement complet — toutes les destinations cliquables %>
-      <div class="bg-gt-white border border-gt-line rounded-[18px] p-[22px]">
+      <div class="bg-gt-white border border-gt-line rounded-[18px] p-4 sm:p-[22px]">
         <div class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted mb-3.5">Classement complet</div>
         <% @results.each_with_index do |result, i| %>
           <%
@@ -518,17 +517,16 @@
            </a>`;
       const dur = q.duration ? `${Math.floor(q.duration/60)}h${q.duration%60}m` : '';
       return `
-        <li class="grid items-center gap-3 py-3.5 ${qi < result.quotes.length - 1 ? 'border-b border-dashed border-gt-line' : ''}"
-            style="grid-template-columns: 44px 1.1fr 1fr 70px 70px;">
+        <li class="grid items-center gap-2 sm:gap-3 py-3 sm:py-3.5 ${qi < result.quotes.length - 1 ? 'border-b border-dashed border-gt-line' : ''} [grid-template-columns:40px_1fr_auto] sm:[grid-template-columns:44px_1.1fr_1fr_70px_70px]">
           <div class="w-9 h-9 rounded-full ${bg} ${fg} flex items-center justify-center text-[13px] font-semibold border-2 border-gt-white flex-shrink-0">
             ${q.name.substring(0,2).toUpperCase()}
           </div>
-          <div>
-            <div class="text-[14px] font-medium text-gt-ink">${q.name}</div>
-            <div class="font-mono text-[11px] text-gt-muted">${q.origin_iata || q.city} → ${result.airport_code}</div>
+          <div class="min-w-0">
+            <div class="text-[14px] font-medium text-gt-ink truncate">${q.name}</div>
+            <div class="font-mono text-[11px] text-gt-muted truncate">${q.origin_iata || q.city} → ${result.airport_code}</div>
           </div>
-          <div class="text-[13px] text-gt-ink-soft">${q.city}</div>
-          <div class="font-mono text-[12px] text-gt-muted text-right">${dur}</div>
+          <div class="hidden sm:block text-[13px] text-gt-ink-soft truncate">${q.city}</div>
+          <div class="hidden sm:block font-mono text-[12px] text-gt-muted text-right">${dur}</div>
           <div class="text-right flex items-center justify-end gap-2">${price}</div>
         </li>`;
     }).join('');

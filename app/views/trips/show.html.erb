@@ -23,9 +23,9 @@
 <% content_for :full_width_hero do %>
 
   <%# ── Trip Header gradient ── %>
-  <div class="pt-[81px] px-8">
+  <div class="pt-[73px] lg:pt-[81px] px-4 sm:px-6 lg:px-8">
     <div class="max-w-[1180px] mx-auto">
-      <div class="rounded-[22px] overflow-hidden relative" style="background: linear-gradient(160deg, #1A1F2E 0%, #2D4A3E 100%); padding: 36px 40px;">
+      <div class="rounded-[22px] overflow-hidden relative p-6 sm:p-8 lg:p-10" style="background: linear-gradient(160deg, #1A1F2E 0%, #2D4A3E 100%);">
         <%# Orange glow %>
         <div class="absolute right-[-30px] top-[-30px] w-[220px] h-[220px] rounded-full pointer-events-none" style="background: radial-gradient(circle, rgba(232,99,42,0.35) 0%, transparent 70%);"></div>
 
@@ -43,13 +43,13 @@
         </div>
 
         <%# Title + meta row %>
-        <div class="flex items-end justify-between gap-6 relative flex-wrap">
-          <h1 class="font-display font-normal text-[56px] leading-[1] tracking-[-0.025em] text-white max-w-[700px] lg:text-[40px] sm:text-[32px]">
+        <div class="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 sm:gap-6 relative">
+          <h1 class="font-display font-normal text-[28px] sm:text-[40px] lg:text-[56px] leading-[1.05] tracking-[-0.025em] text-white max-w-[700px] break-words">
             <%= @trip.title.split.first(3).join(" ") %> <em class="italic text-gt-orange"><%= @trip.title.split.drop(3).join(" ").presence || @trip.title.split.last %></em>
           </h1>
-          <div class="text-right flex-shrink-0">
+          <div class="text-left sm:text-right flex-shrink-0">
             <div class="font-mono text-[11px] text-white/60 tracking-[0.1em] uppercase"><%= @trip.participants.count %> participant<%= @trip.participants.count > 1 ? "s" : "" %></div>
-            <div class="font-display italic text-[22px] text-white/80 mt-1"><%= @trip.candidate_cities.count > 0 ? "#{@trip.candidate_cities.count} villes" : "8 villes auto" %></div>
+            <div class="font-display italic text-[18px] sm:text-[22px] text-white/80 mt-1"><%= @trip.candidate_cities.count > 0 ? "#{@trip.candidate_cities.count} villes" : "8 villes auto" %></div>
           </div>
         </div>
 
@@ -69,7 +69,7 @@
 <% end %>
 
 <%# ── Body ── %>
-<div class="max-w-[1180px] mx-auto px-8 py-7 pb-20">
+<div class="max-w-[1180px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-7 pb-20">
 
   <%# Results available banner %>
   <% if has_results %>
@@ -111,13 +111,13 @@
   <% end %>
 
   <%# ── Two-column grid ── %>
-  <div class="grid gap-5" style="grid-template-columns: 1.3fr 1fr;">
+  <div class="grid gap-5 grid-cols-1 lg:[grid-template-columns:1.3fr_1fr]">
 
     <%# ── LEFT column ── %>
     <div class="flex flex-col gap-5">
 
       <%# People Panel %>
-      <div class="bg-gt-white border border-gt-line rounded-[18px] p-[22px]">
+      <div class="bg-gt-white border border-gt-line rounded-[18px] p-4 sm:p-[22px]">
         <div class="flex items-baseline justify-between mb-3.5">
           <div class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted">
             Votre groupe <span class="text-gt-forest ml-1">· <%= @trip.participants.count %></span>
@@ -127,7 +127,7 @@
         </div>
 
         <% if @trip.participants.any? %>
-          <div class="grid grid-cols-2 gap-2.5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <% @trip.participants.each_with_index do |participant, idx| %>
               <% tones = ['ember', 'forest', 'sky', 'plum', 'sand']
                  tone_classes = {
@@ -189,12 +189,12 @@
             <% if @new_participant.errors.any? %>
               <p class="text-[12px] text-red-600 mb-2"><%= @new_participant.errors.full_messages.first %></p>
             <% end %>
-            <div class="flex gap-2 flex-wrap items-start">
-              <div class="flex-1 min-w-24">
+            <div class="flex flex-wrap gap-2 items-start">
+              <div class="flex-1 min-w-[120px] sm:min-w-24">
                 <%= f.text_field :name, placeholder: "Prénom",
                     class: "w-full border border-gt-line bg-gt-white rounded-[8px] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gt-orange/20 focus:border-gt-orange transition-colors" %>
               </div>
-              <div class="flex-[1.4] min-w-40 relative"
+              <div class="flex-1 min-w-[160px] sm:flex-[1.4] sm:min-w-40 relative"
                    data-controller="city-autocomplete"
                    data-action="focusout->city-autocomplete#onFocusOut">
                 <%= f.text_field :origin_city, placeholder: "Ville de départ",
@@ -205,11 +205,11 @@
                     class="hidden absolute top-full left-0 right-0 mt-1 bg-gt-white border border-gt-line rounded-[14px] z-20 overflow-hidden max-h-48 overflow-y-auto"
                     data-action="click->city-autocomplete#select"></ul>
               </div>
-              <div class="w-28">
+              <div class="w-24 sm:w-28">
                 <%= f.text_field :origin_airport_code, placeholder: "CDG…",
                     class: "w-full border border-gt-line bg-gt-white rounded-[8px] px-3 py-2.5 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-gt-orange/20 focus:border-gt-orange transition-colors" %>
               </div>
-              <%= f.submit "Ajouter", class: "px-[18px] py-[10px] rounded-full bg-gt-orange text-white text-[13px] font-medium hover:bg-gt-orange-dark transition-colors cursor-pointer flex-shrink-0" %>
+              <%= f.submit "Ajouter", class: "w-full sm:w-auto px-[18px] py-[10px] rounded-full bg-gt-orange text-white text-[13px] font-medium hover:bg-gt-orange-dark transition-colors cursor-pointer flex-shrink-0" %>
             </div>
             <p class="font-mono text-[10px] tracking-[0.06em] text-gt-muted mt-2">CODE AÉROPORT FACULTATIF — DÉTECTÉ AUTOMATIQUEMENT</p>
           <% end %>
@@ -218,7 +218,7 @@
 
       <%# Share Panel %>
       <% if is_owner && @trip.share_token.present? %>
-        <div class="bg-gt-white border border-gt-line rounded-[18px] p-[22px]">
+        <div class="bg-gt-white border border-gt-line rounded-[18px] p-4 sm:p-[22px]">
           <div class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted mb-3.5">Lien d'invitation</div>
           <div class="flex gap-2.5 items-center px-3.5 py-3 bg-gt-sand rounded-[12px] border border-dashed border-gt-line">
             <span class="font-mono text-[12px] text-gt-forest flex-1 overflow-hidden text-ellipsis whitespace-nowrap" id="share-link-<%= @trip.id %>">
@@ -239,7 +239,7 @@
 
       <%# Candidates Panel (owner only) %>
       <% if is_owner %>
-        <div class="bg-gt-white border border-gt-line rounded-[18px] p-[22px]">
+        <div class="bg-gt-white border border-gt-line rounded-[18px] p-4 sm:p-[22px]">
 
           <%# Header %>
           <div class="mb-1">
@@ -295,7 +295,7 @@
           <% else %>
             <%# Auto state — show the 8 preselected cities as greyed preview chips %>
             <div class="mt-3.5 mb-1">
-              <div class="grid grid-cols-4 gap-1.5 mb-3 sm:grid-cols-2">
+              <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 mb-3">
                 <% PopularDestinations::CITIES.each do |city| %>
                   <div class="flex items-center gap-1.5 px-2.5 py-2 rounded-[10px] bg-gt-sand border border-dashed border-gt-line opacity-70">
                     <span class="font-mono text-[9px] text-gt-forest tracking-[0.06em] flex-shrink-0"><%= city[:country_code] %></span>
@@ -343,7 +343,7 @@
       <%# Go Panel — dark gradient CTA %>
       <% if is_owner %>
         <% if failed %>
-          <div class="bg-red-50 border border-red-200 rounded-[18px] p-[22px] flex items-start gap-4">
+          <div class="bg-red-50 border border-red-200 rounded-[18px] p-4 sm:p-[22px] flex flex-col sm:flex-row items-start gap-4">
             <div class="w-9 h-9 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
               <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
             </div>
@@ -356,7 +356,7 @@
                 data: { disable_with: "En cours…" } %>
           </div>
         <% elsif ready_to_optimize %>
-          <div class="rounded-[18px] p-[22px] relative overflow-hidden" style="background: linear-gradient(160deg, #1A1F2E 0%, #2D4A3E 100%);">
+          <div class="rounded-[18px] p-4 sm:p-[22px] relative overflow-hidden" style="background: linear-gradient(160deg, #1A1F2E 0%, #2D4A3E 100%);">
             <%# Globe decorative — bottom right %>
             <div class="absolute right-[-30px] bottom-[-40px] opacity-35 pointer-events-none">
               <%# Simplified globe SVG %>
@@ -374,7 +374,7 @@
             </div>
             <div class="relative">
               <div class="font-mono text-[11px] tracking-[0.13em] uppercase text-white/60 mb-2.5">Prêt quand vous l'êtes</div>
-              <h3 class="font-display font-normal text-[30px] tracking-[-0.02em] text-white leading-tight mb-3.5">
+              <h3 class="font-display font-normal text-[22px] sm:text-[26px] lg:text-[30px] tracking-[-0.02em] text-white leading-tight mb-3.5">
                 Calculer tous les <em class="italic text-gt-orange"><%= @trip.participants.count * [@trip.candidate_cities.count.positive? ? @trip.candidate_cities.count : 10, 10].min %> vols</em> maintenant&nbsp;?
               </h3>
               <p class="text-[13px] text-white/70 mb-5 max-w-[280px]">
@@ -386,7 +386,7 @@
             </div>
           </div>
         <% else %>
-          <div class="bg-gt-white border-2 border-dashed border-gt-line rounded-[18px] p-[22px] text-center">
+          <div class="bg-gt-white border-2 border-dashed border-gt-line rounded-[18px] p-4 sm:p-[22px] text-center">
             <div class="w-10 h-10 bg-gt-sand rounded-full flex items-center justify-center mx-auto mb-3">
               <svg class="w-5 h-5 text-gt-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
             </div>
