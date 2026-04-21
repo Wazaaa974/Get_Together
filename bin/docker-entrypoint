@@ -8,7 +8,7 @@ fi
 
 # If running the rails server then create or migrate existing database
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
-  ./bin/rails db:prepare db:migrate:queue db:migrate:cache db:migrate:cable
+  ./bin/rails db:prepare
 fi
 
 exec "${@}"
