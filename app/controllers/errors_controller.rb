@@ -1,5 +1,5 @@
 class ErrorsController < ApplicationController
-  skip_before_action :authenticate_user!
+  skip_before_action :authenticate_user!, raise: false
 
   def not_found
     render status: :not_found
