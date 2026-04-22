@@ -13,10 +13,13 @@ class PopularDestinations
   ].freeze
 
   def self.ensure_on_trip(trip)
+    participant_airports = trip.participants.pluck(:origin_airport_code).compact.map(&:upcase).to_set
+
     CITIES.each do |data|
       trip.candidate_cities.find_or_create_by(airport_code: data[:airport_code]) do |city|
         city.city_name    = data[:city_name]
         city.country_code = data[:country_code]
+        city.excluded     = participant_airports.include?(data[:airport_code].upcase)
       end
     end
   end

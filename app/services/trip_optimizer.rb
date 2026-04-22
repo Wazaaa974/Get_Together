@@ -19,7 +19,7 @@ class TripOptimizer
     trip_id     = trip.id
     # Snapshot city IDs before spawning threads — avoids sharing the AR object
     # across threads and triggering @association_cache race conditions.
-    city_ids    = trip.candidate_cities.pluck(:id)
+    city_ids    = trip.candidate_cities.included.pluck(:id)
     n_cities    = city_ids.size
 
     futures = city_ids.map do |city_id|
@@ -56,7 +56,7 @@ class TripOptimizer
   end
 
   def self.results_from_db(trip)
-    trip.candidate_cities.map do |city|
+    trip.candidate_cities.included.map do |city|
       quotes = city.route_quotes.where(trip: trip).includes(:participant).to_a
       next nil if quotes.empty?
 

@@ -66,7 +66,7 @@
         departure_at:       q.departure_at&.strftime("%H:%M"),
         arrival_at:         q.arrival_at&.strftime("%H:%M"),
         departure_date:     q.departure_at&.strftime("%d %b"),
-        departure_date_iso: q.departure_at&.strftime("%Y-%m-%d"),
+        departure_date_iso: (q.departure_at&.to_date || @trip.start_date)&.strftime("%Y-%m-%d"),
         next_day:           q.departure_at.present? && q.arrival_at.present? && q.arrival_at.to_date > q.departure_at.to_date
       }}
     }

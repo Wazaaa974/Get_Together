@@ -8,7 +8,11 @@ Rails.application.routes.draw do
 
   resources :trips do
     resources :participants, only: [:edit, :create, :update, :destroy]
-    resources :candidate_cities, only: [:create, :destroy]
+    resources :candidate_cities, only: [:create, :destroy] do
+      member do
+        patch :toggle_excluded
+      end
+    end
     resources :votes, only: [:create]
     member do
       post :optimize

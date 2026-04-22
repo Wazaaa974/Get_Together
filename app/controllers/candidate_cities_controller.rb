@@ -14,6 +14,12 @@ class CandidateCitiesController < ApplicationController
     end
   end
 
+  def toggle_excluded
+    @candidate_city = @trip.candidate_cities.find(params[:id])
+    @candidate_city.update!(excluded: !@candidate_city.excluded)
+    redirect_to trip_path(@trip)
+  end
+
   def destroy
     @candidate_city = @trip.candidate_cities.find(params[:id])
     @candidate_city.destroy
