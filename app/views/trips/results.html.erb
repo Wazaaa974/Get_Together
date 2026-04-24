@@ -189,6 +189,8 @@
           </button>
         <% end %>
       </div>
+
+      <%= render "trips/booking_cta", trip: @trip, city_name: best[:city].city_name, airport_code: best[:city].airport_code %>
     </div>
   </div>
 
