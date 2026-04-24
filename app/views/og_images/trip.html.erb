@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 1200px; height: 630px; overflow: hidden; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: linear-gradient(135deg, #F5F0E8 0%, #FDF0E8 100%);
+      color: #1A1F2E;
+      padding: 60px 72px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.35;
+      z-index: 0;
+    }
+    .blob-orange { width: 480px; height: 480px; background: #E8632A; top: -140px; right: -140px; }
+    .blob-forest { width: 360px; height: 360px; background: #4A7A65; bottom: -120px; left: -100px; }
+    .content { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
+
+    .header { display: flex; align-items: center; justify-content: space-between; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-mark {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: #E8632A; color: #FEFCF8;
+      font-family: 'Fraunces', serif; font-style: italic; font-weight: 500;
+      font-size: 26px;
+      display: flex; align-items: center; justify-content: center;
+      line-height: 1;
+    }
+    .brand-name { font-family: 'Fraunces', serif; font-size: 28px; color: #2D4A3E; letter-spacing: -0.5px; }
+    .trip-title {
+      font-size: 20px; color: #4A7A65; font-weight: 500;
+      max-width: 600px; text-align: right;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    .main { display: flex; flex-direction: column; gap: 16px; }
+    .kicker {
+      font-size: 18px; color: #8A8070; text-transform: uppercase;
+      letter-spacing: 2px; font-weight: 500;
+    }
+    .city {
+      font-family: 'Fraunces', serif; font-weight: 500;
+      font-size: 132px; line-height: 1; color: #2D4A3E;
+      letter-spacing: -3px;
+    }
+    .price-row { display: flex; align-items: baseline; gap: 14px; margin-top: 8px; }
+    .price-label { font-size: 20px; color: #4A7A65; font-weight: 500; }
+    .price {
+      font-family: 'Fraunces', serif; font-weight: 600;
+      font-size: 56px; color: #E8632A; line-height: 1;
+    }
+    .price-per { font-size: 18px; color: #8A8070; }
+
+    .pending {
+      font-family: 'Fraunces', serif; font-weight: 500;
+      font-size: 88px; line-height: 1.05; color: #2D4A3E;
+      letter-spacing: -2px; max-width: 900px;
+    }
+    .pending-sub { font-size: 22px; color: #4A7A65; font-weight: 500; margin-top: 20px; }
+
+    .footer { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .participants { display: flex; flex-wrap: wrap; gap: 8px; max-width: 820px; }
+    .chip {
+      background: #FEFCF8; border: 1px solid rgba(45,74,62,0.12);
+      padding: 8px 14px; border-radius: 999px;
+      font-size: 15px; font-weight: 500; color: #2D4A3E;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .chip-dot { width: 6px; height: 6px; border-radius: 50%; background: #E8632A; }
+    .chip-more {
+      background: transparent; border: none;
+      font-size: 15px; color: #8A8070; padding: 8px 4px;
+    }
+    .cta {
+      background: #2D4A3E; color: #FEFCF8;
+      padding: 14px 22px; border-radius: 999px;
+      font-size: 16px; font-weight: 500;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="blob blob-orange"></div>
+  <div class="blob blob-forest"></div>
+
+  <div class="content">
+    <div class="header">
+      <div class="brand">
+        <div class="brand-mark">g</div>
+        <div class="brand-name">Get Together</div>
+      </div>
+      <div class="trip-title"><%= @trip.title %></div>
+    </div>
+
+    <% if @has_results && @winner %>
+      <div class="main">
+        <div class="kicker">Destination recommandée</div>
+        <div class="city"><%= @winner.city_name %></div>
+        <div class="price-row">
+          <span class="price-label">pour tout le groupe :</span>
+          <span class="price"><%= @total_price_euros %> €</span>
+        </div>
+      </div>
+    <% else %>
+      <div class="main">
+        <div class="kicker">Un trip est en préparation</div>
+        <div class="pending">On cherche où tout le monde se retrouve.</div>
+        <div class="pending-sub">Get Together calcule la destination la moins chère pour le groupe.</div>
+      </div>
+    <% end %>
+
+    <div class="footer">
+      <div class="participants">
+        <% visible = @participants.first(6) %>
+        <% visible.each do |p| %>
+          <div class="chip">
+            <span class="chip-dot"></span>
+            <span><%= p[:name].presence || p[:city] %> · <%= p[:city] %></span>
+          </div>
+        <% end %>
+        <% if @participants.length > visible.length %>
+          <div class="chip-more">+ <%= @participants.length - visible.length %> autres</div>
+        <% end %>
+      </div>
+      <div class="cta">gettogether.app</div>
+    </div>
+  </div>
+</body>
+</html>

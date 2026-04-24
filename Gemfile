@@ -28,6 +28,9 @@ gem "devise"
 # Rate limiting — throttles abusive requests (votes spam, brute-force logins)
 gem "rack-attack"
 
+# OG image generation — renders HTML/Tailwind to PNG via headless Chromium (Puppeteer)
+gem "grover"
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 

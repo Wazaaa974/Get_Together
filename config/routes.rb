@@ -5,6 +5,7 @@ Rails.application.routes.draw do
   get "/trips/shared/:share_token", to: "trips#shared", as: :shared_trip
   get "/trips/shared/:share_token/results", to: "trips#shared_results", as: :shared_trip_results
   post "/trips/shared/:share_token/participants", to: "shared_participants#create", as: :shared_trip_participants
+  get "/trips/shared/:share_token/og.png", to: "og_images#show", as: :trip_og_image
 
   resources :trips do
     resources :participants, only: [:edit, :create, :update, :destroy]

@@ -42,3 +42,10 @@
 
 # Claude Code local settings
 /.claude/settings.local.json
+
+# Node (Puppeteer for Grover OG images)
+/node_modules
+npm-debug.log*
+
+# OG image cache
+/tmp/og_cache
