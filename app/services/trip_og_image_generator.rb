@@ -47,12 +47,17 @@ class TripOgImageGenerator
   end
 
   def grover_options
-    {
+    opts = {
       format: "A4",
       viewport: { width: 1200, height: 630 },
       device_scale_factor: 2,
-      wait_until: "networkidle0",
-      launch_args: %w[--no-sandbox --disable-setuid-sandbox --disable-dev-shm-usage]
+      wait_until: "load",
+      launch_args: %w[--no-sandbox --disable-setuid-sandbox --disable-dev-shm-usage --disable-gpu]
     }
+    # Sur Railway/Docker, Puppeteer utilise le chromium système
+    executable = ENV["PUPPETEER_EXECUTABLE_PATH"].presence ||
+                 %w[/usr/bin/chromium /usr/bin/chromium-browser /usr/bin/google-chrome-stable].find { |p| File.exist?(p) }
+    opts[:executable_path] = executable if executable
+    opts
   end
 end
