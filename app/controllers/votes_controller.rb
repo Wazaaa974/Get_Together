@@ -20,6 +20,8 @@ class VotesController < ApplicationController
     vote.candidate_city = candidate_city
 
     if vote.save
+      ahoy.track "vote_cast", trip_id: @trip.id,
+        candidate_city_id: candidate_city.id, city_name: candidate_city.city_name
       render turbo_stream: turbo_stream.replace("votes-section-#{@trip.id}",
         partial: "votes/section", locals: { trip: @trip.reload, error: nil })
     else

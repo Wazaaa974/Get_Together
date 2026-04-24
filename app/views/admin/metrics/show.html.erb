@@ -1,0 +1,110 @@
+<%
+  content_for :title, "Métriques admin — Get Together"
+  content_for :nav_crumb, "Admin · Métriques"
+%>
+
+<div class="max-w-4xl mx-auto py-8 space-y-8">
+
+  <div class="flex items-baseline justify-between">
+    <h1 class="font-display text-3xl text-gt-forest">Métriques <span class="text-gt-orange">· 30 jours</span></h1>
+    <span class="text-xs text-gt-muted font-mono">depuis <%= @since.strftime("%d/%m/%Y") %></span>
+  </div>
+
+  <%# ── Funnel ── %>
+  <div class="bg-gt-white border border-gt-line rounded-[18px] p-6">
+    <div class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted mb-5">Funnel principal</div>
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-4">
+      <% funnel_steps = [
+        { label: "Trips créés",       key: :created,      color: "text-gt-forest" },
+        { label: "Calculs lancés",    key: :optimized,    color: "text-gt-forest-light" },
+        { label: "Résultats obtenus", key: :completed,    color: "text-gt-orange" },
+        { label: "Liens ouverts",     key: :shared_opens, color: "text-gt-orange-dark" },
+        { label: "Votes",             key: :voted,        color: "text-gt-muted" },
+      ] %>
+      <% funnel_steps.each_with_index do |step, i| %>
+        <div class="text-center">
+          <div class="text-4xl font-display <%= step[:color] %>"><%= @funnel[step[:key]] %></div>
+          <div class="text-xs text-gt-muted mt-1"><%= step[:label] %></div>
+          <% if i > 0 && @funnel[funnel_steps[i-1][:key]] > 0 %>
+            <div class="text-[10px] text-gt-muted mt-0.5 font-mono">
+              <%= (@funnel[step[:key]].to_f / @funnel[funnel_steps[i-1][:key]] * 100).round %>%
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <%# ── Métriques secondaires ── %>
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="bg-gt-white border border-gt-line rounded-[18px] p-5 text-center">
+      <div class="text-4xl font-display text-gt-forest"><%= @share_copies %></div>
+      <div class="text-xs text-gt-muted mt-1">Liens copiés</div>
+      <% if @share_copies > 0 && @funnel[:shared_opens] > 0 %>
+        <div class="text-[10px] text-gt-muted mt-1 font-mono">
+          <%= (@funnel[:shared_opens].to_f / @share_copies * 100).round %>% taux ouverture
+        </div>
+      <% end %>
+    </div>
+    <div class="bg-gt-white border border-gt-line rounded-[18px] p-5 text-center">
+      <div class="text-4xl font-display text-gt-forest">
+        <%= @avg_votes_per_trip ? @avg_votes_per_trip.round(1) : "—" %>
+      </div>
+      <div class="text-xs text-gt-muted mt-1">Votes moy. / trip</div>
+    </div>
+    <div class="bg-gt-white border border-gt-line rounded-[18px] p-5 text-center">
+      <div class="text-4xl font-display text-gt-orange"><%= @funnel[:completed] %></div>
+      <div class="text-xs text-gt-muted mt-1">Calculs réussis</div>
+    </div>
+  </div>
+
+  <%# ── Top villes gagnantes ── %>
+  <% if @top_winning_cities.any? %>
+    <div class="bg-gt-white border border-gt-line rounded-[18px] p-6">
+      <div class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted mb-4">Top destinations calculées</div>
+      <div class="space-y-2">
+        <% max = @top_winning_cities.first[1].to_f %>
+        <% @top_winning_cities.each_with_index do |(city, count), i| %>
+          <div class="flex items-center gap-3">
+            <div class="w-5 text-right text-xs text-gt-muted font-mono"><%= i + 1 %></div>
+            <div class="flex-1">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-sm font-medium text-gt-forest"><%= city %></span>
+                <span class="text-xs text-gt-muted font-mono"><%= count %>×</span>
+              </div>
+              <div class="h-1.5 bg-gt-sand rounded-full overflow-hidden">
+                <div class="h-full bg-gt-orange rounded-full" style="width:<%= (count / max * 100).round %>%"></div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <%# ── Trips / jour ── %>
+  <% if @trips_per_day.any? %>
+    <div class="bg-gt-white border border-gt-line rounded-[18px] p-6">
+      <div class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted mb-4">Trips créés / jour</div>
+      <% max_day = @trips_per_day.values.max.to_f %>
+      <div class="flex items-end gap-1 h-20">
+        <% @trips_per_day.each do |date, count| %>
+          <div class="flex-1 flex flex-col items-center gap-1 group relative">
+            <div class="w-full bg-gt-orange rounded-t-sm transition-all"
+                 style="height:<%= [(count / max_day * 100).round, 4].max %>%"
+                 title="<%= date %> : <%= count %>"></div>
+          </div>
+        <% end %>
+      </div>
+      <div class="flex justify-between mt-1 text-[10px] text-gt-muted font-mono">
+        <span><%= @trips_per_day.keys.first&.strftime("%d/%m") %></span>
+        <span><%= @trips_per_day.keys.last&.strftime("%d/%m") %></span>
+      </div>
+    </div>
+  <% else %>
+    <div class="bg-gt-white border border-gt-line rounded-[18px] p-6 text-center text-gt-muted text-sm">
+      Pas encore de données. Les events apparaîtront ici après les premières actions.
+    </div>
+  <% end %>
+
+</div>

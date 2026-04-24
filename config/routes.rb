@@ -25,6 +25,12 @@ Rails.application.routes.draw do
     end
   end
 
+  post "/t", to: "tracking#create", as: :track_event
+
+  namespace :admin do
+    get "metrics", to: "metrics#show"
+  end
+
   get "up" => "rails/health#show", as: :rails_health_check
 
   match "/404", to: "errors#not_found", via: :all

@@ -23,6 +23,10 @@ class OptimizationJob < ApplicationJob
     if results.any?
       trip.update!(status: "active", optimization_status: "done", last_optimized_at: Time.current)
       Rails.logger.info("[OptimizationJob] trip #{trip_id} done in #{elapsed}s — #{results.size} cities ranked")
+      Ahoy::Event.create!(name: "optimization_completed", time: Time.current, properties: {
+        trip_id: trip_id, duration_s: elapsed, cities_count: results.size,
+        winning_city: results.first[:city].city_name, total_price_cents: results.first[:total_cents]
+      })
       ResultsMailer.results_ready(trip).deliver_later if trip.notification_email.present?
     else
       trip.update!(optimization_status: "failed")

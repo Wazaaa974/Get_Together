@@ -16,6 +16,11 @@ class TripsController < ApplicationController
     @trip.user = current_user if user_signed_in?
     if @trip.save
       claim_trip_ownership(@trip)
+      ahoy.track "trip_created", trip_id: @trip.id,
+        participants_count: @trip.participants.count,
+        candidates_count: @trip.candidate_cities.count,
+        has_end_date: @trip.end_date.present?,
+        user_signed_in: user_signed_in?
       redirect_to @trip, notice: "Trip créé avec succès."
     else
       render :new, status: :unprocessable_entity
@@ -60,6 +65,9 @@ class TripsController < ApplicationController
     end
 
     @trip.update!(optimization_status: "pending")
+    ahoy.track "optimization_started", trip_id: @trip.id,
+      participants_count: @trip.participants.count,
+      candidates_count: @trip.candidate_cities.count
     OptimizationJob.perform_later(@trip.id)
     redirect_to waiting_trip_path(@trip)
   end
@@ -90,6 +98,7 @@ class TripsController < ApplicationController
       redirect_to root_path, alert: "Ce lien de partage est invalide ou a expiré."
       return
     end
+    ahoy.track "trip_opened_via_share", trip_id: @trip.id, page: "show"
     @new_participant = Participant.new
     @new_candidate_city = CandidateCity.new
     @is_owner = false
@@ -113,6 +122,7 @@ class TripsController < ApplicationController
       redirect_to root_path, alert: "Ce lien de partage est invalide ou a expiré."
       return
     end
+    ahoy.track "trip_opened_via_share", trip_id: @trip.id, page: "results"
     @is_owner = false
     @shared_view = true
     @results = TripOptimizer.results_from_db(@trip)
