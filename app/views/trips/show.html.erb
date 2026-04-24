@@ -1,6 +1,7 @@
 <%
   content_for :og_title, "#{@trip.title} — Get Together"
   content_for :og_description, "Rejoignez le trip « #{@trip.title} » et ajoutez votre ville de départ."
+  content_for :og_image, trip_og_image_url(@trip.share_token) if @trip.share_token.present?
   content_for :nav_crumb, @trip.title
 
   status_label = case @trip.status

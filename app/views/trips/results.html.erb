@@ -1,11 +1,14 @@
 <%
-  content_for :og_title, "Résultats — #{@trip.title} | Get Together"
-  content_for :og_description, "Get Together a trouvé les meilleures destinations pour #{@trip.title}."
-  content_for :nav_crumb, "#{@trip.title} / Résultats"
-
   top3   = @results.first(3)
   best   = top3.first
   others = @results.drop(3)
+
+  _best_city_name = best[:city].city_name
+  _best_price_eur = (best[:total_cents] / 100.0).round
+  content_for :og_title, "Le groupe se retrouve à #{_best_city_name} — #{_best_price_eur} €"
+  content_for :og_description, "Voici la destination la moins chère pour « #{@trip.title} ». Vote pour la tienne."
+  content_for :og_image, trip_og_image_url(@trip.share_token) if @trip.share_token.present?
+  content_for :nav_crumb, "#{@trip.title} / Résultats"
 
   city_photos = {
     "barcelone"   => "photo-1539037116277-4db20889f2d4",
