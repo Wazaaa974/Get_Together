@@ -31,6 +31,9 @@ gem "rack-attack"
 # OG image generation — renders HTML/Tailwind to PNG via headless Chromium (Puppeteer)
 gem "grover"
 
+# Analytics — tracks events + visits server-side, stored in Postgres (GDPR-safe)
+gem "ahoy_matey"
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 

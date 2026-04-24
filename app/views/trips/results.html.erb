@@ -179,6 +179,7 @@
             data-share-url="<%= shared_trip_results_url(@trip.share_token) %>"
             data-share-text="<%= "#{@trip.title} → #{best[:city].city_name} pour #{(best[:total_cents] / 100.0).round}€ total (#{avg_price}€/pers). Trouvé par Get Together 🗺️" %>"
             data-share-title="<%= "#{@trip.title} — Get Together" %>"
+            data-trip-id="<%= @trip.id %>"
             onclick="shareResults(this)"
             class="px-[18px] py-3 rounded-full border border-white/25 text-white text-sm font-medium hover:bg-white/10 transition-colors inline-flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -382,6 +383,11 @@
         label.textContent = 'Partager les résultats';
         btn.classList.remove('border-white/60', 'bg-white/10');
       }, 2500);
+      fetch('/t', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': document.querySelector('meta[name=csrf-token]').content },
+        body: JSON.stringify({ event: 'share_link_copied', trip_id: btn.dataset.tripId })
+      });
     } catch (e) {
       prompt('Copiez ce lien :', url);
     }
