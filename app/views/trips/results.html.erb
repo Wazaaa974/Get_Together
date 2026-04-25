@@ -82,6 +82,13 @@
   max_dur     = best[:quotes].map(&:duration_minutes).compact.max
   diff_vs_2   = top3[1] ? ((top3[1][:total_cents] - best[:total_cents]) / 100.0).ceil : nil
 
+  # Boarding-pass-style date strip
+  fr_months   = %w[JAN FÉV MAR AVR MAI JUI JUL AOÛ SEP OCT NOV DÉC]
+  fmt_short   = ->(d) { d ? "#{d.strftime('%d')} #{fr_months[d.month - 1]}" : nil }
+  dep_str     = fmt_short.call(@trip.start_date)
+  ret_str     = fmt_short.call(@trip.end_date)
+  nights      = (@trip.start_date && @trip.end_date) ? (@trip.end_date - @trip.start_date).to_i : nil
+
   # Build best GFlights URL for the winner city
   best_gf_url = begin
     first_q = best[:quotes].reject { |q| q.price_cents == 0 }.first
@@ -143,9 +150,34 @@
       </h1>
 
       <%# Country · IATA italic subtitle %>
-      <div id="winner-subtitle" class="font-display italic text-[18px] sm:text-[22px] text-white/75 mb-6 sm:mb-8">
+      <div id="winner-subtitle" class="font-display italic text-[18px] sm:text-[22px] text-white/75 mb-4">
         <%= best[:city].country_code %> · <%= best[:city].airport_code %>
       </div>
+
+      <%# Boarding-pass-style date strip %>
+      <% if dep_str %>
+        <div class="inline-flex items-stretch gap-0 mb-6 sm:mb-8 border border-white/15 rounded-[10px] overflow-hidden bg-white/5 backdrop-blur-sm">
+          <div class="px-3 py-2 sm:px-4 sm:py-2.5 border-r border-dashed border-white/20">
+            <div class="font-mono text-[9px] tracking-[0.14em] uppercase text-white/55 mb-0.5">Aller</div>
+            <div class="font-mono text-[13px] sm:text-[14px] tracking-[0.06em] text-white"><%= dep_str %></div>
+          </div>
+          <% if ret_str %>
+            <div class="px-3 py-2 sm:px-4 sm:py-2.5 border-r border-dashed border-white/20">
+              <div class="font-mono text-[9px] tracking-[0.14em] uppercase text-white/55 mb-0.5">Retour</div>
+              <div class="font-mono text-[13px] sm:text-[14px] tracking-[0.06em] text-white"><%= ret_str %></div>
+            </div>
+            <% if nights && nights > 0 %>
+              <div class="px-3 py-2 sm:px-4 sm:py-2.5 flex items-center">
+                <span class="font-mono text-[10px] sm:text-[11px] tracking-[0.08em] text-white/70"><%= nights %> <%= nights > 1 ? "nuits" : "nuit" %></span>
+              </div>
+            <% end %>
+          <% else %>
+            <div class="px-3 py-2 sm:px-4 sm:py-2.5 flex items-center">
+              <span class="font-mono text-[10px] sm:text-[11px] tracking-[0.08em] text-white/70">Aller simple</span>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
 
       <%# Stats row %>
       <div class="flex gap-6 sm:gap-9 lg:gap-12 mb-6 sm:mb-8 flex-wrap">
@@ -240,9 +272,14 @@
     <span class="font-mono text-[11px] tracking-[0.08em] text-gt-muted uppercase"><%= @results.count %> destinations évaluées</span>
   </div>
 
+  <% winner_guide = CityGuides.for(best[:city].airport_code) %>
+
   <%# ── Main grid: breakdown left + (runners-up + vote) right ── %>
   <div class="grid gap-5 grid-cols-1 lg:[grid-template-columns:1.3fr_1fr]" id="top3-cards"
        data-results-filter-target="cards">
+
+    <%# ── Left column: breakdown + city guide ── %>
+    <div class="flex flex-col gap-5">
 
     <%# ── Fare Breakdown Panel ── %>
     <div class="bg-gt-white border border-gt-line rounded-[18px] p-4 sm:p-[22px]" id="detail-section">
@@ -309,6 +346,60 @@
         <span class="font-display italic text-[36px] text-gt-forest tracking-[-0.02em]">€<%= (best[:total_cents] / 100.0).round %></span>
       </div>
     </div>
+
+    <%# ── City Guide Panel ── %>
+    <div class="bg-gt-white border border-gt-line rounded-[18px] p-4 sm:p-[22px]" id="city-guide-section">
+      <div class="flex items-baseline justify-between mb-3 gap-2">
+        <div class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted">Plongez dans la ville</div>
+        <span class="font-mono text-[10px] tracking-[0.08em] text-gt-muted/70 uppercase">Aperçu</span>
+      </div>
+
+      <h3 id="guide-title" class="font-display text-[24px] sm:text-[28px] text-gt-forest leading-[1.05] tracking-[-0.01em]">
+        Plongez dans <em class="italic text-gt-orange">
+          <%= best[:city].city_name %>
+        </em>
+      </h3>
+      <p id="guide-tagline" class="font-display italic text-[14px] sm:text-[15px] text-gt-ink-soft mt-1 mb-3">
+        <%= winner_guide[:tagline] %>
+      </p>
+      <p id="guide-hero" class="text-[13px] sm:text-[14px] text-gt-ink-soft leading-relaxed mb-4">
+        <%= winner_guide[:hero] %>
+      </p>
+
+      <%# Must-do list %>
+      <div class="font-mono text-[10px] tracking-[0.12em] uppercase text-gt-muted mb-2">★ Incontournables</div>
+      <ul id="guide-must-do" class="mb-4 space-y-1.5">
+        <% winner_guide[:must_do].each do |item| %>
+          <li class="flex items-start gap-2 text-[13px] text-gt-ink">
+            <span class="text-gt-orange mt-0.5 flex-shrink-0">→</span>
+            <span><%= item %></span>
+          </li>
+        <% end %>
+      </ul>
+
+      <%# Stats grid %>
+      <div class="grid grid-cols-3 gap-2 sm:gap-3 pt-4 border-t border-dashed border-gt-line">
+        <div class="bg-gt-sand rounded-[10px] px-3 py-2.5">
+          <div class="font-mono text-[9px] tracking-[0.1em] uppercase text-gt-muted mb-1">Coût</div>
+          <div id="guide-cost" class="font-display text-[18px] text-gt-forest leading-none"><%= winner_guide[:cost] %></div>
+          <div id="guide-cost-label" class="font-mono text-[10px] text-gt-muted mt-0.5"><%= winner_guide[:cost_label] %></div>
+        </div>
+        <div class="bg-gt-sand rounded-[10px] px-3 py-2.5">
+          <div class="font-mono text-[9px] tracking-[0.1em] uppercase text-gt-muted mb-1">Saison</div>
+          <div id="guide-season" class="font-display text-[15px] text-gt-forest leading-tight mt-1"><%= winner_guide[:season] %></div>
+        </div>
+        <div class="bg-gt-sand rounded-[10px] px-3 py-2.5">
+          <div class="font-mono text-[9px] tracking-[0.1em] uppercase text-gt-muted mb-1">Vibes</div>
+          <div id="guide-vibes" class="font-mono text-[10px] text-gt-ink-soft leading-snug mt-1 truncate"><%= winner_guide[:vibes].join(" · ") %></div>
+        </div>
+      </div>
+
+      <p class="font-mono text-[9px] tracking-[0.08em] uppercase text-gt-muted/60 mt-3 text-right">
+        Données indicatives — version enrichie à venir
+      </p>
+    </div>
+
+    </div><%# end left column %>
 
     <%# ── Right column: runners-up + vote ── %>
     <div class="flex flex-col gap-5">
@@ -397,6 +488,8 @@
   const allResults          = <%= raw results_data.to_json %>;
   const tripReturnDate      = <%= raw @trip.end_date&.strftime("%Y-%m-%d").to_json %>;
   const tripParticipants    = <%= @trip.participants.count %>;
+  const CITY_GUIDES         = <%= raw CityGuides.all.to_json %>;
+  const CITY_GUIDE_DEFAULT  = <%= raw CityGuides::DEFAULT.to_json %>;
 
   const TONE_BG = ['bg-gt-orange-light','bg-[#DDE7E1]','bg-[#DCE8F1]','bg-[#EADCF0]','bg-gt-sand-dark'];
   const TONE_FG = ['text-gt-orange-dark','text-gt-forest','text-[#3A6B92]','text-[#7A3F8F]','text-gt-ink-soft'];
@@ -546,7 +639,29 @@
     const brkTotal = list.closest('#detail-section').querySelector('.font-display.italic.text-gt-forest');
     if (brkTotal) brkTotal.textContent = `€${Math.round(result.total_cents / 100)}`;
 
-    // ── 7. Map sync ──
+    // ── 7. City guide panel ──
+    const guide = CITY_GUIDES[result.airport_code] || CITY_GUIDE_DEFAULT;
+    const titleEl = document.getElementById('guide-title');
+    if (titleEl) {
+      titleEl.innerHTML = `Plongez dans <em class="italic text-gt-orange">${result.city_name}</em>`;
+    }
+    const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    setText('guide-tagline', guide.tagline);
+    setText('guide-hero', guide.hero);
+    setText('guide-cost', guide.cost);
+    setText('guide-cost-label', guide.cost_label);
+    setText('guide-season', guide.season);
+    setText('guide-vibes', (guide.vibes || []).join(' · '));
+    const mustDoEl = document.getElementById('guide-must-do');
+    if (mustDoEl) {
+      mustDoEl.innerHTML = (guide.must_do || []).map(item => `
+        <li class="flex items-start gap-2 text-[13px] text-gt-ink">
+          <span class="text-gt-orange mt-0.5 flex-shrink-0">→</span>
+          <span>${item}</span>
+        </li>`).join('');
+    }
+
+    // ── 8. Map sync ──
     const mapEl = document.getElementById('map');
     if (mapEl?._stimulus_controller) mapEl._stimulus_controller.selectDestination(index);
     if (mapEl) mapEl.dataset.mapSelectedValue = index;
