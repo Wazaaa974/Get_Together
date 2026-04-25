@@ -73,24 +73,25 @@
         <%# Desktop nav links %>
         <div class="hidden lg:flex items-center gap-1">
           <% if transparent_nav %>
-            <a href="#how-it-works" class="px-3 py-2 text-sm text-gt-ink-soft hover:text-gt-forest transition-colors">Comment ça marche</a>
+            <a href="#how-it-works" class="px-3 py-2 text-sm text-gt-ink-soft hover:text-gt-forest transition-colors"><%= t("nav.how_it_works") %></a>
           <% end %>
           <% if user_signed_in? %>
-            <%= link_to "Mes trips", trips_path, class: "px-3 py-2 text-sm text-gt-ink-soft hover:text-gt-forest transition-colors" %>
+            <%= link_to t("nav.my_trips"), trips_path, class: "px-3 py-2 text-sm text-gt-ink-soft hover:text-gt-forest transition-colors" %>
             <span class="text-sm text-gt-muted px-2 truncate max-w-[140px]"><%= current_user.email %></span>
-            <%= link_to "Déconnexion", destroy_user_session_path, data: { turbo_method: :delete }, class: "px-3 py-2 text-sm text-gt-ink-soft hover:text-gt-forest transition-colors" %>
+            <%= link_to t("nav.sign_out"), destroy_user_session_path, data: { turbo_method: :delete }, class: "px-3 py-2 text-sm text-gt-ink-soft hover:text-gt-forest transition-colors" %>
           <% else %>
-            <%= link_to "Se connecter", new_user_session_path, class: "px-3 py-2 text-sm text-gt-ink-soft hover:text-gt-forest transition-colors" %>
+            <%= link_to t("nav.sign_in"), new_user_session_path, class: "px-3 py-2 text-sm text-gt-ink-soft hover:text-gt-forest transition-colors" %>
           <% end %>
+          <%= render "shared/locale_switcher" %>
           <%= link_to new_trip_path, class: "px-[18px] py-[10px] rounded-full bg-gt-orange text-white text-[13px] font-medium shadow-[0_8px_24px_rgba(232,99,42,0.2)] hover:bg-gt-orange-dark transition-colors ml-1" do %>
-            Planifier un trip
+            <%= t("nav.plan_trip") %>
           <% end %>
         </div>
 
         <%# Mobile: primary CTA + burger %>
         <div class="flex lg:hidden items-center gap-2">
           <%= link_to new_trip_path, class: "hidden sm:inline-flex px-3.5 py-2 rounded-full bg-gt-orange text-white text-[12px] font-medium hover:bg-gt-orange-dark transition-colors" do %>
-            Planifier
+            <%= t("nav.plan_short") %>
           <% end %>
           <button type="button"
                   data-action="click->mobile-nav#toggle"
@@ -106,17 +107,18 @@
       <div data-mobile-nav-target="menu" class="hidden lg:hidden bg-gt-white border-t border-gt-line">
         <div class="px-4 sm:px-6 py-4 flex flex-col gap-1">
           <% if transparent_nav %>
-            <a href="#how-it-works" data-action="click->mobile-nav#close" class="px-3 py-2.5 text-sm text-gt-ink-soft hover:bg-gt-sand rounded-[8px] transition-colors">Comment ça marche</a>
+            <a href="#how-it-works" data-action="click->mobile-nav#close" class="px-3 py-2.5 text-sm text-gt-ink-soft hover:bg-gt-sand rounded-[8px] transition-colors"><%= t("nav.how_it_works") %></a>
           <% end %>
           <% if user_signed_in? %>
-            <%= link_to "Mes trips", trips_path, class: "px-3 py-2.5 text-sm text-gt-ink-soft hover:bg-gt-sand rounded-[8px] transition-colors" %>
+            <%= link_to t("nav.my_trips"), trips_path, class: "px-3 py-2.5 text-sm text-gt-ink-soft hover:bg-gt-sand rounded-[8px] transition-colors" %>
             <div class="px-3 py-2 text-[12px] text-gt-muted truncate"><%= current_user.email %></div>
-            <%= link_to "Déconnexion", destroy_user_session_path, data: { turbo_method: :delete }, class: "px-3 py-2.5 text-sm text-gt-ink-soft hover:bg-gt-sand rounded-[8px] transition-colors" %>
+            <%= link_to t("nav.sign_out"), destroy_user_session_path, data: { turbo_method: :delete }, class: "px-3 py-2.5 text-sm text-gt-ink-soft hover:bg-gt-sand rounded-[8px] transition-colors" %>
           <% else %>
-            <%= link_to "Se connecter", new_user_session_path, class: "px-3 py-2.5 text-sm text-gt-ink-soft hover:bg-gt-sand rounded-[8px] transition-colors" %>
+            <%= link_to t("nav.sign_in"), new_user_session_path, class: "px-3 py-2.5 text-sm text-gt-ink-soft hover:bg-gt-sand rounded-[8px] transition-colors" %>
           <% end %>
+          <div class="px-3 py-2"><%= render "shared/locale_switcher" %></div>
           <%= link_to new_trip_path, class: "mt-1 inline-flex justify-center items-center px-4 py-2.5 rounded-full bg-gt-orange text-white text-[13px] font-medium hover:bg-gt-orange-dark transition-colors" do %>
-            Planifier un trip
+            <%= t("nav.plan_trip") %>
           <% end %>
         </div>
       </div>

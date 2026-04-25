@@ -1,0 +1,14 @@
+<%# Locale switcher: FR · EN — preserves the current path and query params %>
+<div class="inline-flex items-center gap-0.5 px-1 py-1 rounded-full bg-gt-sand-dark/50 border border-gt-line text-[11px] font-mono tracking-[0.06em] uppercase">
+  <% I18n.available_locales.each do |loc| %>
+    <%
+      is_active = (I18n.locale == loc)
+      url       = url_for(request.path_parameters.merge(locale: loc, only_path: true))
+    %>
+    <%= link_to url,
+        class: "px-2 py-0.5 rounded-full transition-colors #{is_active ? 'bg-gt-forest text-white' : 'text-gt-muted hover:text-gt-forest'}",
+        aria: { current: (is_active ? 'true' : nil) } do %>
+      <%= loc.to_s.upcase %>
+    <% end %>
+  <% end %>
+</div>

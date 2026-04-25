@@ -95,3 +95,11 @@ fr:
       blank: "ne peut pas être vide"
       taken: "est déjà utilisé(e)"
       invalid: "n'est pas valide"
+
+  nav:
+    how_it_works: "Comment ça marche"
+    my_trips: "Mes trips"
+    sign_in: "Se connecter"
+    sign_out: "Déconnexion"
+    plan_trip: "Planifier un trip"
+    plan_short: "Planifier"

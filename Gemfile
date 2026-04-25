@@ -25,6 +25,9 @@ gem "bcrypt", "~> 3.1.7"
 # Authentication
 gem "devise"
 
+# Translations for Rails defaults (validations, dates, numbers) in 100+ locales
+gem "rails-i18n"
+
 # Rate limiting — throttles abusive requests (votes spam, brute-force logins)
 gem "rack-attack"
 
