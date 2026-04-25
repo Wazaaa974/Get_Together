@@ -1,7 +1,7 @@
-<% content_for :title, "Modifier — #{@trip.title}" %>
-<% content_for :nav_crumb, "#{@trip.title} / Modifier" %>
+<% content_for :title, "#{t("trips.edit.crumb")} — #{@trip.title}" %>
+<% content_for :nav_crumb, "#{@trip.title} / #{t("trips.edit.crumb")}" %>
 
 <div class="max-w-[640px] mx-auto pt-[81px] pb-20">
-  <h1 class="font-display font-normal text-[44px] tracking-[-0.02em] text-gt-forest mb-7">Modifier le trip</h1>
+  <h1 class="font-display font-normal text-[44px] tracking-[-0.02em] text-gt-forest mb-7"><%= t("trips.edit.headline") %></h1>
   <%= render "form", trip: @trip %>
 </div>

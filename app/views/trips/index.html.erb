@@ -1,4 +1,4 @@
-<% content_for :title, "Get Together — Trouvez où se retrouver" %>
+<% content_for :title, t("trips.index.title") %>
 
 <%# ── LANDING (non-auth or no trips) ── %>
 <% unless user_signed_in? && @trips.any? %>
@@ -11,36 +11,36 @@
 
         <%# Chips row %>
         <div class="flex items-center gap-2 sm:gap-2.5 mb-6 sm:mb-7 flex-wrap">
-          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gt-orange-light text-gt-orange-dark text-xs font-medium tracking-wide">◉ Now booking · Printemps 2026</span>
-          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gt-white border border-gt-line text-gt-forest text-xs font-medium">3 840 groupes retrouvés ce mois-ci</span>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gt-orange-light text-gt-orange-dark text-xs font-medium tracking-wide"><%= t("trips.index.hero.chip_booking") %></span>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gt-white border border-gt-line text-gt-forest text-xs font-medium"><%= t("trips.index.hero.chip_count") %></span>
         </div>
 
         <%# Headline — responsive Fraunces %>
         <h1 class="font-display font-normal text-[40px] sm:text-[56px] md:text-[72px] lg:text-[88px] leading-[0.95] tracking-[-0.03em] text-gt-forest max-w-[900px] mb-5 sm:mb-6">
-          Où devriez-vous tous<br><em class="not-italic italic text-gt-orange">vous retrouver</em> vraiment&nbsp;?
+          <%= t("trips.index.hero.headline_pre") %><br><em class="not-italic italic text-gt-orange"><%= t("trips.index.hero.headline_em") %></em>&nbsp;<%= t("trips.index.hero.headline_post") %>
         </h1>
 
         <%# Body copy %>
         <p class="text-[15px] sm:text-[17px] lg:text-[19px] leading-[1.5] text-gt-ink-soft max-w-[540px] mb-8 sm:mb-10">
-          Indiquez vos villes de départ. On compare les vrais prix de vols depuis chaque porte et on vous donne l'endroit le moins cher <em class="italic text-gt-orange">pour tout le monde</em>.
+          <%= t("trips.index.hero.body_pre") %> <em class="italic text-gt-orange"><%= t("trips.index.hero.body_em") %></em><%= t("trips.index.hero.body_post") %>
         </p>
 
         <%# Search widget (links to new_trip_path) — stacks on mobile %>
         <div class="max-w-[720px] mb-8 sm:mb-10">
           <%= link_to new_trip_path, class: "bg-gt-white rounded-[22px] md:rounded-full border border-gt-line flex flex-col md:flex-row items-stretch md:items-center p-1.5 shadow-[0_14px_40px_rgba(24,21,18,0.08)] hover:shadow-[0_14px_40px_rgba(24,21,18,0.14)] transition-shadow cursor-pointer gap-1 md:gap-0" do %>
             <div class="flex-1 px-4 md:px-5 py-3 md:py-3.5 relative">
-              <div class="font-mono text-[11px] font-medium tracking-[0.06em] uppercase text-gt-muted">Groupe</div>
-              <div class="text-sm text-gt-muted mt-0.5">4 personnes</div>
+              <div class="font-mono text-[11px] font-medium tracking-[0.06em] uppercase text-gt-muted"><%= t("trips.index.hero.widget.group") %></div>
+              <div class="text-sm text-gt-muted mt-0.5"><%= t("trips.index.hero.widget.group_value") %></div>
               <div class="hidden md:block absolute right-0 top-3 bottom-3 w-px bg-gt-line"></div>
             </div>
             <div class="flex-[1.4] px-4 md:px-5 py-3 md:py-3.5 relative border-t md:border-t-0 border-gt-line">
-              <div class="font-mono text-[11px] font-medium tracking-[0.06em] uppercase text-gt-muted">Depuis</div>
-              <div class="text-sm text-gt-muted mt-0.5 truncate">Paris · Madrid · Londres · Berlin</div>
+              <div class="font-mono text-[11px] font-medium tracking-[0.06em] uppercase text-gt-muted"><%= t("trips.index.hero.widget.from") %></div>
+              <div class="text-sm text-gt-muted mt-0.5 truncate"><%= t("trips.index.hero.widget.from_value") %></div>
               <div class="hidden md:block absolute right-0 top-3 bottom-3 w-px bg-gt-line"></div>
             </div>
             <div class="flex-1 px-4 md:px-5 py-3 md:py-3.5 border-t md:border-t-0 border-gt-line">
-              <div class="font-mono text-[11px] font-medium tracking-[0.06em] uppercase text-gt-muted">Quand</div>
-              <div class="text-sm text-gt-muted mt-0.5">14 → 18 mai</div>
+              <div class="font-mono text-[11px] font-medium tracking-[0.06em] uppercase text-gt-muted"><%= t("trips.index.hero.widget.when") %></div>
+              <div class="text-sm text-gt-muted mt-0.5"><%= t("trips.index.hero.widget.when_value") %></div>
             </div>
             <div class="p-1 flex-shrink-0 flex justify-end md:block">
               <div class="w-[44px] h-[44px] md:w-[52px] md:h-[52px] rounded-full bg-gt-orange grid place-items-center shadow-[0_8px_20px_rgba(232,99,42,0.27)] hover:bg-gt-orange-dark transition-colors">
@@ -54,17 +54,17 @@
         <div class="flex items-center gap-4 sm:gap-6 lg:gap-9 flex-wrap">
           <div>
             <div class="font-display italic text-[22px] sm:text-[28px] text-gt-forest leading-none">200+</div>
-            <div class="text-[13px] text-gt-muted mt-1">destinations</div>
+            <div class="text-[13px] text-gt-muted mt-1"><%= t("trips.index.hero.metric_destinations") %></div>
           </div>
           <div class="w-px h-8 bg-gt-line"></div>
           <div>
             <div class="font-display italic text-[22px] sm:text-[28px] text-gt-forest leading-none">~30s</div>
-            <div class="text-[13px] text-gt-muted mt-1">pour une réponse honnête</div>
+            <div class="text-[13px] text-gt-muted mt-1"><%= t("trips.index.hero.metric_response") %></div>
           </div>
           <div class="w-px h-8 bg-gt-line"></div>
           <div>
-            <div class="font-display italic text-[22px] sm:text-[28px] text-gt-forest leading-none">Gratuit</div>
-            <div class="text-[13px] text-gt-muted mt-1">sans compte requis</div>
+            <div class="font-display italic text-[22px] sm:text-[28px] text-gt-forest leading-none"><%= t("trips.index.hero.metric_free") %></div>
+            <div class="text-[13px] text-gt-muted mt-1"><%= t("trips.index.hero.metric_no_account") %></div>
           </div>
         </div>
 
@@ -72,25 +72,25 @@
         <div class="absolute top-16 right-16 rotate-6 hidden xl:block" aria-hidden="true">
           <div class="w-[260px] bg-gt-white border border-gt-line rounded-[14px] overflow-hidden shadow-[0_20px_50px_rgba(24,21,18,0.08)]">
             <div class="px-[18px] py-3.5 bg-gt-forest text-white flex justify-between items-center">
-              <span class="font-mono text-[10px] tracking-[0.15em]">BOARDING</span>
+              <span class="font-mono text-[10px] tracking-[0.15em]"><%= t("trips.index.hero.ticket.boarding") %></span>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 12 L21 5 L15 12 L21 19 Z M3 12 L9 10 L11 12 L9 14 Z" fill="white"/></svg>
             </div>
             <div class="px-[18px] pt-4 pb-2.5 flex items-center gap-2.5">
               <div class="flex-1">
-                <div class="font-mono text-[10px] text-gt-muted tracking-[0.08em] uppercase">Depuis</div>
+                <div class="font-mono text-[10px] text-gt-muted tracking-[0.08em] uppercase"><%= t("trips.index.hero.ticket.from") %></div>
                 <div class="font-display text-[28px] text-gt-forest leading-none mt-1">CDG</div>
               </div>
               <div class="flex-[1.5] border-b border-dashed border-gt-line relative mb-2">
                 <svg class="absolute -right-1 -top-[7px]" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 12 L21 5 L15 12 L21 19 Z M3 12 L9 10 L11 12 L9 14 Z" fill="#E8632A"/></svg>
               </div>
               <div class="flex-1 text-right">
-                <div class="font-mono text-[10px] text-gt-muted tracking-[0.08em] uppercase">Vers</div>
+                <div class="font-mono text-[10px] text-gt-muted tracking-[0.08em] uppercase"><%= t("trips.index.hero.ticket.to") %></div>
                 <div class="font-display text-[28px] text-gt-forest leading-none mt-1">LIS</div>
               </div>
             </div>
             <div class="px-[18px] pb-4 flex justify-between text-[11px] text-gt-muted">
-              <span>Groupe de 4</span>
-              <span class="text-gt-orange font-medium">€184 total</span>
+              <span><%= t("trips.index.hero.ticket.group") %></span>
+              <span class="text-gt-orange font-medium"><%= t("trips.index.hero.ticket.total") %></span>
             </div>
           </div>
         </div>
@@ -103,15 +103,15 @@
       <div class="max-w-[1180px] mx-auto px-4 sm:px-6 lg:px-16">
         <div class="flex items-baseline justify-between mb-6 sm:mb-9 gap-4">
           <h2 class="font-display font-normal text-[28px] sm:text-[36px] lg:text-[44px] tracking-[-0.02em] text-gt-forest leading-none">
-            Trois étapes. <em class="italic text-gt-orange">Pas de tableur.</em>
+            <%= t("trips.index.how.title_pre") %> <em class="italic text-gt-orange"><%= t("trips.index.how.title_em") %></em>
           </h2>
-          <span class="font-mono text-[11px] text-gt-muted tracking-[0.15em] uppercase hidden lg:block">— Comment ça marche</span>
+          <span class="font-mono text-[11px] text-gt-muted tracking-[0.15em] uppercase hidden lg:block"><%= t("trips.index.how.kicker") %></span>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
           <% [
-            { n: "01", t: "Réunissez votre groupe", d: "Un lien. Un tap. Chaque personne renseigne son aéroport de départ." },
-            { n: "02", t: "On évalue chaque option", d: "Vrais tarifs Duffel, depuis chaque origine, vers chaque destination — simultanément." },
-            { n: "03", t: "Une réponse honnête", d: "La ville où le coût total des billets est le plus bas, avec le détail par personne." },
+            { n: "01", t: t("trips.index.how.steps.one_t"), d: t("trips.index.how.steps.one_d") },
+            { n: "02", t: t("trips.index.how.steps.two_t"), d: t("trips.index.how.steps.two_d") },
+            { n: "03", t: t("trips.index.how.steps.three_t"), d: t("trips.index.how.steps.three_d") },
           ].each do |step| %>
             <div class="p-5 sm:p-7 border border-gt-line rounded-[18px] bg-gt-sand relative">
               <div class="font-display italic text-[40px] sm:text-[52px] text-gt-orange leading-none"><%= step[:n] %></div>
@@ -128,7 +128,7 @@
       <div class="max-w-[1180px] mx-auto px-4 sm:px-6 lg:px-16">
         <div class="flex items-baseline justify-between mb-5 sm:mb-7">
           <h2 class="font-display font-normal text-[24px] sm:text-[30px] lg:text-[36px] tracking-[-0.02em] text-gt-forest">
-            Retrouvailles populaires <em class="italic text-gt-muted">cette semaine</em>
+            <%= t("trips.index.popular.title_pre") %> <em class="italic text-gt-muted"><%= t("trips.index.popular.title_em") %></em>
           </h2>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 sm:gap-3.5">
@@ -148,11 +148,11 @@
                 <div class="absolute inset-0 rounded-[16px]" style="background: linear-gradient(170deg, rgba(232,99,42,0.35) 0%, transparent 60%);"></div>
               <% end %>
               <div class="relative font-mono text-[10px] tracking-[0.08em] text-white/80">
-                <%= i == 0 ? '★ BEST FIT' : "##{i + 1}" %>
+                <%= i == 0 ? t("trips.index.popular.best_fit") : "##{i + 1}" %>
               </div>
               <div class="relative">
                 <div class="font-display text-[22px] tracking-[-0.01em] leading-tight text-white"><%= dest[:city] %></div>
-                <div class="text-[13px] text-white/80 mt-0.5"><%= dest[:price] %> total</div>
+                <div class="text-[13px] text-white/80 mt-0.5"><%= t("trips.index.popular.total", price: dest[:price]) %></div>
               </div>
             </div>
           <% end %>
@@ -167,7 +167,7 @@
           <div class="w-7 h-7 rounded-full bg-gt-orange flex items-center justify-center font-display italic text-[18px]">g</div>
           <span class="font-display text-gt-white text-[18px] tracking-tight">Get Together</span>
         </div>
-        <span class="font-mono text-[11px] text-white/50 tracking-[0.08em]">© 2026 · FAIT POUR LES AMIS</span>
+        <span class="font-mono text-[11px] text-white/50 tracking-[0.08em]"><%= t("trips.index.footer.tagline") %></span>
       </div>
     </footer>
 
@@ -180,10 +180,10 @@
     <div class="w-12 h-12 bg-gt-orange-light rounded-full flex items-center justify-center mx-auto mb-5">
       <svg class="w-5 h-5 text-gt-orange-dark" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
     </div>
-    <h1 class="font-display text-[30px] sm:text-[36px] lg:text-[44px] tracking-[-0.02em] text-gt-forest leading-tight mb-3">Votre premier trip vous attend</h1>
-    <p class="text-[15px] text-gt-ink-soft max-w-sm mx-auto mb-8 leading-relaxed">Créez un trip, invitez vos amis et laissez Get Together trouver la destination idéale.</p>
+    <h1 class="font-display text-[30px] sm:text-[36px] lg:text-[44px] tracking-[-0.02em] text-gt-forest leading-tight mb-3"><%= t("trips.index.empty.title") %></h1>
+    <p class="text-[15px] text-gt-ink-soft max-w-sm mx-auto mb-8 leading-relaxed"><%= t("trips.index.empty.body") %></p>
     <%= link_to new_trip_path, class: "inline-flex items-center gap-2 px-[22px] py-[14px] rounded-full bg-gt-orange text-white text-[15px] font-medium shadow-[0_8px_24px_rgba(232,99,42,0.2)] hover:bg-gt-orange-dark transition-colors" do %>
-      Créer mon premier trip →
+      <%= t("trips.index.empty.cta") %>
     <% end %>
   </div>
 
@@ -192,13 +192,13 @@
 
   <div class="flex items-center justify-between mb-6 sm:mb-8 gap-3">
     <div class="min-w-0">
-      <h1 class="font-display text-[30px] sm:text-[36px] lg:text-[44px] tracking-[-0.02em] text-gt-forest leading-none">Mes trips</h1>
-      <p class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted mt-2"><%= @trips.count %> trip<%= @trips.count > 1 ? "s" : "" %></p>
+      <h1 class="font-display text-[30px] sm:text-[36px] lg:text-[44px] tracking-[-0.02em] text-gt-forest leading-none"><%= t("trips.index.list.title") %></h1>
+      <p class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted mt-2"><%= t("trips.index.list.count", count: @trips.count) %></p>
     </div>
     <%= link_to new_trip_path, class: "inline-flex items-center gap-2 px-4 sm:px-[18px] py-[10px] rounded-full bg-gt-orange text-white text-[13px] font-medium shadow-[0_8px_24px_rgba(232,99,42,0.2)] hover:bg-gt-orange-dark transition-colors flex-shrink-0" do %>
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-      <span class="hidden sm:inline">Nouveau trip</span>
-      <span class="sm:hidden">Nouveau</span>
+      <span class="hidden sm:inline"><%= t("trips.index.list.new") %></span>
+      <span class="sm:hidden"><%= t("trips.index.list.new_short") %></span>
     <% end %>
   </div>
 
@@ -206,9 +206,9 @@
     <% @trips.each do |trip| %>
       <%
         status_label = case trip.status
-          when "active"    then "Actif"
-          when "completed" then "Terminé"
-          else                  "Brouillon"
+          when "active"    then t("trips.index.list.status_active")
+          when "completed" then t("trips.index.list.status_completed")
+          else                  t("trips.index.list.status_draft")
         end
         status_classes = case trip.status
           when "active"    then "bg-green-50 text-green-700"
@@ -220,11 +220,11 @@
         <%# Dark gradient header %>
         <div class="px-5 py-5 relative overflow-hidden" style="background: linear-gradient(160deg, #1A1F2E 0%, #2D4A3E 100%);">
           <div class="absolute right-[-20px] top-[-20px] w-[100px] h-[100px] rounded-full opacity-25" style="background: radial-gradient(circle, #E8632A, transparent);"></div>
-          <p class="font-mono text-[10px] tracking-[0.12em] uppercase text-white/40 mb-1.5">Trip</p>
+          <p class="font-mono text-[10px] tracking-[0.12em] uppercase text-white/40 mb-1.5"><%= t("trips.index.list.kicker") %></p>
           <h2 class="font-display text-[20px] tracking-[-0.01em] text-white truncate"><%= trip.title %></h2>
           <% if trip.start_date.present? %>
             <p class="font-mono text-[11px] text-white/40 mt-1 tracking-wide">
-              <%= trip.start_date.strftime("%d %b") %><% if trip.end_date.present? %> → <%= trip.end_date.strftime("%d %b %Y") %><% else %> <%= trip.start_date.strftime("%Y") %><% end %>
+              <%= l(trip.start_date, format: :short) %><% if trip.end_date.present? %> → <%= l(trip.end_date, format: :short_with_year) %><% else %> <%= trip.start_date.strftime("%Y") %><% end %>
             </p>
           <% end %>
         </div>
@@ -233,15 +233,15 @@
           <div class="flex items-center justify-between">
             <span class="text-[13px] text-gt-ink-soft flex items-center gap-1.5">
               <svg class="w-3.5 h-3.5 text-gt-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-              <%= trip.participants.count %> participant<%= trip.participants.count > 1 ? "s" : "" %>
+              <%= t("trips.index.list.participants", count: trip.participants.count) %>
             </span>
             <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-medium <%= status_classes %>"><%= status_label %></span>
           </div>
           <div class="flex items-center gap-2 mt-auto pt-1">
             <% if trip.route_quotes.any? %>
-              <%= link_to "Résultats", results_trip_path(trip), class: "flex-1 text-center text-[13px] font-medium bg-gt-orange-light text-gt-orange-dark px-3 py-2 rounded-full hover:bg-gt-orange hover:text-white transition-colors" %>
+              <%= link_to t("trips.index.list.results"), results_trip_path(trip), class: "flex-1 text-center text-[13px] font-medium bg-gt-orange-light text-gt-orange-dark px-3 py-2 rounded-full hover:bg-gt-orange hover:text-white transition-colors" %>
             <% end %>
-            <%= link_to "Ouvrir", trip_path(trip), class: "flex-1 text-center text-[13px] text-gt-ink-soft border border-gt-line px-3 py-2 rounded-full hover:border-gt-forest/30 hover:text-gt-forest transition-colors font-medium" %>
+            <%= link_to t("trips.index.list.open"), trip_path(trip), class: "flex-1 text-center text-[13px] text-gt-ink-soft border border-gt-line px-3 py-2 rounded-full hover:border-gt-forest/30 hover:text-gt-forest transition-colors font-medium" %>
           </div>
         </div>
       </div>
@@ -250,7 +250,7 @@
     <%# New trip dashed card %>
     <%= link_to new_trip_path, class: "rounded-[18px] border-2 border-dashed border-gt-line flex flex-col items-center justify-center gap-2 py-10 text-gt-muted hover:border-gt-orange hover:text-gt-orange transition-colors min-h-[180px]" do %>
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"/></svg>
-      <span class="text-[13px] font-medium">Nouveau trip</span>
+      <span class="text-[13px] font-medium"><%= t("trips.index.list.new") %></span>
     <% end %>
   </div>
 

@@ -1,6 +1,6 @@
 <% require "ostruct" %>
-<% content_for :title, "Calcul en cours… — Get Together" %>
-<% content_for :nav_crumb, "Calcul en cours…" %>
+<% content_for :title, t("trips.waiting.title") %>
+<% content_for :nav_crumb, t("trips.waiting.crumb") %>
 
 <div class="max-w-[640px] mx-auto px-4 sm:px-6 lg:px-8 pt-12 sm:pt-20 pb-20 text-center"
      data-controller="optimization-poll"
@@ -60,22 +60,22 @@
   </div>
 
   <%# ── Kicker ── %>
-  <div class="font-mono text-[11px] tracking-[0.13em] uppercase text-gt-muted mb-3">Calcul des prix · Duffel</div>
+  <div class="font-mono text-[11px] tracking-[0.13em] uppercase text-gt-muted mb-3"><%= t("trips.waiting.kicker") %></div>
 
   <%# ── Headline ── %>
   <h1 class="font-display font-normal text-[28px] sm:text-[36px] lg:text-[48px] leading-[1.1] tracking-[-0.025em] text-gt-forest mb-4">
-    On sillonne les cieux pour <em class="italic text-gt-orange">la réponse honnête…</em>
+    <%= t("trips.waiting.headline_pre") %> <em class="italic text-gt-orange"><%= t("trips.waiting.headline_em") %></em>
   </h1>
 
   <p class="text-[14px] sm:text-[16px] text-gt-ink-soft leading-relaxed max-w-[440px] mx-auto mb-8">
-    On interroge Duffel pour les vrais tarifs depuis chaque origine vers chaque destination.
+    <%= t("trips.waiting.body") %>
   </p>
 
   <%# ── Progress bar ── %>
   <div class="mb-8 max-w-[400px] mx-auto">
     <div class="flex justify-between items-center mb-2">
       <span class="font-mono text-[11px] tracking-[0.06em] text-gt-muted" data-optimization-poll-target="statusText">
-        Connexion aux APIs de vols…
+        <%= t("trips.waiting.status_initial") %>
       </span>
       <span class="font-mono text-[11px] text-gt-muted" data-optimization-poll-target="progressLabel">0%</span>
     </div>
@@ -111,22 +111,23 @@
   <%# ── Email capture ── %>
   <div class="max-w-[440px] mx-auto">
     <div class="bg-gt-white border border-gt-line rounded-[18px] p-6">
-      <div class="font-mono text-[10px] tracking-[0.1em] uppercase text-gt-muted mb-2">Vous partez ?</div>
+      <div class="font-mono text-[10px] tracking-[0.1em] uppercase text-gt-muted mb-2"><%= t("trips.waiting.email_kicker") %></div>
       <p class="text-[15px] text-gt-ink-soft mb-4 leading-relaxed">
-        Recevez les résultats par email si vous fermez cette page.
+        <%= t("trips.waiting.email_body") %>
       </p>
-      <div id="email-form-area">
+      <div id="email-form-area" data-success-text="<%= t("trips.waiting.email_success") %>">
         <div class="flex flex-col sm:flex-row gap-2">
-          <input type="email" id="notify-email-input" placeholder="votre@email.com"
+          <input type="email" id="notify-email-input" placeholder="<%= t("trips.waiting.email_placeholder") %>"
                  class="flex-1 px-4 py-2.5 rounded-full border border-gt-line text-[14px] text-gt-ink bg-gt-sand focus:outline-none focus:border-gt-forest/40 placeholder:text-gt-muted/60 transition-colors">
           <button type="button" onclick="submitNotifyEmail(this)"
                   data-url="<%= save_notification_email_trip_path(@trip) %>"
                   data-csrf="<%= form_authenticity_token %>"
+                  data-label="<%= t("trips.waiting.email_submit") %>"
                   class="px-5 py-2.5 rounded-full bg-gt-forest text-white text-[14px] font-medium hover:bg-gt-forest/90 transition-colors flex-shrink-0">
-            M'avertir
+            <%= t("trips.waiting.email_submit") %>
           </button>
         </div>
-        <p class="font-mono text-[10px] text-gt-muted mt-2.5 tracking-[0.04em]">Pas de spam. Un seul email quand c'est prêt.</p>
+        <p class="font-mono text-[10px] text-gt-muted mt-2.5 tracking-[0.04em]"><%= t("trips.waiting.email_note") %></p>
       </div>
     </div>
   </div>
@@ -159,24 +160,26 @@
       });
 
       if (res.ok) {
-        document.getElementById('email-form-area').innerHTML = `
+        const wrap = document.getElementById('email-form-area');
+        const successText = wrap.dataset.successText;
+        wrap.innerHTML = `
           <div class="flex items-center gap-2.5 justify-center py-1">
             <div class="w-6 h-6 rounded-full bg-gt-forest/10 flex items-center justify-center flex-shrink-0">
               <svg class="w-3.5 h-3.5 text-gt-forest" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
               </svg>
             </div>
-            <span class="text-[14px] text-gt-forest font-medium">On vous envoie ça dès que c'est prêt.</span>
+            <span class="text-[14px] text-gt-forest font-medium">${successText}</span>
           </div>`;
       } else {
         btn.disabled = false;
-        btn.textContent = "M'avertir";
+        btn.textContent = btn.dataset.label;
         input.classList.add('border-red-300');
         setTimeout(() => input.classList.remove('border-red-300'), 1500);
       }
     } catch {
       btn.disabled = false;
-      btn.textContent = "M'avertir";
+      btn.textContent = btn.dataset.label;
     }
   }
 </script>

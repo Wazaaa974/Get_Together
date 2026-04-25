@@ -1,7 +1,7 @@
 <%= form_with(model: trip, class: "") do |f| %>
   <% if trip.errors.any? %>
     <div class="mb-5 bg-red-50 border border-red-200 rounded-[14px] p-4">
-      <p class="text-sm font-medium text-red-800 mb-1">Impossible de sauvegarder :</p>
+      <p class="text-sm font-medium text-red-800 mb-1"><%= t("trips.form.errors_title") %></p>
       <ul class="list-disc list-inside text-sm text-red-600 space-y-0.5">
         <% trip.errors.full_messages.each do |msg| %><li><%= msg %></li><% end %>
       </ul>
@@ -11,20 +11,20 @@
   <div class="bg-gt-white border border-gt-line rounded-[18px] p-4 sm:p-[22px] space-y-5">
 
     <div>
-      <label class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted block mb-2">Nom du trip</label>
+      <label class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted block mb-2"><%= t("trips.form.title_label") %></label>
       <%= f.text_field :title,
-          placeholder: "Ex : Weekend à Dublin",
+          placeholder: t("trips.form.title_placeholder"),
           class: "w-full pb-3 border-b border-gt-line bg-transparent font-display text-[18px] sm:text-[22px] text-gt-forest focus:outline-none focus:border-gt-orange transition-colors placeholder:text-gt-muted/50" %>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div>
-        <label class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted block mb-2">Date de départ</label>
+        <label class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted block mb-2"><%= t("trips.form.start_date") %></label>
         <%= f.date_field :start_date,
             class: "w-full border border-gt-line rounded-[8px] px-3.5 py-2.5 text-sm text-gt-ink bg-gt-white focus:outline-none focus:ring-2 focus:ring-gt-orange/20 focus:border-gt-orange transition" %>
       </div>
       <div>
-        <label class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted block mb-2">Date de retour</label>
+        <label class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted block mb-2"><%= t("trips.form.end_date") %></label>
         <%= f.date_field :end_date,
             class: "w-full border border-gt-line rounded-[8px] px-3.5 py-2.5 text-sm text-gt-ink bg-gt-white focus:outline-none focus:ring-2 focus:ring-gt-orange/20 focus:border-gt-orange transition" %>
       </div>
@@ -32,9 +32,9 @@
 
     <% if trip.persisted? %>
       <div>
-        <label class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted block mb-2">Statut</label>
+        <label class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted block mb-2"><%= t("trips.form.status_label") %></label>
         <%= f.select :status,
-            [["Brouillon", "draft"], ["Actif", "active"], ["Terminé", "completed"]],
+            [[t("trips.index.list.status_draft"), "draft"], [t("trips.index.list.status_active"), "active"], [t("trips.index.list.status_completed"), "completed"]],
             { selected: trip.status.presence || "draft" },
             class: "w-full border border-gt-line rounded-[8px] px-3.5 py-2.5 text-sm text-gt-ink bg-gt-white focus:outline-none focus:ring-2 focus:ring-gt-orange/20 focus:border-gt-orange transition" %>
       </div>
@@ -45,10 +45,10 @@
   </div>
 
   <div class="flex items-center gap-3 mt-5 flex-wrap">
-    <%= f.submit trip.persisted? ? "Enregistrer" : "Créer le voyage",
+    <%= f.submit(trip.persisted? ? t("trips.form.save") : t("trips.form.create"),
         class: "px-[22px] py-[14px] rounded-full bg-gt-orange text-white text-[15px] font-medium shadow-[0_8px_24px_rgba(232,99,42,0.2)] hover:bg-gt-orange-dark transition-colors cursor-pointer",
-        data: { disable_with: trip.persisted? ? "Enregistrement…" : "Création…" } %>
-    <%= link_to "Annuler", trip.persisted? ? trip_path(trip) : trips_path,
+        data: { disable_with: trip.persisted? ? t("trips.form.saving") : t("trips.form.creating") }) %>
+    <%= link_to t("trips.form.cancel"), trip.persisted? ? trip_path(trip) : trips_path,
         class: "px-[18px] py-3 rounded-full border border-gt-line text-gt-ink-soft text-sm font-medium hover:border-gt-forest/30 transition-colors" %>
   </div>
 <% end %>
