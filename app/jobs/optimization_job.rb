@@ -23,21 +23,33 @@ class OptimizationJob < ApplicationJob
     if results.any?
       trip.update!(status: "active", optimization_status: "done", last_optimized_at: Time.current)
       Rails.logger.info("[OptimizationJob] trip #{trip_id} done in #{elapsed}s — #{results.size} cities ranked")
-      Ahoy::Event.create!(name: "optimization_completed", time: Time.current, properties: {
-        trip_id: trip_id, duration_s: elapsed, cities_count: results.size,
-        winning_city: results.first[:city].city_name, total_price_cents: results.first[:total_cents]
-      })
-      ResultsMailer.results_ready(trip).deliver_later if trip.notification_email.present?
+
+      begin
+        Ahoy::Event.create!(name: "optimization_completed", time: Time.current, properties: {
+          trip_id: trip_id, duration_s: elapsed, cities_count: results.size,
+          winning_city: results.first[:city].city_name, total_price_cents: results.first[:total_cents]
+        })
+      rescue => e
+        Rails.logger.warn("[OptimizationJob] Ahoy tracking failed (non-fatal): #{e.class}: #{e.message}")
+      end
+
+      begin
+        ResultsMailer.results_ready(trip).deliver_later if trip.notification_email.present?
+      rescue => e
+        Rails.logger.warn("[OptimizationJob] Mailer enqueue failed (non-fatal): #{e.class}: #{e.message}")
+      end
     else
       trip.update!(optimization_status: "failed")
       Rails.logger.warn("[OptimizationJob] trip #{trip_id} — no results after #{elapsed}s")
     end
   rescue Timeout::Error
     Rails.logger.error("[OptimizationJob] Timeout after #{TIMEOUT_SECONDS}s for trip #{trip_id}")
-    Trip.find_by(id: trip_id)&.update(optimization_status: "failed")
+    t = Trip.find_by(id: trip_id)
+    t.update(optimization_status: "failed") if t && t.optimization_status != "done"
   rescue => e
     Rails.logger.error("[OptimizationJob] #{e.class}: #{e.message}")
-    Trip.find_by(id: trip_id)&.update(optimization_status: "failed")
+    t = Trip.find_by(id: trip_id)
+    t.update(optimization_status: "failed") if t && t.optimization_status != "done"
     raise
   end
 
