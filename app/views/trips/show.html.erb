@@ -253,7 +253,17 @@
             cities_to_show = @trip.candidate_cities.any? ? @trip.candidate_cities : []
             participant_airports = @trip.participants.pluck(:origin_airport_code, :name)
                                        .each_with_object({}) { |(code, name), h| h[code.to_s.upcase] = name if code.present? }
+            origin_cities_count = cities_to_show.count { |c| participant_airports.key?(c.airport_code.to_s.upcase) }
           %>
+          <% if origin_cities_count > 0 && is_owner %>
+            <div class="mt-3 mb-1 flex items-start gap-2 px-3 py-2.5 rounded-[10px] bg-gt-sand-dark/60 border border-dashed border-gt-line">
+              <svg class="w-4 h-4 text-gt-forest flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 12l2-2m0 0l7-7 7 7m-9-9v18m-2-9h2"/></svg>
+              <p class="text-[12px] text-gt-ink-soft leading-relaxed">
+                <span class="font-medium text-gt-forest"><%= origin_cities_count %> <%= origin_cities_count > 1 ? "villes d'origine exclues" : "ville d'origine exclue" %> par défaut.</span>
+                Vous voulez vous retrouver chez quelqu'un&nbsp;? Cliquez sur « Inclure » à côté de la ville.
+              </p>
+            </div>
+          <% end %>
           <% if cities_to_show.any? %>
             <div class="mt-3.5">
               <% cities_to_show.each_with_index do |city, i| %>
@@ -271,9 +281,10 @@
                     <div class="flex items-center gap-2 flex-wrap">
                       <span class="text-[14px] font-medium <%= is_excluded ? 'text-gt-muted line-through' : 'text-gt-ink' %>"><%= city.city_name %></span>
                       <% if participant_name %>
-                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[6px] bg-gt-orange-light text-gt-orange-dark font-mono text-[9px] tracking-[0.06em] uppercase flex-shrink-0">
-                          <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
-                          <%= participant_name %>
+                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[6px] bg-gt-orange-light text-gt-orange-dark font-mono text-[9px] tracking-[0.06em] uppercase flex-shrink-0"
+                              title="Ville d'origine de <%= participant_name %>">
+                          <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                          Domicile · <%= participant_name %>
                         </span>
                       <% end %>
                     </div>
