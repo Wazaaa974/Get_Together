@@ -72,17 +72,6 @@
 <%# ── Body ── %>
 <div class="max-w-[1180px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-7 pb-20">
 
-  <%# Results available banner %>
-  <% if has_results %>
-    <div class="mb-5 bg-gt-orange-light border border-gt-orange/20 rounded-[14px] px-5 py-3.5 flex items-center justify-between gap-3">
-      <div class="flex items-center gap-2.5 text-sm text-gt-orange-dark">
-        <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-        <span class="font-medium">Résultats disponibles</span>
-      </div>
-      <%= link_to "Voir les résultats →", results_trip_path(@trip), class: "text-sm font-medium text-gt-orange-dark hover:text-gt-orange transition-colors flex-shrink-0" %>
-    </div>
-  <% end %>
-
   <%# Shared view banner %>
   <% if @shared_view %>
     <div class="mb-5 bg-gt-orange-light border border-gt-orange/20 rounded-[14px] px-5 py-3.5 flex items-center gap-3 text-sm text-gt-orange-dark">

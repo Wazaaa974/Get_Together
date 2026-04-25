@@ -34,15 +34,18 @@
       <div class="flex flex-col gap-5">
 
         <%# Trip name card %>
-        <div class="bg-gt-white border border-gt-line rounded-[18px] p-4 sm:p-[22px]">
+        <div class="bg-gt-white border border-gt-line rounded-[18px] p-4 sm:p-[22px]"
+             data-controller="title-presets">
           <div class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted mb-3.5">Nom du trip</div>
           <%= f.text_field :title,
               placeholder: "Eurotrip avec la promo…",
+              data: { title_presets_target: "input" },
               class: "w-full pb-3 border-b border-gt-line bg-transparent font-display text-[20px] sm:text-[26px] text-gt-forest tracking-[-0.01em] focus:outline-none focus:border-gt-orange transition-colors placeholder:text-gt-muted/50" %>
           <div class="flex gap-2 flex-wrap mt-4">
             <% ["Week-end entre amis", "Réunion de famille", "Retraite d'équipe", "Anniversaire"].each do |preset| %>
               <button type="button"
-                onclick="document.querySelector('input[name=\'trip[title]\']').value = '<%= preset %>'"
+                data-action="title-presets#apply"
+                data-value="<%= preset %>"
                 class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gt-white border border-gt-line text-gt-forest text-xs font-medium hover:border-gt-forest/30 transition-colors cursor-pointer">
                 <%= preset %>
               </button>
