@@ -26,7 +26,6 @@ Rails.application.routes.draw do
   end
 
   post "/t", to: "tracking#create", as: :track_event
-  get  "/bookings/out", to: "bookings#out", as: :booking_out
 
   namespace :admin do
     get "metrics", to: "metrics#show"
