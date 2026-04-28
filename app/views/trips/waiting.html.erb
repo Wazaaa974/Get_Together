@@ -90,14 +90,18 @@
   <%# ── Route chips grid ── %>
   <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-left mb-10" data-optimization-poll-target="steps">
     <%
-      participants = @trip.participants.first(4)
-      destinations = @trip.candidate_cities.any? ? @trip.candidate_cities.first(4) : [
+      participants = @trip.participants.to_a
+      fallback_destinations = [
         OpenStruct.new(city_name: "Lisbonne", airport_code: "LIS"),
         OpenStruct.new(city_name: "Dublin",   airport_code: "DUB"),
         OpenStruct.new(city_name: "Bruxelles",airport_code: "BRU"),
         OpenStruct.new(city_name: "Barcelone",airport_code: "BCN"),
       ]
-      routes = participants.flat_map { |p| destinations.map { |d| [p, d] } }.first(8)
+      destinations = @trip.candidate_cities.any? ? @trip.candidate_cities.to_a : fallback_destinations
+      # Show one chip per participant so everyone is visible, capped at 8 chips total.
+      per_participant = [participants.size, 1].max
+      slots_per       = [8 / per_participant, 1].max
+      routes = participants.flat_map { |p| destinations.first(slots_per).map { |d| [p, d] } }.first(8)
     %>
     <% routes.each_with_index do |(participant, dest), i| %>
       <div class="p-2.5 rounded-[10px] bg-gt-sand border border-dashed border-gt-line font-mono text-[10px] flex justify-between items-center"

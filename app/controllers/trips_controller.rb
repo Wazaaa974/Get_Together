@@ -8,7 +8,7 @@ class TripsController < ApplicationController
 
   def new
     @trip = Trip.new
-    3.times { @trip.participants.build }
+    @trip.participants.build
   end
 
   def create
