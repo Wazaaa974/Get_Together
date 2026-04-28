@@ -62,8 +62,8 @@
           <%# Rows container %>
           <div class="flex flex-col gap-2" data-participant-rows-target="container">
             <%= f.fields_for :participants do |pf| %>
-              <div data-participant-row class="flex items-center gap-2 bg-gt-sand rounded-[12px] px-3 py-2.5 border border-gt-line">
-                <div class="w-8 h-8 rounded-full bg-gt-orange-light flex items-center justify-center font-display italic text-gt-orange text-[16px] flex-shrink-0">g</div>
+              <div data-participant-row class="flex items-center gap-2 bg-gt-sand rounded-[12px] px-3 py-2.5 border border-gt-line transition-all duration-200">
+                <div class="w-8 h-8 rounded-full bg-gt-orange-light flex items-center justify-center font-display italic text-gt-orange text-[16px] flex-shrink-0 transition-colors duration-200">g</div>
                 <div class="flex-1 min-w-0">
                   <%= pf.text_field :name, placeholder: t("trips.new.first_name"),
                       class: "w-full border-none bg-transparent outline-none text-[14px] text-gt-ink placeholder:text-gt-muted" %>
@@ -91,8 +91,8 @@
 
           <%# Template for JS-added rows %>
           <template data-participant-rows-target="template">
-            <div data-participant-row class="flex items-center gap-2 bg-gt-sand rounded-[12px] px-3 py-2.5 border border-gt-line">
-              <div class="w-8 h-8 rounded-full bg-gt-orange-light flex items-center justify-center font-display italic text-gt-orange text-[16px] flex-shrink-0">g</div>
+            <div data-participant-row class="flex items-center gap-2 bg-gt-sand rounded-[12px] px-3 py-2.5 border border-gt-line transition-all duration-200">
+              <div class="w-8 h-8 rounded-full bg-gt-orange-light flex items-center justify-center font-display italic text-gt-orange text-[16px] flex-shrink-0 transition-colors duration-200">g</div>
               <div class="flex-1 min-w-0">
                 <input type="text" name="trip[participants_attributes][NEW_IDX][name]" placeholder="<%= t("trips.new.first_name") %>"
                        class="w-full border-none bg-transparent outline-none text-[14px] text-gt-ink placeholder:text-gt-muted">

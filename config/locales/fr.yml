@@ -260,6 +260,8 @@ fr:
       cheaper_than: "Moins cher que #%{rank}"
       book_gflights: "Réserver sur Google Flights →"
       share_results: "Partager les résultats"
+      share_text: "Le groupe se retrouve à %{city} pour « %{title} » — total %{total}€ (%{avg}€ par personne)."
+      cheapest_stamp: "Moins cher"
       share_copied: "✓ Lien copié !"
       one_way: "Aller simple"
       out: "Aller"
