@@ -1,13 +1,13 @@
 <%
   content_for :og_title, "#{@trip.title} — Get Together"
-  content_for :og_description, "Rejoignez le trip « #{@trip.title} » et ajoutez votre ville de départ."
+  content_for :og_description, t("trips.show.og_description", title: @trip.title)
   content_for :og_image, trip_og_image_url(@trip.share_token) if @trip.share_token.present?
   content_for :nav_crumb, @trip.title
 
   status_label = case @trip.status
-    when "active"    then "Actif"
-    when "completed" then "Terminé"
-    else                  "Brouillon"
+    when "active"    then t("trips.index.list.status_active")
+    when "completed" then t("trips.index.list.status_completed")
+    else                  t("trips.index.list.status_draft")
   end
   status_chip_class = case @trip.status
     when "active"    then "bg-green-50 text-green-700"
@@ -35,11 +35,11 @@
           <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#2b2d35] text-white text-xs font-medium">● <%= status_label %></span>
           <% if @trip.start_date.present? %>
             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#2b2d35] text-white text-xs font-medium">
-              <%= @trip.start_date.strftime("%d %b") %><% if @trip.end_date.present? %> → <%= @trip.end_date.strftime("%d %b") %><% end %>
+              <%= l(@trip.start_date, format: :short) %><% if @trip.end_date.present? %> → <%= l(@trip.end_date, format: :short) %><% end %>
             </span>
           <% end %>
           <% if @shared_view %>
-            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gt-orange/30 text-white text-xs font-medium">↗ Lien de partage</span>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gt-orange/30 text-white text-xs font-medium"><%= t("trips.show.shared_label") %></span>
           <% end %>
         </div>
 
@@ -49,18 +49,18 @@
             <%= @trip.title.split.first(3).join(" ") %> <em class="italic text-gt-orange"><%= @trip.title.split.drop(3).join(" ").presence || @trip.title.split.last %></em>
           </h1>
           <div class="text-left sm:text-right flex-shrink-0">
-            <div class="font-mono text-[11px] text-white/60 tracking-[0.1em] uppercase"><%= @trip.participants.count %> participant<%= @trip.participants.count > 1 ? "s" : "" %></div>
-            <div class="font-display italic text-[18px] sm:text-[22px] text-white/80 mt-1"><%= @trip.candidate_cities.count > 0 ? "#{@trip.candidate_cities.count} villes" : "8 villes auto" %></div>
+            <div class="font-mono text-[11px] text-white/60 tracking-[0.1em] uppercase"><%= t("trips.index.list.participants", count: @trip.participants.count) %></div>
+            <div class="font-display italic text-[18px] sm:text-[22px] text-white/80 mt-1"><%= @trip.candidate_cities.count > 0 ? t("trips.show.cities", count: @trip.candidate_cities.count) : t("trips.show.cities_auto") %></div>
           </div>
         </div>
 
         <%# Owner actions %>
         <% if is_owner %>
           <div class="flex items-center gap-2 mt-5 relative">
-            <%= link_to "Modifier", edit_trip_path(@trip), class: "text-[13px] text-white/60 border border-white/20 px-3 py-1.5 rounded-full hover:bg-white/10 transition-colors" %>
-            <%= button_to "Supprimer", trip_path(@trip), method: :delete,
+            <%= link_to t("trips.show.edit"), edit_trip_path(@trip), class: "text-[13px] text-white/60 border border-white/20 px-3 py-1.5 rounded-full hover:bg-white/10 transition-colors" %>
+            <%= button_to t("trips.show.delete"), trip_path(@trip), method: :delete,
                 class: "text-[13px] text-red-300/70 border border-red-300/20 px-3 py-1.5 rounded-full hover:bg-red-500/10 transition-colors",
-                data: { turbo_confirm: "Supprimer ce trip définitivement ?" } %>
+                data: { turbo_confirm: t("trips.show.delete_confirm") } %>
           </div>
         <% end %>
       </div>
@@ -76,7 +76,7 @@
   <% if @shared_view %>
     <div class="mb-5 bg-gt-orange-light border border-gt-orange/20 rounded-[14px] px-5 py-3.5 flex items-center gap-3 text-sm text-gt-orange-dark">
       <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
-      Vous consultez ce trip via un lien de partage. Ajoutez votre ville ci-dessous.
+      <%= t("trips.show.shared_banner_full") %>
     </div>
   <% end %>
 
@@ -85,7 +85,7 @@
     <div class="mb-5 bg-amber-50 border border-amber-200 rounded-[14px] px-5 py-4">
       <p class="text-[12px] font-medium text-amber-800 mb-2.5 flex items-center gap-1.5">
         <svg class="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-        Sauvegardez votre lien administrateur
+        <%= t("trips.show.admin_save_title") %>
       </p>
       <div class="flex items-center gap-2">
         <input type="text" readonly
@@ -93,10 +93,10 @@
           class="flex-1 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-[8px] px-3 py-2 focus:outline-none font-mono truncate"
           id="admin-link-<%= @trip.id %>">
         <button type="button"
-          onclick="navigator.clipboard.writeText(document.getElementById('admin-link-<%= @trip.id %>').value).then(() => { this.textContent = 'Copié !'; setTimeout(() => this.textContent = 'Copier', 2000) })"
-          class="text-xs text-amber-700 border border-amber-300 px-3 py-2 rounded-[8px] hover:bg-amber-100 transition-colors flex-shrink-0 font-medium">Copier</button>
+          onclick="navigator.clipboard.writeText(document.getElementById('admin-link-<%= @trip.id %>').value).then(() => { this.textContent = '<%= t("trips.show.copied") %>'; setTimeout(() => this.textContent = '<%= t("trips.show.copy") %>', 2000) })"
+          class="text-xs text-amber-700 border border-amber-300 px-3 py-2 rounded-[8px] hover:bg-amber-100 transition-colors flex-shrink-0 font-medium"><%= t("trips.show.copy") %></button>
       </div>
-      <p class="text-[11px] text-amber-600 mt-1.5">Ce lien vous permet de retrouver l'administration depuis n'importe quel appareil.</p>
+      <p class="text-[11px] text-amber-600 mt-1.5"><%= t("trips.show.admin_save_body") %></p>
     </div>
   <% end %>
 
@@ -110,10 +110,10 @@
       <div class="bg-gt-white border border-gt-line rounded-[18px] p-4 sm:p-[22px]">
         <div class="flex items-baseline justify-between mb-3.5">
           <div class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted">
-            Votre groupe <span class="text-gt-forest ml-1">· <%= @trip.participants.count %></span>
+            <%= t("trips.show.group_count_html", count: @trip.participants.count).html_safe %>
           </div>
           <% ready = @trip.participants.select { |p| p.origin_airport_code.present? }.count %>
-          <span class="text-xs text-gt-muted"><%= ready %> / <%= @trip.participants.count %> prêts</span>
+          <span class="text-xs text-gt-muted"><%= t("trips.show.ready_count", ready: ready, total: @trip.participants.count) %></span>
         </div>
 
         <% if @trip.participants.any? %>
@@ -157,7 +157,7 @@
                       <% end %>
                       <%= button_to trip_participant_path(@trip, participant), method: :delete,
                           class: "text-gray-300 hover:text-red-400 transition-colors p-0.5",
-                          data: { turbo_confirm: "Supprimer #{participant.name} ?" } do %>
+                          data: { turbo_confirm: t("trips.show.delete_participant_confirm", name: participant.name) } do %>
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                       <% end %>
                     <% end %>
@@ -168,7 +168,7 @@
           </div>
         <% else %>
           <div class="py-6 text-center">
-            <p class="text-[13px] text-gt-muted">Personne n'a encore rejoint. Partagez le lien ci-dessous.</p>
+            <p class="text-[13px] text-gt-muted"><%= t("trips.show.empty_group") %></p>
           </div>
         <% end %>
 
@@ -181,13 +181,13 @@
             <% end %>
             <div class="flex flex-wrap gap-2 items-start">
               <div class="flex-1 min-w-[120px] sm:min-w-24">
-                <%= f.text_field :name, placeholder: "Prénom",
+                <%= f.text_field :name, placeholder: t("trips.show.add_participant_first_name"),
                     class: "w-full border border-gt-line bg-gt-white rounded-[8px] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gt-orange/20 focus:border-gt-orange transition-colors" %>
               </div>
               <div class="flex-1 min-w-[160px] sm:flex-[1.4] sm:min-w-40 relative"
                    data-controller="city-autocomplete"
                    data-action="focusout->city-autocomplete#onFocusOut">
-                <%= f.text_field :origin_city, placeholder: "Ville de départ",
+                <%= f.text_field :origin_city, placeholder: t("trips.show.add_participant_origin_city"),
                     class: "w-full border border-gt-line bg-gt-white rounded-[8px] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gt-orange/20 focus:border-gt-orange transition-colors",
                     data: { city_autocomplete_target: "input", action: "input->city-autocomplete#onInput keydown->city-autocomplete#onKeydown" },
                     autocomplete: "off" %>
@@ -196,12 +196,12 @@
                     data-action="click->city-autocomplete#select"></ul>
               </div>
               <div class="w-24 sm:w-28">
-                <%= f.text_field :origin_airport_code, placeholder: "CDG…",
+                <%= f.text_field :origin_airport_code, placeholder: t("trips.show.add_participant_iata"),
                     class: "w-full border border-gt-line bg-gt-white rounded-[8px] px-3 py-2.5 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-gt-orange/20 focus:border-gt-orange transition-colors" %>
               </div>
-              <%= f.submit "Ajouter", class: "w-full sm:w-auto px-[18px] py-[10px] rounded-full bg-gt-orange text-white text-[13px] font-medium hover:bg-gt-orange-dark transition-colors cursor-pointer flex-shrink-0" %>
+              <%= f.submit t("trips.show.add_participant_submit"), class: "w-full sm:w-auto px-[18px] py-[10px] rounded-full bg-gt-orange text-white text-[13px] font-medium hover:bg-gt-orange-dark transition-colors cursor-pointer flex-shrink-0" %>
             </div>
-            <p class="font-mono text-[10px] tracking-[0.06em] text-gt-muted mt-2">CODE AÉROPORT FACULTATIF — DÉTECTÉ AUTOMATIQUEMENT</p>
+            <p class="font-mono text-[10px] tracking-[0.06em] text-gt-muted mt-2"><%= t("trips.show.airport_hint") %></p>
           <% end %>
         <% end %>
       </div>
@@ -209,16 +209,16 @@
       <%# Share Panel %>
       <% if is_owner && @trip.share_token.present? %>
         <div class="bg-gt-white border border-gt-line rounded-[18px] p-4 sm:p-[22px]">
-          <div class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted mb-3.5">Lien d'invitation</div>
+          <div class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted mb-3.5"><%= t("trips.show.invite_label") %></div>
           <div class="flex gap-2.5 items-center px-3.5 py-3 bg-gt-sand rounded-[12px] border border-dashed border-gt-line">
             <span class="font-mono text-[12px] text-gt-forest flex-1 overflow-hidden text-ellipsis whitespace-nowrap" id="share-link-<%= @trip.id %>">
               <%= shared_trip_url(@trip.share_token) %>
             </span>
             <button type="button"
-              onclick="navigator.clipboard.writeText(document.getElementById('share-link-<%= @trip.id %>').textContent.trim()).then(() => { this.textContent='Copié !'; setTimeout(() => this.textContent='Copier', 2000) })"
-              class="px-3.5 py-1.5 rounded-full bg-gt-orange text-white text-[12px] font-medium hover:bg-gt-orange-dark transition-colors flex-shrink-0">Copier</button>
+              onclick="navigator.clipboard.writeText(document.getElementById('share-link-<%= @trip.id %>').textContent.trim()).then(() => { this.textContent='<%= t("trips.show.copied") %>'; setTimeout(() => this.textContent='<%= t("trips.show.copy") %>', 2000) })"
+              class="px-3.5 py-1.5 rounded-full bg-gt-orange text-white text-[12px] font-medium hover:bg-gt-orange-dark transition-colors flex-shrink-0"><%= t("trips.show.copy") %></button>
           </div>
-          <p class="text-[13px] text-gt-muted mt-2.5">Les amis qui ouvrent ce lien peuvent s'ajouter. Sans compte.</p>
+          <p class="text-[13px] text-gt-muted mt-2.5"><%= t("trips.show.invite_note") %></p>
         </div>
       <% end %>
 
@@ -235,17 +235,17 @@
           <div class="mb-1">
             <div class="flex items-baseline justify-between">
               <div class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted">
-                Destinations à évaluer <span class="text-gt-forest ml-1">· <%= @trip.candidate_cities.any? ? @trip.candidate_cities.count : 8 %></span>
+                <%= t("trips.show.candidates_count_html", count: (@trip.candidate_cities.any? ? @trip.candidate_cities.count : 8)).html_safe %>
               </div>
               <% if has_results %>
                 <span class="inline-flex items-center gap-1 font-mono text-[10px] text-gt-forest tracking-[0.06em]">
                   <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                  Prix calculés
+                  <%= t("trips.show.prices_calculated") %>
                 </span>
               <% end %>
             </div>
             <p class="text-[12px] text-gt-muted mt-1 leading-relaxed">
-              On a présélectionné <%= @trip.candidate_cities.any? ? @trip.candidate_cities.count : 8 %> destinations populaires depuis vos villes. Ajoutez ou retirez selon vos envies.
+              <%= t("trips.show.candidates_intro_html", count: (@trip.candidate_cities.any? ? @trip.candidate_cities.count : 8)) %>
             </p>
           </div>
 
@@ -259,8 +259,8 @@
             <div class="mt-3 mb-1 flex items-start gap-2 px-3 py-2.5 rounded-[10px] bg-gt-sand-dark/60 border border-dashed border-gt-line">
               <svg class="w-4 h-4 text-gt-forest flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 12l2-2m0 0l7-7 7 7m-9-9v18m-2-9h2"/></svg>
               <p class="text-[12px] text-gt-ink-soft leading-relaxed">
-                <span class="font-medium text-gt-forest"><%= origin_cities_count %> <%= origin_cities_count > 1 ? "villes d'origine exclues" : "ville d'origine exclue" %> par défaut.</span>
-                Vous voulez vous retrouver chez quelqu'un&nbsp;? Cliquez sur « Inclure » à côté de la ville.
+                <span class="font-medium text-gt-forest"><%= I18n.t("trips.show.origin_banner", count: origin_cities_count, default: (origin_cities_count > 1 ? t("trips.show.origin_banner_other", count: origin_cities_count) : t("trips.show.origin_banner_one"))) %></span>
+                <%= t("trips.show.origin_banner_cta") %>
               </p>
             </div>
           <% end %>
@@ -282,9 +282,9 @@
                       <span class="text-[14px] font-medium <%= is_excluded ? 'text-gt-muted line-through' : 'text-gt-ink' %>"><%= city.city_name %></span>
                       <% if participant_name %>
                         <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[6px] bg-gt-orange-light text-gt-orange-dark font-mono text-[9px] tracking-[0.06em] uppercase flex-shrink-0"
-                              title="Ville d'origine de <%= participant_name %>">
+                              title="<%= t("trips.show.home_badge_title", name: participant_name) %>">
                           <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                          Domicile · <%= participant_name %>
+                          <%= t("trips.show.home_badge", name: participant_name) %>
                         </span>
                       <% end %>
                     </div>
@@ -296,19 +296,19 @@
                     <% if is_owner %>
                       <%= form_with url: toggle_excluded_trip_candidate_city_path(@trip, city), method: :patch, class: "inline" do |f| %>
                         <button type="submit"
-                                title="<%= is_excluded ? 'Réactiver cette destination' : 'Exclure du calcul' %>"
+                                title="<%= is_excluded ? t("trips.show.reactivate_title") : t("trips.show.exclude_title") %>"
                                 class="flex items-center gap-1 px-2 py-1 rounded-[8px] border transition-colors <%= is_excluded ? 'border-gt-orange-dark bg-gt-orange-light text-gt-orange-dark hover:bg-gt-orange hover:text-white' : 'border-gt-line bg-transparent text-gt-muted hover:border-red-300 hover:text-red-400' %>">
                           <% if is_excluded %>
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            <span class="font-mono text-[9px] tracking-[0.06em] uppercase">Exclue</span>
+                            <span class="font-mono text-[9px] tracking-[0.06em] uppercase"><%= t("trips.show.excluded") %></span>
                           <% else %>
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
-                            <span class="font-mono text-[9px] tracking-[0.06em] uppercase">Inclure</span>
+                            <span class="font-mono text-[9px] tracking-[0.06em] uppercase"><%= t("trips.show.include") %></span>
                           <% end %>
                         </button>
                       <% end %>
                       <button type="button"
-                              title="Supprimer cette ville"
+                              title="<%= t("trips.show.delete_city_title") %>"
                               onclick="confirmDeleteCity(this)"
                               data-url="<%= trip_candidate_city_path(@trip, city) %>"
                               data-name="<%= city.city_name %>"
@@ -332,7 +332,7 @@
                   </div>
                 <% end %>
               </div>
-              <p class="text-[12px] text-gt-muted">Ces 8 villes seront évaluées au lancement. Vous pouvez en ajouter d'autres ci-dessous ou lancer directement.</p>
+              <p class="text-[12px] text-gt-muted"><%= t("trips.show.auto_intro") %></p>
             </div>
           <% end %>
 
@@ -343,7 +343,7 @@
               <div class="flex-1 relative"
                    data-controller="city-autocomplete"
                    data-action="focusout->city-autocomplete#onFocusOut">
-                <%= f.text_field :city_name, placeholder: "Ajouter une autre ville…",
+                <%= f.text_field :city_name, placeholder: t("trips.show.add_city_placeholder"),
                     class: "w-full border-none bg-transparent outline-none text-[14px] text-gt-ink placeholder:text-gt-muted",
                     data: { city_autocomplete_target: "input", action: "input->city-autocomplete#onInput keydown->city-autocomplete#onKeydown" },
                     autocomplete: "off" %>
@@ -353,14 +353,15 @@
               </div>
               <%= f.hidden_field :country_code %>
               <%= f.hidden_field :airport_code %>
-              <span class="font-mono text-[10px] text-gt-muted tracking-[0.08em]">⏎ AJOUTER</span>
+              <span class="font-mono text-[10px] text-gt-muted tracking-[0.08em]"><%= t("trips.show.add_city_submit") %></span>
             </div>
           <% end %>
         </div>
 
         <script>
           function confirmDeleteCity(btn) {
-            if (!confirm("Retirer " + btn.dataset.name + " du calcul ?")) return;
+            const tpl = "<%= j t("trips.show.delete_city_js_confirm", name: "__NAME__") %>";
+            if (!confirm(tpl.replace("__NAME__", btn.dataset.name))) return;
             fetch(btn.dataset.url, {
               method: 'DELETE',
               headers: { 'X-CSRF-Token': btn.dataset.csrf, 'Accept': 'text/vnd.turbo-stream.html' }
@@ -377,12 +378,12 @@
               <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
             </div>
             <div class="flex-1 min-w-0">
-              <p class="font-medium text-red-800 text-sm">Le calcul a échoué</p>
-              <p class="text-[12px] text-red-600 mt-1">L'API de vols n'a pas répondu. Vérifiez les villes et réessayez.</p>
+              <p class="font-medium text-red-800 text-sm"><%= t("trips.show.failed_title") %></p>
+              <p class="text-[12px] text-red-600 mt-1"><%= t("trips.show.failed_body") %></p>
             </div>
-            <%= button_to "Réessayer →", optimize_trip_path(@trip), method: :post,
+            <%= button_to t("trips.show.retry"), optimize_trip_path(@trip), method: :post,
                 class: "px-[18px] py-[10px] rounded-full bg-red-600 text-white text-[13px] font-medium hover:bg-red-700 transition-colors flex-shrink-0 self-center",
-                data: { disable_with: "En cours…" } %>
+                data: { disable_with: t("trips.show.retrying") } %>
           </div>
         <% elsif ready_to_optimize %>
           <div class="rounded-[18px] p-4 sm:p-[22px] relative overflow-hidden" style="background: linear-gradient(160deg, #1A1F2E 0%, #2D4A3E 100%);">
@@ -402,16 +403,21 @@
               </svg>
             </div>
             <div class="relative">
-              <div class="font-mono text-[11px] tracking-[0.13em] uppercase text-white/60 mb-2.5">Prêt quand vous l'êtes</div>
+              <%
+                origins_n = @trip.participants.count
+                dests_n   = @trip.candidate_cities.count > 0 ? @trip.candidate_cities.count : 10
+                flights_n = origins_n * [dests_n, 10].min
+              %>
+              <div class="font-mono text-[11px] tracking-[0.13em] uppercase text-white/60 mb-2.5"><%= t("trips.show.go_kicker") %></div>
               <h3 class="font-display font-normal text-[22px] sm:text-[26px] lg:text-[30px] tracking-[-0.02em] text-white leading-tight mb-3.5">
-                Calculer tous les <em class="italic text-gt-orange"><%= @trip.participants.count * [@trip.candidate_cities.count.positive? ? @trip.candidate_cities.count : 10, 10].min %> vols</em> maintenant&nbsp;?
+                <%= t("trips.show.go_headline_pre") %> <em class="italic text-gt-orange"><%= t("trips.show.go_headline_em", count: flights_n) %></em> <%= t("trips.show.go_headline_post") %>
               </h3>
               <p class="text-[13px] text-white/70 mb-5 max-w-[280px]">
-                <%= @trip.participants.count %> origine<%= @trip.participants.count > 1 ? "s" : "" %> × <%= @trip.candidate_cities.count > 0 ? @trip.candidate_cities.count : 10 %> destinations. Environ 30 secondes.
+                <%= t("trips.show.go_meta", count: origins_n, origins: origins_n, dests: dests_n) %>
               </p>
-              <%= button_to "Trouver la ville idéale →", optimize_trip_path(@trip), method: :post,
+              <%= button_to t("trips.show.go_submit"), optimize_trip_path(@trip), method: :post,
                   class: "px-[22px] py-[14px] rounded-full bg-gt-orange text-white text-[15px] font-medium shadow-[0_8px_24px_rgba(232,99,42,0.2)] hover:bg-gt-orange-dark transition-colors inline-flex items-center gap-2",
-                  data: { disable_with: "Calcul en cours…" } %>
+                  data: { disable_with: t("trips.show.go_submitting") } %>
             </div>
           </div>
         <% else %>
@@ -419,8 +425,8 @@
             <div class="w-10 h-10 bg-gt-sand rounded-full flex items-center justify-center mx-auto mb-3">
               <svg class="w-5 h-5 text-gt-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
             </div>
-            <p class="text-[14px] font-medium text-gt-forest">Ajoutez des participants pour lancer le calcul</p>
-            <p class="text-[12px] text-gt-muted mt-1">8 destinations européennes seront évaluées automatiquement.</p>
+            <p class="text-[14px] font-medium text-gt-forest"><%= t("trips.show.no_participants_title") %></p>
+            <p class="text-[12px] text-gt-muted mt-1"><%= t("trips.show.no_participants_body") %></p>
           </div>
         <% end %>
       <% end %>

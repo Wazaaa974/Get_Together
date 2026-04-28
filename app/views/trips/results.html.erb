@@ -83,8 +83,7 @@
   diff_vs_2   = top3[1] ? ((top3[1][:total_cents] - best[:total_cents]) / 100.0).ceil : nil
 
   # Boarding-pass-style date strip
-  fr_months   = %w[JAN FÉV MAR AVR MAI JUI JUL AOÛ SEP OCT NOV DÉC]
-  fmt_short   = ->(d) { d ? "#{d.strftime('%d')} #{fr_months[d.month - 1]}" : nil }
+  fmt_short   = ->(d) { d ? I18n.l(d, format: :short).upcase : nil }
   dep_str     = fmt_short.call(@trip.start_date)
   ret_str     = fmt_short.call(@trip.end_date)
   nights      = (@trip.start_date && @trip.end_date) ? (@trip.end_date - @trip.start_date).to_i : nil
@@ -132,17 +131,17 @@
 
     <%# Stamp — top right (hidden on mobile to save space) %>
     <div class="absolute right-6 top-6 sm:right-10 sm:top-10 hidden sm:block" style="transform: rotate(8deg);" aria-hidden="true">
-      <div class="inline-flex items-center gap-1.5 px-2.5 py-1 border border-dashed border-gt-orange text-gt-orange rounded font-mono text-[10px] font-medium tracking-[0.12em] uppercase bg-transparent">Cheapest for the group</div>
+      <div class="inline-flex items-center gap-1.5 px-2.5 py-1 border border-dashed border-gt-orange text-gt-orange rounded font-mono text-[10px] font-medium tracking-[0.12em] uppercase bg-transparent"><%= t("trips.results.cheapest_stamp") %></div>
     </div>
 
     <div class="relative">
       <%# Dark chips %>
       <div class="flex items-center gap-2.5 mb-5 flex-wrap">
-        <span id="winner-rank-chip" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#2b2d35] text-white text-xs font-medium">★ Best fit</span>
+        <span id="winner-rank-chip" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#2b2d35] text-white text-xs font-medium"><%= t("trips.results.best_fit") %></span>
       </div>
 
       <%# Meet in kicker %>
-      <div class="font-mono text-[12px] tracking-[0.14em] uppercase text-white/70 mb-1">Meet in</div>
+      <div class="font-mono text-[12px] tracking-[0.14em] uppercase text-white/70 mb-1"><%= t("trips.results.meet_in") %></div>
 
       <%# City name — responsive %>
       <h1 id="winner-city-name" class="font-display font-normal text-white leading-[0.92] tracking-[-0.03em] mb-2 text-[56px] sm:text-[88px] lg:text-[120px] xl:text-[140px]">
@@ -158,22 +157,22 @@
       <% if dep_str %>
         <div class="inline-flex items-stretch gap-0 mb-6 sm:mb-8 border border-white/15 rounded-[10px] overflow-hidden bg-white/5 backdrop-blur-sm">
           <div class="px-3 py-2 sm:px-4 sm:py-2.5 border-r border-dashed border-white/20">
-            <div class="font-mono text-[9px] tracking-[0.14em] uppercase text-white/55 mb-0.5">Aller</div>
+            <div class="font-mono text-[9px] tracking-[0.14em] uppercase text-white/55 mb-0.5"><%= t("trips.results.out") %></div>
             <div class="font-mono text-[13px] sm:text-[14px] tracking-[0.06em] text-white"><%= dep_str %></div>
           </div>
           <% if ret_str %>
             <div class="px-3 py-2 sm:px-4 sm:py-2.5 border-r border-dashed border-white/20">
-              <div class="font-mono text-[9px] tracking-[0.14em] uppercase text-white/55 mb-0.5">Retour</div>
+              <div class="font-mono text-[9px] tracking-[0.14em] uppercase text-white/55 mb-0.5"><%= t("trips.results.back") %></div>
               <div class="font-mono text-[13px] sm:text-[14px] tracking-[0.06em] text-white"><%= ret_str %></div>
             </div>
             <% if nights && nights > 0 %>
               <div class="px-3 py-2 sm:px-4 sm:py-2.5 flex items-center">
-                <span class="font-mono text-[10px] sm:text-[11px] tracking-[0.08em] text-white/70"><%= nights %> <%= nights > 1 ? "nuits" : "nuit" %></span>
+                <span class="font-mono text-[10px] sm:text-[11px] tracking-[0.08em] text-white/70"><%= t("trips.results.nights", count: nights) %></span>
               </div>
             <% end %>
           <% else %>
             <div class="px-3 py-2 sm:px-4 sm:py-2.5 flex items-center">
-              <span class="font-mono text-[10px] sm:text-[11px] tracking-[0.08em] text-white/70">Aller simple</span>
+              <span class="font-mono text-[10px] sm:text-[11px] tracking-[0.08em] text-white/70"><%= t("trips.results.one_way") %></span>
             </div>
           <% end %>
         </div>
@@ -182,19 +181,19 @@
       <%# Stats row %>
       <div class="flex gap-6 sm:gap-9 lg:gap-12 mb-6 sm:mb-8 flex-wrap">
         <div>
-          <div class="font-mono text-[10px] tracking-[0.12em] uppercase text-white/55">Total groupe</div>
+          <div class="font-mono text-[10px] tracking-[0.12em] uppercase text-white/55"><%= t("trips.results.total_group") %></div>
           <div id="winner-total-val" class="font-display italic text-[32px] sm:text-[40px] lg:text-[44px] text-white leading-none mt-1">€<%= (best[:total_cents] / 100.0).round %></div>
         </div>
         <div>
-          <div class="font-mono text-[10px] tracking-[0.12em] uppercase text-white/55">Moy. par personne</div>
+          <div class="font-mono text-[10px] tracking-[0.12em] uppercase text-white/55"><%= t("trips.results.avg_per_person") %></div>
           <div id="winner-avg-val" class="font-display text-[22px] sm:text-[26px] lg:text-[28px] text-white leading-none mt-1">€<%= avg_price %></div>
         </div>
         <div id="winner-dur-block" class="<%= (max_dur.present? && max_dur > 0) ? '' : 'hidden' %>">
-          <div class="font-mono text-[10px] tracking-[0.12em] uppercase text-white/55">Vol le plus long</div>
+          <div class="font-mono text-[10px] tracking-[0.12em] uppercase text-white/55"><%= t("trips.results.longest_flight") %></div>
           <div id="winner-dur-val" class="font-display text-[22px] sm:text-[26px] lg:text-[28px] text-white leading-none mt-1"><%= max_dur.present? && max_dur > 0 ? "#{max_dur / 60}h#{max_dur % 60}m" : "" %></div>
         </div>
         <div id="winner-diff-block" class="<%= diff_vs_2 ? '' : 'hidden' %>">
-          <div id="winner-diff-label" class="font-mono text-[10px] tracking-[0.12em] uppercase text-white/55">Moins cher que #2</div>
+          <div id="winner-diff-label" class="font-mono text-[10px] tracking-[0.12em] uppercase text-white/55"><%= t("trips.results.cheaper_than", rank: 2) %></div>
           <div id="winner-diff-val" class="font-display text-[22px] sm:text-[26px] lg:text-[28px] text-white leading-none mt-1"><%= diff_vs_2 ? "−€#{diff_vs_2}" : "" %></div>
         </div>
       </div>
@@ -203,13 +202,13 @@
       <div class="flex items-center gap-3 flex-wrap">
         <%= link_to best_gf_url, target: "_blank", rel: "noopener", id: "winner-gf-link",
             class: "px-[22px] py-[14px] rounded-full bg-gt-orange text-white text-[15px] font-medium shadow-[0_8px_24px_rgba(232,99,42,0.2)] hover:bg-gt-orange-dark transition-colors inline-flex items-center gap-2" do %>
-          Réserver sur Google Flights →
+          <%= t("trips.results.book_gflights") %>
         <% end %>
         <% if @trip.share_token.present? %>
           <button type="button"
             id="share-results-btn"
             data-share-url="<%= shared_trip_results_url(@trip.share_token) %>"
-            data-share-text="<%= "#{@trip.title} → #{best[:city].city_name} pour #{(best[:total_cents] / 100.0).round}€ total (#{avg_price}€/pers). Trouvé par Get Together 🗺️" %>"
+            data-share-text="<%= t("trips.results.share_text", title: @trip.title, city: best[:city].city_name, total: (best[:total_cents] / 100.0).round, avg: avg_price) %>"
             data-share-title="<%= "#{@trip.title} — Get Together" %>"
             data-trip-id="<%= @trip.id %>"
             onclick="shareResults(this)"
@@ -217,7 +216,7 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
             </svg>
-            <span id="share-btn-label">Partager les résultats</span>
+            <span id="share-btn-label"><%= t("trips.results.share_results") %></span>
           </button>
         <% end %>
       </div>
