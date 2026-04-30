@@ -6,8 +6,11 @@ class CandidateCityEvaluator
     return_date = trip.end_date&.to_s
 
     trip.participants.map do |participant|
-      origin      = participant.origin_airport_code.presence ||
-                    AirportResolver.call(participant.origin_city)
+      origin = participant.origin_airport_code.presence
+      unless origin
+        origin = AirportResolver.call(participant.origin_city)
+        participant.update_column(:origin_airport_code, origin) if origin
+      end
       destination = candidate_city.airport_code.presence ||
                     AirportResolver.call(candidate_city.city_name)
 

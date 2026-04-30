@@ -44,6 +44,13 @@
   winner_photo_id = city_photos[best[:city].city_name.downcase.unicode_normalize(:nfd).gsub(/\p{Mn}/, "").strip] ||
                     city_photos[best[:city].city_name.downcase.strip]
 
+  # Backfill missing airport codes for participants (for trips optimized before this fix)
+  @trip.participants.select { |p| p.origin_airport_code.blank? }.each do |p|
+    code = AirportResolver.call(p.origin_city)
+    p.update_column(:origin_airport_code, code) if code
+    p.origin_airport_code = code
+  end
+
   participants_data = @trip.participants.map { |p| { name: p.name, city: p.origin_city } }
 
   results_data = @results.map { |r|
@@ -57,10 +64,15 @@
       max_duration: max_duration,
       lat: coords ? coords[0] : nil,
       lng: coords ? coords[1] : nil,
-      quotes: r[:quotes].map { |q| {
+      quotes: r[:quotes].map { |q|
+        o_iata   = q.participant.origin_airport_code.presence
+        d_iata   = r[:city].airport_code.presence
+        dep_iso  = @trip.start_date&.strftime("%Y-%m-%d")
+        ret_iso  = (q.is_round_trip && @trip.end_date) ? @trip.end_date.strftime("%Y-%m-%d") : nil
+        {
         name:               q.participant.name,
         city:               q.participant.origin_city,
-        origin_iata:        q.participant.origin_airport_code.presence,
+        origin_iata:        o_iata,
         price:              q.price_euros.round,
         duration:           q.duration_minutes,
         is_local:           q.price_cents == 0,
@@ -69,8 +81,9 @@
         departure_at:       q.departure_at&.strftime("%H:%M"),
         arrival_at:         q.arrival_at&.strftime("%H:%M"),
         departure_date:     q.departure_at&.strftime("%d %b"),
-        departure_date_iso: (q.departure_at&.to_date || @trip.start_date)&.strftime("%Y-%m-%d"),
-        next_day:           q.departure_at.present? && q.arrival_at.present? && q.arrival_at.to_date > q.departure_at.to_date
+        departure_date_iso: @trip.start_date&.strftime("%Y-%m-%d"),
+        next_day:           q.departure_at.present? && q.arrival_at.present? && q.arrival_at.to_date > q.departure_at.to_date,
+        gf_url:             q.price_cents > 0 ? GoogleFlightsUrl.build_url(origin: o_iata, destination: d_iata, departure_date: dep_iso, return_date: ret_iso) : nil
       }}
     }
   }
@@ -94,15 +107,15 @@
     if first_q
       origin_iata = first_q.participant.origin_airport_code.presence
       dest_iata   = best[:city].airport_code.presence
-      flight_date = first_q.departure_at&.to_date || @trip.start_date
-      if origin_iata && dest_iata && flight_date
-        outbound = "#{origin_iata}.#{dest_iata}.#{flight_date.strftime('%Y-%m-%d')}"
-        "https://www.google.com/travel/flights#flt=#{outbound};c:EUR;e:1;sd:1;t:f"
-      end
+      flight_date = @trip.start_date&.strftime("%Y-%m-%d")
+      return_date = (first_q.is_round_trip && @trip.end_date) ? @trip.end_date.strftime("%Y-%m-%d") : nil
+      GoogleFlightsUrl.build_url(origin: origin_iata, destination: dest_iata, departure_date: flight_date, return_date: return_date)
     end
-  rescue nil
+  rescue => e
+    Rails.logger.warn("[GFlights URL] #{e.message}")
+    nil
   end
-  best_gf_url ||= "https://www.google.com/travel/flights?q=#{CGI.escape(best[:city].city_name)}"
+  best_gf_url ||= "https://www.google.com/travel/flights"
 %>
 
 <%= content_for :head do %>
@@ -296,14 +309,9 @@
 
             origin_iata = quote.participant.origin_airport_code.presence
             dest_iata   = best[:city].airport_code.presence
-            flight_date = quote.departure_at&.to_date || @trip.start_date
-            if origin_iata && dest_iata && flight_date
-              outbound = "#{origin_iata}.#{dest_iata}.#{flight_date.strftime('%Y-%m-%d')}"
-              return_leg = (quote.is_round_trip && @trip.end_date) ? "*#{dest_iata}.#{origin_iata}.#{@trip.end_date.strftime('%Y-%m-%d')}" : ""
-              gf_url = "https://www.google.com/travel/flights#flt=#{outbound}#{return_leg};c:EUR;e:1;sd:1;t:f"
-            else
-              gf_url = "https://www.google.com/travel/flights?q=#{CGI.escape("#{quote.participant.origin_city} to #{best[:city].city_name}")}"
-            end
+            dep_iso     = @trip.start_date&.strftime("%Y-%m-%d")
+            ret_iso     = (quote.is_round_trip && @trip.end_date) ? @trip.end_date.strftime("%Y-%m-%d") : nil
+            gf_url      = GoogleFlightsUrl.build_url(origin: origin_iata, destination: dest_iata, departure_date: dep_iso, return_date: ret_iso) || "https://www.google.com/travel/flights"
           %>
           <li class="grid items-center gap-2 sm:gap-3 py-3 sm:py-3.5 <%= qi < best[:quotes].count - 1 ? 'border-b border-dashed border-gt-line' : '' %> [grid-template-columns:40px_1fr_auto] sm:[grid-template-columns:44px_1.1fr_1fr_70px_70px]">
             <div class="w-9 h-9 rounded-full <%= tone_bg %> <%= tone_fg %> flex items-center justify-center text-[13px] font-semibold border-2 border-gt-white flex-shrink-0">
@@ -485,7 +493,7 @@
   }
 
   const allResults          = <%= raw results_data.to_json %>;
-  const tripReturnDate      = <%= raw @trip.end_date&.strftime("%Y-%m-%d").to_json %>;
+
   const tripParticipants    = <%= @trip.participants.count %>;
   const CITY_GUIDES         = <%= raw CityGuides.all.to_json %>;
   const CITY_GUIDE_DEFAULT  = <%= raw CityGuides::DEFAULT.to_json %>;
@@ -526,14 +534,7 @@
     return id ? `https://images.unsplash.com/${id}?w=1400&h=700&fit=crop&crop=center&q=80` : null;
   }
 
-  function buildGFlightsUrl(originIata, destIata, departDate, returnDate) {
-    if (originIata && destIata && departDate) {
-      const outbound  = `${originIata}.${destIata}.${departDate}`;
-      const returnLeg = returnDate ? `*${destIata}.${originIata}.${returnDate}` : '';
-      return `https://www.google.com/travel/flights#flt=${outbound}${returnLeg};c:EUR;e:1;sd:1;t:f`;
-    }
-    return null;
-  }
+  const GF_FALLBACK = 'https://www.google.com/travel/flights';
 
   function selectDestination(index) {
     index = parseInt(index, 10);
@@ -587,12 +588,8 @@
     // ── 4. Update Google Flights CTA ──
     const gfLink = document.getElementById('winner-gf-link');
     if (gfLink) {
-      const q = result.quotes.find(q => q.origin_iata && !q.is_local);
-      if (q) {
-        const url = buildGFlightsUrl(q.origin_iata, result.airport_code, q.departure_date_iso,
-                      q.is_round_trip ? tripReturnDate : null);
-        if (url) gfLink.href = url;
-      }
+      const q = result.quotes.find(q => !q.is_local && q.gf_url);
+      gfLink.href = q ? q.gf_url : GF_FALLBACK;
     }
 
     // ── 5. Highlight selected row in classement panel ──
@@ -608,9 +605,7 @@
     list.innerHTML = result.quotes.map((q, qi) => {
       const bg = TONE_BG[qi % TONE_BG.length];
       const fg = TONE_FG[qi % TONE_FG.length];
-      const retDate = q.is_round_trip ? tripReturnDate : null;
-      const gfUrl = buildGFlightsUrl(q.origin_iata, result.airport_code, q.departure_date_iso, retDate)
-        || `https://www.google.com/travel/flights?q=${encodeURIComponent(q.city + ' to ' + result.city_name)}`;
+      const gfUrl = q.gf_url || GF_FALLBACK;
       const price = q.is_local
         ? `<span class="font-display italic text-[18px] text-gt-forest-light">Local</span>`
         : `<div><div class="font-display italic text-[22px] text-gt-orange leading-none">€${q.price}</div>${q.is_round_trip ? '<div class="font-mono text-[9px] text-gt-muted">A/R</div>' : ''}</div>
