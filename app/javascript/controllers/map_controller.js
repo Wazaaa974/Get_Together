@@ -43,6 +43,7 @@ export default class extends Controller {
       center: [10, 50],
       zoom: 3.5,
       attributionControl: false,
+      cooperativeGestures: true,
     })
     this.map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-right")
 
@@ -75,25 +76,36 @@ export default class extends Controller {
         try { this.map.setPaintProperty(id, prop, val) } catch (e) {}
       }
     }
-    safe("background", "background-color", GT.sand)
-    safe("land", "background-color", GT.sand)
-    safe("landcover", "fill-color", GT.sandDark)
+    // Land & water
+    safe("land", "background-color", "#F5F0E8")
+    safe("landcover", "fill-color", "#EBE4D6")
+    safe("landcover_wood", "fill-color", "#DDE7E1")
+    safe("national_park", "fill-color", "#DDE7E1")
     safe("national-park", "fill-color", "#DDE7E1")
-    safe("water", "fill-color", "#E0D9C8")
-    safe("waterway", "line-color", "#E0D9C8")
+    safe("water", "fill-color", "#D4CEBC")
+    safe("waterway", "line-color", "#D4CEBC")
+    safe("waterway-river-canal", "line-color", "#D4CEBC")
+    // Borders
     safe("admin-0-boundary", "line-color", GT.muted)
-    safe("admin-0-boundary", "line-opacity", 0.4)
-    safe("admin-1-boundary", "line-opacity", 0.15)
-    safe("road-primary", "line-color", "#EFE7D6")
-    safe("road-secondary-tertiary", "line-color", "#EFE7D6")
+    safe("admin-0-boundary", "line-opacity", 0.5)
+    safe("admin-0-boundary", "line-width", 0.8)
+    safe("admin-1-boundary", "line-opacity", 0.2)
+    safe("admin-0-boundary-disputed", "line-color", GT.muted)
+    // Roads — muted so they don't distract
+    safe("road-primary", "line-color", "#E8DFD0")
+    safe("road-secondary-tertiary", "line-color", "#E8DFD0")
     safe("road-street", "line-opacity", 0)
     safe("road-minor", "line-opacity", 0)
-    ;["country-label", "state-label", "settlement-major-label", "settlement-minor-label"]
-      .forEach(id => {
+    safe("road-motorway-trunk", "line-color", "#E8DFD0")
+    // Labels
+    ;["country-label", "state-label", "settlement-major-label",
+      "settlement-minor-label", "settlement-subdivision-label"].forEach(id => {
         safe(id, "text-color", GT.forest)
-        safe(id, "text-halo-color", GT.sand)
+        safe(id, "text-halo-color", "#F5F0E8")
         safe(id, "text-halo-width", 1.5)
       })
+    safe("country-label", "text-color", GT.ink)
+    safe("country-label", "text-halo-width", 2)
   }
 
   // 2. ── Plane sprite (SVG → image, registered with Mapbox) ─────────────
@@ -148,8 +160,8 @@ export default class extends Controller {
   addDestinationMarkers() {
     this.resultsValue.forEach((result, i) => {
       if (!result.lat || !result.lng) return
-      const rank    = i + 1
-      const isFirst = rank === 1
+      const rank     = i + 1
+      const isFirst  = rank === 1
       const isPodium = rank <= 3
 
       const el = document.createElement("div")
@@ -157,70 +169,77 @@ export default class extends Controller {
       el.style.cursor = "pointer"
       el.dataset.index = i
 
-      const ringColor   = isFirst ? GT.orange : isPodium ? GT.forestLight : GT.muted
-      const fillColor   = isFirst ? GT.orange : GT.white
-      const textColor   = isFirst ? GT.white  : (isPodium ? GT.forest : GT.muted)
+      const ringColor  = isFirst ? GT.orange : isPodium ? GT.forestLight : GT.muted
+      const fillColor  = isFirst ? GT.orange : GT.white
+      const textColor  = isFirst ? GT.white  : (isPodium ? GT.forest : GT.muted)
+      const pinSize    = isFirst ? 46 : isPodium ? 36 : 30
+      const fontSize   = isFirst ? 18 : isPodium ? 13 : 11
 
       const haloHTML = isFirst ? `
-        <span style="position:absolute;inset:-14px;border-radius:50%;
-          background:${GT.orange};opacity:0.25;animation:gt-pulse-ring 2.4s ease-out infinite;"></span>
-        <span style="position:absolute;inset:-8px;border-radius:50%;
-          background:${GT.orange};opacity:0.35;animation:gt-pulse-ring 2.4s ease-out infinite .6s;"></span>` : ""
+        <span style="position:absolute;inset:-16px;border-radius:50%;
+          background:${GT.orange};opacity:0.18;animation:gt-pulse-ring 2.4s ease-out infinite;"></span>
+        <span style="position:absolute;inset:-9px;border-radius:50%;
+          background:${GT.orange};opacity:0.28;animation:gt-pulse-ring 2.4s ease-out infinite .7s;"></span>` : ""
 
       const starHTML = isFirst ? `
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="${GT.white}"
-             style="position:absolute;top:-6px;right:-6px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.25));">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="${GT.white}"
+             style="position:absolute;top:-5px;right:-5px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.3));">
           <path d="M12 2 L14.6 8.6 L21.6 9.2 L16.3 13.7 L18 20.5 L12 16.8 L6 20.5 L7.7 13.7 L2.4 9.2 L9.4 8.6 Z"/>
         </svg>` : ""
 
+      const totalEur = result.total_cents ? Math.round(result.total_cents / 100) : null
       const labelHTML = isFirst ? `
         <div style="
-          position:absolute;left:50%;top:calc(100% + 12px);transform:translateX(-50%);
-          background:${GT.white};border:1px solid ${GT.line};border-radius:10px;
-          padding:6px 10px 8px;white-space:nowrap;
-          box-shadow:0 8px 22px rgba(24,21,18,0.12);
+          position:absolute;left:50%;top:calc(100% + 10px);transform:translateX(-50%);
+          background:${GT.white};border:1.5px solid ${GT.orange};border-radius:10px;
+          padding:6px 11px 8px;white-space:nowrap;
+          box-shadow:0 8px 24px rgba(24,21,18,0.14);
           font-family:'Inter',system-ui,sans-serif;
         ">
-          <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:9px;letter-spacing:1.4px;
-                      text-transform:uppercase;color:${GT.orangeDark};font-weight:600;">★ Best fit</div>
-          <div style="font-family:'Fraunces',serif;font-size:15px;color:${GT.forest};line-height:1.1;margin-top:2px;">
+          <div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:9px;letter-spacing:1.2px;
+                      text-transform:uppercase;color:${GT.orangeDark};font-weight:700;margin-bottom:2px;">★ Best fit</div>
+          <div style="font-family:'Fraunces',serif;font-size:15px;color:${GT.forest};line-height:1.15;font-weight:400;">
             ${result.city_name}
           </div>
-          ${result.total_price ? `<div style="font-family:'Fraunces',serif;font-style:italic;font-size:14px;color:${GT.orange};margin-top:2px;">€${result.total_price}</div>` : ""}
-        </div>` : `
+          ${totalEur ? `<div style="font-family:'Fraunces',serif;font-style:italic;font-size:13px;color:${GT.orange};margin-top:3px;">€${totalEur} groupe</div>` : ""}
+        </div>` : isPodium ? `
         <div style="
           position:absolute;left:50%;top:calc(100% + 6px);transform:translateX(-50%);
-          background:${GT.white};border:1px solid ${GT.line};border-radius:6px;
-          padding:2px 6px;white-space:nowrap;
+          background:${GT.white};border:1px solid ${GT.line};border-radius:7px;
+          padding:3px 7px;white-space:nowrap;
           font-family:'Inter',system-ui,sans-serif;font-size:11px;color:${GT.forest};
-          box-shadow:0 2px 6px rgba(24,21,18,0.08);
-        ">${result.city_name}</div>`
+          box-shadow:0 2px 8px rgba(24,21,18,0.10);
+        ">${result.city_name}${totalEur ? ` <span style="color:${GT.muted};font-size:10px;">€${totalEur}</span>` : ""}</div>` : ""
 
       el.innerHTML = `
         <div style="position:relative;">
           ${haloHTML}
           <div style="
-            width:${isFirst ? 44 : 34}px;height:${isFirst ? 44 : 34}px;
-            border-radius:50%;background:${fillColor};color:${textColor};
+            width:${pinSize}px;height:${pinSize}px;border-radius:50%;
+            background:${fillColor};color:${textColor};
             border:2px solid ${isFirst ? GT.white : ringColor};
-            box-shadow:0 0 0 ${isFirst ? "2.5px" : "0"} ${ringColor}, 0 6px 18px rgba(24,21,18,0.16);
+            box-shadow:0 0 0 ${isFirst ? "2px" : "0"} ${ringColor}, 0 4px 14px rgba(24,21,18,0.18);
             display:grid;place-items:center;
-            font-family:'Fraunces',serif;font-size:${isFirst ? 18 : 14}px;font-weight:500;
-            transition:transform .18s ease;position:relative;
+            font-family:'Fraunces',serif;font-size:${fontSize}px;font-weight:500;
+            transition:transform .18s ease, box-shadow .18s ease;position:relative;
           " class="gt-dest-pin">${rank}</div>
           ${starHTML}
           ${labelHTML}
         </div>`
 
       el.addEventListener("mouseenter", () => {
-        el.querySelector(".gt-dest-pin").style.transform = "scale(1.12)"
+        const pin = el.querySelector(".gt-dest-pin")
+        pin.style.transform = "scale(1.14)"
+        pin.style.boxShadow = `0 0 0 ${isFirst ? "2px" : "0"} ${ringColor}, 0 8px 20px rgba(24,21,18,0.22)`
       })
       el.addEventListener("mouseleave", () => {
-        el.querySelector(".gt-dest-pin").style.transform = ""
+        const pin = el.querySelector(".gt-dest-pin")
+        pin.style.transform = ""
+        pin.style.boxShadow = `0 0 0 ${isFirst ? "2px" : "0"} ${ringColor}, 0 4px 14px rgba(24,21,18,0.18)`
       })
       el.addEventListener("click", () => {
         this.selectedValue = i
-        this.selectDestination(i)
+        if (typeof selectDestination === "function") selectDestination(i)
         this.dispatch("select", { detail: { index: i } })
       })
 
@@ -274,10 +293,10 @@ export default class extends Controller {
           source: routeId,
           layout: { "line-join": "round", "line-cap": "round" },
           paint: {
-            "line-color": isWinner ? GT.orange : tone.border,
-            "line-width": isWinner ? 2.5 : 1.5,
-            "line-opacity": isWinner ? 0.85 : 0.55,
-            "line-dasharray": isWinner ? [1, 0] : [0, 2, 3],
+            "line-color": isWinner ? GT.orange : GT.forestLight,
+            "line-width": isWinner ? 2.8 : 1.6,
+            "line-opacity": isWinner ? 0.9 : 0.45,
+            "line-dasharray": isWinner ? [1, 0] : [0, 2.5, 3.5],
           }
         })
       }

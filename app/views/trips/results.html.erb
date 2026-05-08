@@ -237,8 +237,9 @@
     </div>
   </div>
 
-  <%# ── Mapbox map (compact) ── %>
+  <%# ── Mapbox map ── %>
   <div data-controller="map-toggle" class="mb-5">
+    <%# Mobile header with toggle %>
     <div class="flex items-center justify-between mb-2 sm:hidden">
       <span class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted">Carte interactive</span>
       <button data-map-toggle-target="button" data-action="click->map-toggle#toggle"
@@ -246,8 +247,34 @@
         Voir la carte
       </button>
     </div>
-    <div data-map-toggle-target="map" class="bg-gt-white border border-gt-line rounded-[18px] overflow-hidden">
-      <div id="map" class="w-full h-56 sm:h-72"
+    <%# Map container %>
+    <div data-map-toggle-target="map" class="relative rounded-[18px] overflow-hidden shadow-[0_4px_24px_rgba(24,21,18,0.10)] border border-gt-line">
+      <%# Map legend overlay — top left %>
+      <div class="absolute top-3 left-3 z-10 bg-white/90 backdrop-blur-sm rounded-[10px] px-3 py-2 shadow-sm border border-gt-line/60 hidden sm:block pointer-events-none">
+        <div class="font-mono text-[9px] tracking-[0.12em] uppercase text-gt-muted mb-1.5">Participants</div>
+        <% @trip.participants.each_with_index do |p, idx| %>
+          <%
+            avatar_colors = [
+              { bg: '#FDF0E8', fg: '#B54A1A' },
+              { bg: '#DDE7E1', fg: '#2D4A3E' },
+              { bg: '#DCE8F1', fg: '#3A6B92' },
+              { bg: '#EADCF0', fg: '#7A3F8F' },
+              { bg: '#E8E0D0', fg: '#181512' }
+            ]
+            ac = avatar_colors[idx % avatar_colors.length]
+          %>
+          <div class="flex items-center gap-1.5 mb-1 last:mb-0">
+            <div class="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-semibold flex-shrink-0"
+                 style="background:<%= ac[:bg] %>;color:<%= ac[:fg] %>">
+              <%= p.name[0].upcase %>
+            </div>
+            <span class="text-[11px] text-gt-ink font-medium"><%= p.name %></span>
+            <span class="text-[10px] text-gt-muted truncate max-w-[80px]"><%= p.origin_city %></span>
+          </div>
+        <% end %>
+      </div>
+      <%# Map element %>
+      <div id="map" class="w-full h-64 sm:h-[340px]"
            data-controller="map"
            data-map-token-value="<%= mapbox_token %>"
            data-map-participants-value="<%= participants_data.to_json %>"
@@ -413,14 +440,20 @@
 
       <%# Classement complet — toutes les destinations cliquables %>
       <div class="bg-gt-white border border-gt-line rounded-[18px] p-4 sm:p-[22px]">
-        <div class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted mb-3.5">Classement complet</div>
+        <div class="flex items-baseline justify-between mb-3.5">
+          <div class="font-mono text-[11px] tracking-[0.1em] uppercase text-gt-muted">Classement complet</div>
+          <span class="font-mono text-[10px] text-gt-muted/70"><%= @results.count %> destinations</span>
+        </div>
+        <% results_limit = 6 %>
         <% @results.each_with_index do |result, i| %>
           <%
             diff = i == 0 ? nil : ((result[:total_cents] - best[:total_cents]) / 100.0).ceil
+            is_last_visible = (i == results_limit - 1) && @results.count > results_limit
+            is_last = i == @results.count - 1
           %>
           <div data-result-idx="<%= i %>"
                onclick="selectDestination(<%= i %>)"
-               class="flex items-center gap-2.5 py-2.5 px-2 -mx-2 rounded-[10px] cursor-pointer transition-colors <%= i < @results.count - 1 ? 'border-b border-dashed border-gt-line' : '' %> <%= i == 0 ? 'bg-gt-sand-dark' : 'hover:bg-gt-sand' %>">
+               class="result-ranking-row flex items-center gap-2.5 py-2.5 px-2 -mx-2 rounded-[10px] cursor-pointer transition-colors <%= (i < @results.count - 1 && !(is_last_visible)) ? 'border-b border-dashed border-gt-line' : '' %> <%= i == 0 ? 'bg-gt-sand-dark' : 'hover:bg-gt-sand' %> <%= i >= results_limit ? 'hidden' : '' %>">
             <span class="font-mono text-[11px] text-gt-muted w-5 flex-shrink-0">#<%= i + 1 %></span>
             <span class="flex-1 text-[14px] text-gt-ink font-medium truncate"><%= result[:city].city_name %></span>
             <% if diff %>
@@ -429,6 +462,16 @@
               <span class="font-mono text-[10px] text-gt-muted flex-shrink-0 tracking-[0.06em]">BEST</span>
             <% end %>
             <span class="font-display italic text-[18px] text-gt-forest min-w-[48px] text-right flex-shrink-0">€<%= (result[:total_cents] / 100.0).round %></span>
+          </div>
+        <% end %>
+        <% if @results.count > results_limit %>
+          <div id="show-more-results-wrapper" class="pt-2 mt-1 border-t border-dashed border-gt-line">
+            <button id="show-more-results-btn" type="button"
+                    onclick="showMoreResults()"
+                    class="w-full py-2.5 text-[13px] font-medium text-gt-forest hover:text-gt-orange transition-colors flex items-center justify-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              Voir les <%= @results.count - results_limit %> autres destinations
+            </button>
           </div>
         <% end %>
       </div>
@@ -490,6 +533,19 @@
     } catch (e) {
       prompt('Copiez ce lien :', url);
     }
+  }
+
+  function showMoreResults() {
+    document.querySelectorAll('.result-ranking-row.hidden').forEach(el => el.classList.remove('hidden'));
+    // Re-add the border between formerly-last-visible and next row
+    document.querySelectorAll('.result-ranking-row').forEach((el, i, all) => {
+      const isLast = i === all.length - 1;
+      el.classList.toggle('border-b', !isLast);
+      el.classList.toggle('border-dashed', !isLast);
+      el.classList.toggle('border-gt-line', !isLast);
+    });
+    const wrapper = document.getElementById('show-more-results-wrapper');
+    if (wrapper) wrapper.remove();
   }
 
   const allResults          = <%= raw results_data.to_json %>;
@@ -593,6 +649,11 @@
     }
 
     // ── 5. Highlight selected row in classement panel ──
+    // If the selected row is hidden (beyond the initial 6), expand all first
+    const selectedRow = document.querySelector(`[data-result-idx="${index}"]`);
+    if (selectedRow && selectedRow.classList.contains('hidden')) {
+      showMoreResults();
+    }
     document.querySelectorAll('[data-result-idx]').forEach(el => {
       const idx = parseInt(el.dataset.resultIdx, 10);
       el.classList.toggle('bg-gt-sand-dark', idx === index);
