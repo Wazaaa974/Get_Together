@@ -17,6 +17,10 @@ class TripOptimizer
   def self.call(trip)
     started_at  = Time.current
     trip_id     = trip.id
+    # Remove quotes for participants no longer on this trip so results_from_db stays consistent.
+    current_participant_ids = trip.participants.pluck(:id)
+    RouteQuote.where(trip: trip).where.not(participant_id: current_participant_ids).delete_all
+
     # Snapshot city IDs before spawning threads — avoids sharing the AR object
     # across threads and triggering @association_cache race conditions.
     city_ids    = trip.candidate_cities.included.pluck(:id)
@@ -56,9 +60,16 @@ class TripOptimizer
   end
 
   def self.results_from_db(trip)
+    current_participant_ids = trip.participants.pluck(:id)
+    return [] if current_participant_ids.empty?
+
     trip.candidate_cities.included.map do |city|
-      quotes = city.route_quotes.where(trip: trip).includes(:participant).to_a
+      quotes = city.route_quotes
+                   .where(trip: trip, participant_id: current_participant_ids)
+                   .includes(:participant).to_a
       next nil if quotes.empty?
+      # Skip cities where some participants are missing a quote (stale data from a previous run)
+      next nil if quotes.map(&:participant_id).uniq.sort != current_participant_ids.sort
 
       total_cents = ScoreCalculator.call(quotes)
       { city: city, quotes: quotes, total_cents: total_cents }
